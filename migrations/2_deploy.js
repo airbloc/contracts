@@ -18,7 +18,12 @@ const DEPLOYMENT_OUTPUT_PATH = 'deployment.local.json';
 module.exports = function (deployer, network) {
     deployer.then(async () => {
         // contracts without any dependencies will go here:
-        await deployer.deploy(AppRegistry);
+        const baseContracts = [
+            AppRegistry,
+        ];
+        for (const contract of baseContracts) {
+            await deployer.deploy(contract);
+        }
 
         // await deployer.deploy([
         //     Accounts,
