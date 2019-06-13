@@ -3,25 +3,20 @@ Airbloc Contracts
 `airbloc/contract` contains on-chain backend contract codes
 written in [Solidity](https://solidity.readthedocs.io) v0.5.0.
 
+### Prerequisites
+
+ - Node 8.10 or higher
+ - Yarn
+
 ### Build
 
-To build contracts, use `npm run compile`.
+To build contracts, use `yarn compile`.
 
 ```
-$ npm run compile
+$ yarn compile
 ```
 
 You can see compiled contract bytecodes and output ABIs in `build/` directory.
-
-### Generating Go Binds
-
-You need to regenerate contract binds (placed in `github.com/airbloc/airbloc-go/adapter`) if the contract ABI is changed.
-For details, please refer `contracts/generate_adapter.go`.
-
-```
-$ cd ..                  # must be run on root directory!
-$ make generate-bind
-```
 
 
 ### Deploying Contracts
@@ -57,7 +52,7 @@ To deploy contracts, you can use `npm run deploy <network_name>` command. The ne
 For example, to deploy contract on ropsten, you can type:
 
 ```
-$ npm run deploy ropsten
+$ yarn deploy ropsten
 ```
 
 After deployment, `deployment.local.json` is generated. The generated JSON file contains all deployed contract address
@@ -67,7 +62,23 @@ information, and it is essential to run Airbloc server. You can provide the file
  $ airbloc server --deployment ./contracts/deployment.local.json
 ```
 
-### Test Using Docker
+### Testing
+
+#### Running Unit Tests
+
+First, you need to launch development server.
+
+```
+ $ yarn dev
+```
+
+Then you can run unit tests using `yarn test`.
+
+```
+ $ yarn test
+```
+
+#### Using Docker
 
 First, you need to build a new image or pull from `airbloc/contracts`.
 
