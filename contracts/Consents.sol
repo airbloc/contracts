@@ -14,14 +14,14 @@ contract Consents {
     event CollectionConsented(
         bytes8 indexed userId,
         bytes32 indexed app,
-        bytes32 indexed dataType,
+        string /*indexed*/ dataType,
         bool allowed
     );
     
     event ExchangeConsented(
         bytes8 indexed userId,
         bytes32 indexed app,
-        bytes32 indexed dataType,
+        string /*indexed*/ dataType,
         bool allowed
     );
 
@@ -63,53 +63,53 @@ contract Consents {
     }
 
     function consentCollection(
-        string memory appName,
-        string memory dataType,
-        bool consented)
+        string calldata appName,
+        string calldata dataType,
+        bool allowed)
         external
     {
         bytes8 userId = accounts.getAccountId(msg.sender);
-        modifiyConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
+        modifyConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
 
         emit CollectionConsented(userId, appName, dataType, allowed);
     }
 
     function consentCollectionByController(
         bytes8 userId,
-        string memory appName,
-        string memory dataType,
-        bool consented)
+        string calldata appName,
+        string calldata dataType,
+        bool allowed)
         external
         onlyDataController
     {
         require(accounts.isDelegateOf(msg.sender, userId));
-        modifiyConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
+        modifyConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
 
         emit CollectionConsented(userId, appName, dataType, allowed);
     }    
 
     function consentExchange(
-        string memory appName,
-        string memory dataType,
-        bool consented)
+        string calldata appName,
+        string calldata dataType,
+        bool allowed)
         external
     {
         bytes8 userId = accounts.getAccountId(msg.sender);
-        modifiyConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
+        modifyConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
 
         emit ExchangeConsented(userId, appName, dataType, allowed);
     }
 
     function consentExchangeByController(
         bytes8 userId,
-        string memory appName,
-        string memory dataType,
-        bool consented)
+        string calldata appName,
+        string calldata dataType,
+        bool allowed)
         external
         onlyDataController
     {
         require(accounts.isDelegateOf(msg.sender, userId));
-        modifiyConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
+        modifyConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
 
         emit ExchangeConsented(userId, appName, dataType, allowed);
     }

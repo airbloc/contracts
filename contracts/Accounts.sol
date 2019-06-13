@@ -74,7 +74,7 @@ contract Accounts is Ownable {
         emit TemporaryCreated(msg.sender, identityHash, accountId);
     }
 
-    function unlockTemporary(bytes32 identityPreimage, address newOwner, bytes memory passwordSignature)
+    function unlockTemporary(bytes32 identityPreimage, address newOwner, bytes calldata passwordSignature)
         external
         onlyDataController
     {
@@ -125,7 +125,7 @@ contract Accounts is Ownable {
         passwordToAccount[passwordProof] = accountId;
     }
 
-    function getAccount(bytes8 accountId) public view returns (Account storage) {
+    function getAccount(bytes8 accountId) public view returns (Account memory) {
         return accounts[accountId];
     }
 

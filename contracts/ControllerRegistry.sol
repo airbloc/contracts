@@ -39,7 +39,7 @@ contract ControllerRegistry is Ownable {
      * @dev Returns an application object.
      * Reverts if the given name does not exist.
      */
-    function get(address controller) public view returns (DataController memory) {
+    function get(address controller) internal view returns (DataController storage) {
         require(exists(controller), "controller does not exist");
         return controllers[controller];
     }
