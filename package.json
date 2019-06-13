@@ -1,0 +1,38 @@
+{
+  "name": "contracts",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "truffle test --network dev",
+    "truffle": "truffle",
+    "dev": "truffle develop",
+    "compile": "truffle compile",
+    "console": "truffle console --network",
+    "migrate:mainnet": "truffle migrate --reset --network mainnet",
+    "migrate:dev": "truffle migrate --reset --network dev",
+    "migrate:local": "truffle migrate --reset --network local",
+    "flatten": "truffle-flattener",
+    "ganache": "node ganache.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-bignumber": "^3.0.0",
+    "ganache-cli": "^6.4.3",
+    "openzeppelin-solidity": "^2.3.0",
+    "solc": "^0.5.9",
+    "truffle": "^5.0.21",
+    "truffle-privatekey-provider": "^1.1.0"
+  },
+  "devDependencies": {
+    "eth-gas-reporter": "^0.2.0",
+    "truffle-assertions": "^0.9.1"
+  }
+}
