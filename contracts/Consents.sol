@@ -25,15 +25,26 @@ contract Consents {
         bool allowed
     );
 
-    struct Consentbase {
-        // TODO: fill
-        mapping(bytes8 => Consent) usersConsents;
+    struct ConsentBase {
+        mapping(string => ConsentBase) dataTypeConsents;
+    }
+
+    struct DataTypeConsent {
+        bytes8 owner;
+        bytes32 app;
+        string dataType;
+        Consent collection;
+        Consent exchange;
     }
 
     struct Consent {
         bool allowed;
         uint256 at;
     }
+
+    // consents.
+    mapping(bytes32 => ConsentBase) private appConsents;
+    mapping(bytes8 => ConsentBase) private userConsents;
 
     // action types for consents.
     bytes4 constant ACTION_TYPE_COLLECTION = bytes4(keccak256("Collection"));
@@ -71,7 +82,7 @@ contract Consents {
         AppRegistry.App memory app = apps.get(appName);
 
         bytes8 userId = accounts.getAccountId(msg.sender);
-        modifyConsent(ACTION_TYPE_COLLECTION, userId, app.name, dataType, true);
+        updateConsent(ACTION_TYPE_COLLECTION, userId, app, dataType, true);
 
         emit CollectionConsented(userId, app.hashedName, dataType, allowed);
     }
@@ -85,7 +96,7 @@ contract Consents {
         AppRegistry.App memory app = apps.get(appName);
 
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
-        modifyConsent(ACTION_TYPE_COLLECTION, userId, app.name, dataType, true);
+        updateConsent(ACTION_TYPE_COLLECTION, userId, app, dataType, true);
 
         emit CollectionConsented(userId, app.hashedName, dataType, allowed);
     }
@@ -98,7 +109,7 @@ contract Consents {
         AppRegistry.App memory app = apps.get(appName);
 
         bytes8 userId = accounts.getAccountId(msg.sender);
-        modifyConsent(ACTION_TYPE_EXCHANGE, userId, app.name, dataType, true);
+        updateConsent(ACTION_TYPE_EXCHANGE, userId, app, dataType, true);
 
         emit ExchangeConsented(userId, app.hashedName, dataType, allowed);
     }
@@ -112,28 +123,82 @@ contract Consents {
         AppRegistry.App memory app = apps.get(appName);
 
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
-        modifyConsent(ACTION_TYPE_EXCHANGE, userId, app.name, dataType, true);
+        updateConsent(ACTION_TYPE_EXCHANGE, userId, app, dataType, true);
 
         emit ExchangeConsented(userId, app.hashedName, dataType, allowed);
     }
 
 
-    function modifyConsent(
+    function updateConsent(
         bytes4 actionType,
         bytes8 userId,
-        string memory app,
+        AppRegistry.App memory app,
         string memory dataType,
         bool allowed
-    ) internal view {
-        require(apps.exists(app), "app does not exist");
+    ) internal {
+        require(app.owner == address(0x0), "app does not exist");
         require(dataTypes.exists(dataType), "data type does not exist");
 
-        // if (consent.at != 0 && accounts.isTemporary(userId)) {
-        //     // temporary account can't change consent settings that already set.
-        //     revert("The account is currently locked.");
-        // }
-        // consent.allowed = allowed;
-        // consent.at = block.number;
+        ConsentBase storage consent = _get(userId);
+        if (actionType == ACTION_TYPE_COLLECTION) {
+            consent.collection = Consent({
+                allowed: allowed,
+                at: block.number
+            });
+        }
+
+        if (actionType == ACTION_TYPE_EXCHANGE) {
+            consent.exchange = Consent({
+                allowed: allowed,
+                at: block.number
+            });
+        }
+    }
+
+    /**
+     * @dev Returns a consent base object.
+     * Reverts if the given userId does not exists.
+     */
+    function getByUser(bytes8 userId) public view returns (ConsentBase memory) {
+        require(exists(userId), "consent does not exists");
+        return _getByUser(userId);
+    }
+
+    /**
+     * @dev Returns a consent base object.
+     * Reverts if the given app does not exists.
+     */
+    function getByApp(string memory appName) public view returns (ConsentBase memory) {
+        require(exists(userId), "consent does not exists");
+        return _getByUser(userId);
+    }
+
+    /**
+     * @return An storage-reference of consent base object event if it does not exists.
+     */
+    function _getByUser(bytes8 userId) internal view returns (ConsentBase storage) {
+        return userConsents[userId];
+    }
+
+    /**
+     * @return An storage-reference of consent base object event if it does not exists.
+     */
+    function _getByApp(bytes8 userId) internal view returns (ConsentBase storage) {
+        return userConsents[userId];
+    }
+
+    /**
+     * @return true if given userId exists.
+     */
+    function existsByUser(bytes8 userId) public view returns (bool) {
+        return _getByUser(userId).owner == bytes8(0x0);
+    }
+
+    /**
+     * @return true if given userId exists.
+     */
+    function existsByApp(bytes8 userId) public view returns (bool) {
+        return _getByUser(userId).owner == bytes8(0x0);
     }
 
     function isCollectionAllowed(
@@ -150,9 +215,8 @@ contract Consents {
         bytes8 userId,
         uint256 blockNumber
     ) public view returns (bool) {
-        // TODO: old code
-        // return collections[collectionId].dataCollectionOf[user].isAllowed
-        //     && collections[collectionId].dataCollectionOf[user].authorizedAt < blockNumber;
+        Consent memory consent = get(userId).collection;
+        return consent.allowed && consent.at < blockNumber;
     }
 
     // TODO: isExchangeAllowed, isExchangeAllowedAt
