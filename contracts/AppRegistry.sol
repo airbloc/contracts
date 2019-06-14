@@ -43,7 +43,7 @@ contract AppRegistry is Ownable {
     function unregister(string memory appName) public {
         require(isOwner(appName, msg.sender), "unauthorized");
 
-        App memory app = _get(appName);
+        App memory app = get(appName);
         delete apps[app.hashedName];
 
         emit Unregistration(app.hashedName, app.name);
