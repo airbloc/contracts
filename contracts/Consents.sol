@@ -8,7 +8,7 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * Consents is a contract managing users' consent for applications
- * doing specific actions (e.g. Data Collecting, Data Exchanging) to data types. 
+ * doing specific actions (e.g. Data Collecting, Data Exchanging) to data types.
  */
 contract Consents {
     event CollectionConsented(
@@ -17,7 +17,7 @@ contract Consents {
         string /*indexed*/ dataType,
         bool allowed
     );
-    
+
     event ExchangeConsented(
         bytes8 indexed userId,
         bytes32 indexed app,
@@ -48,7 +48,8 @@ contract Consents {
         Accounts accountReg,
         AppRegistry appReg,
         ControllerRegistry controllerReg,
-        DataTypeRegistry dataTypeReg) 
+        DataTypeRegistry dataTypeReg
+    )
         public
     {
         accounts = accountReg;
@@ -63,55 +64,57 @@ contract Consents {
     }
 
     function consentCollection(
-        string calldata appName,
-        string calldata dataType,
-        bool allowed)
-        external
-    {
-        bytes8 userId = accounts.getAccountId(msg.sender);
-        modifyConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
+        string memory appName,
+        string memory dataType,
+        bool allowed
+    ) public {
+        AppRegistry.App memory app = apps.get(appName);
 
-        emit CollectionConsented(userId, appName, dataType, allowed);
+        bytes8 userId = accounts.getAccountId(msg.sender);
+        modifyConsent(ACTION_TYPE_COLLECTION, userId, app.name, dataType, true);
+
+        emit CollectionConsented(userId, app.hashedName, dataType, allowed);
     }
 
     function consentCollectionByController(
         bytes8 userId,
-        string calldata appName,
-        string calldata dataType,
-        bool allowed)
-        external
-        onlyDataController
-    {
-        require(accounts.isDelegateOf(msg.sender, userId));
-        modifyConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
+        string memory appName,
+        string memory dataType,
+        bool allowed
+    ) public onlyDataController {
+        AppRegistry.App memory app = apps.get(appName);
 
-        emit CollectionConsented(userId, appName, dataType, allowed);
-    }    
+        require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
+        modifyConsent(ACTION_TYPE_COLLECTION, userId, app.name, dataType, true);
+
+        emit CollectionConsented(userId, app.hashedName, dataType, allowed);
+    }
 
     function consentExchange(
-        string calldata appName,
-        string calldata dataType,
-        bool allowed)
-        external
-    {
-        bytes8 userId = accounts.getAccountId(msg.sender);
-        modifyConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
+        string memory appName,
+        string memory dataType,
+        bool allowed
+    ) public {
+        AppRegistry.App memory app = apps.get(appName);
 
-        emit ExchangeConsented(userId, appName, dataType, allowed);
+        bytes8 userId = accounts.getAccountId(msg.sender);
+        modifyConsent(ACTION_TYPE_EXCHANGE, userId, app.name, dataType, true);
+
+        emit ExchangeConsented(userId, app.hashedName, dataType, allowed);
     }
 
     function consentExchangeByController(
         bytes8 userId,
-        string calldata appName,
-        string calldata dataType,
-        bool allowed)
-        external
-        onlyDataController
-    {
-        require(accounts.isDelegateOf(msg.sender, userId));
-        modifyConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
+        string memory appName,
+        string memory dataType,
+        bool allowed
+    ) public onlyDataController {
+        AppRegistry.App memory app = apps.get(appName);
 
-        emit ExchangeConsented(userId, appName, dataType, allowed);
+        require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
+        modifyConsent(ACTION_TYPE_EXCHANGE, userId, app.name, dataType, true);
+
+        emit ExchangeConsented(userId, app.hashedName, dataType, allowed);
     }
 
 
@@ -120,9 +123,8 @@ contract Consents {
         bytes8 userId,
         string memory app,
         string memory dataType,
-        bool allowed)
-        internal
-    {
+        bool allowed
+    ) internal view {
         require(apps.exists(app), "app does not exist");
         require(dataTypes.exists(dataType), "data type does not exist");
 
@@ -147,8 +149,7 @@ contract Consents {
         string memory dataType,
         bytes8 userId,
         uint256 blockNumber
-    ) public view returns (bool) 
-    {
+    ) public view returns (bool) {
         // TODO: old code
         // return collections[collectionId].dataCollectionOf[user].isAllowed
         //     && collections[collectionId].dataCollectionOf[user].authorizedAt < blockNumber;

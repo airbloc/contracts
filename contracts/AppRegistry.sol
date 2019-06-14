@@ -11,11 +11,12 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
  */
 contract AppRegistry is Ownable {
 
-    event Registration(string name);
+    event Registration(bytes32 indexed hashedName, string name);
+    event Unregistration(bytes32 indexed hashedName, string name);
     event AppOwnerTransferred(string name, address indexed oldOwner, address newOwner);
-    event Unregistration(string name);
 
     struct App {
+        bytes32 hashedName;
         string name;
         address owner;
     }
@@ -31,9 +32,23 @@ contract AppRegistry is Ownable {
         App storage app = _get(appName);
         app.name = appName;
         app.owner = msg.sender;
+        app.hashedName = keccak256(abi.encodePacked(appName));
 
-        emit Registration(appName);
+        emit Registration(app.hashedName, app.name);
     }
+
+    /**
+     * @dev Removes an application.
+     */
+    function unregister(string memory appName) public {
+        require(isOwner(appName, msg.sender), "unauthorized");
+
+        App memory app = _get(appName);
+        delete apps[app.hashedName];
+
+        emit Unregistration(app.hashedName, app.name);
+    }
+
 
     /**
      * @dev Returns an application object.
@@ -77,17 +92,5 @@ contract AppRegistry is Ownable {
         app.owner = newOwner;
 
         emit AppOwnerTransferred(appName, oldOwner, newOwner);
-    }
-
-    /**
-     * @dev Removes an application.
-     */
-    function unregister(string memory appName) public {
-        require(isOwner(appName, msg.sender), "unauthorized");
-
-        bytes32 hashedName = keccak256(abi.encodePacked(appName));
-        delete apps[hashedName];
-
-        emit Unregistration(appName);
     }
 }
