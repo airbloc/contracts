@@ -3,14 +3,18 @@ pragma experimental ABIEncoderV2;
 
 import "./Accounts.sol";
 import "./AppRegistry.sol";
+import "./ConsentsLib.sol";
 import "./DataTypeRegistry.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
- * Consents is a contract managing users' consent for applications
+ * @author Airbloc Foundation 2019
+ * @title Consents is a contract managing users' consent for applications
  * doing specific actions (e.g. Data Collecting, Data Exchanging) to data types.
  */
 contract Consents {
+    using ConsentsLib for ConsentsLib.Consents;
+
     event CollectionConsented(
         bytes8 indexed userId,
         bytes32 indexed app,
@@ -25,26 +29,8 @@ contract Consents {
         bool allowed
     );
 
-    struct ConsentBase {
-        mapping(string => ConsentBase) dataTypeConsents;
-    }
-
-    struct DataTypeConsent {
-        bytes8 owner;
-        bytes32 app;
-        string dataType;
-        Consent collection;
-        Consent exchange;
-    }
-
-    struct Consent {
-        bool allowed;
-        uint256 at;
-    }
-
-    // consents.
-    mapping(bytes32 => ConsentBase) private appConsents;
-    mapping(bytes8 => ConsentBase) private userConsents;
+    // consents
+    ConsentsLib.Consents private consents;
 
     // action types for consents.
     bytes4 constant ACTION_TYPE_COLLECTION = bytes4(keccak256("Collection"));
@@ -139,85 +125,82 @@ contract Consents {
         require(app.owner == address(0x0), "app does not exist");
         require(dataTypes.exists(dataType), "data type does not exist");
 
-        ConsentBase storage consent = _get(userId);
+        ConsentsLib.InputPackage memory inputPackage = ConsentsLib.InputPackage({
+            userId: userId,
+            appName: app.name,
+            dataType: dataType
+        });
+
+        ConsentsLib.ConsentBase memory consentBase;
+
+        if (!consents.exists(inputPackage)) {
+            consentBase = consents.newConsent(inputPackage);
+        } else {
+            consentBase = consents.get(inputPackage);
+        }
+
         if (actionType == ACTION_TYPE_COLLECTION) {
-            consent.collection = Consent({
+            consentBase.collection = ConsentsLib.Consent({
                 allowed: allowed,
                 at: block.number
             });
         }
 
         if (actionType == ACTION_TYPE_EXCHANGE) {
-            consent.exchange = Consent({
+            consentBase.exchange = ConsentsLib.Consent({
                 allowed: allowed,
                 at: block.number
             });
         }
-    }
 
-    /**
-     * @dev Returns a consent base object.
-     * Reverts if the given userId does not exists.
-     */
-    function getByUser(bytes8 userId) public view returns (ConsentBase memory) {
-        require(exists(userId), "consent does not exists");
-        return _getByUser(userId);
-    }
-
-    /**
-     * @dev Returns a consent base object.
-     * Reverts if the given app does not exists.
-     */
-    function getByApp(string memory appName) public view returns (ConsentBase memory) {
-        require(exists(userId), "consent does not exists");
-        return _getByUser(userId);
-    }
-
-    /**
-     * @return An storage-reference of consent base object event if it does not exists.
-     */
-    function _getByUser(bytes8 userId) internal view returns (ConsentBase storage) {
-        return userConsents[userId];
-    }
-
-    /**
-     * @return An storage-reference of consent base object event if it does not exists.
-     */
-    function _getByApp(bytes8 userId) internal view returns (ConsentBase storage) {
-        return userConsents[userId];
-    }
-
-    /**
-     * @return true if given userId exists.
-     */
-    function existsByUser(bytes8 userId) public view returns (bool) {
-        return _getByUser(userId).owner == bytes8(0x0);
-    }
-
-    /**
-     * @return true if given userId exists.
-     */
-    function existsByApp(bytes8 userId) public view returns (bool) {
-        return _getByUser(userId).owner == bytes8(0x0);
+        consents.update(consentBase, inputPackage);
     }
 
     function isCollectionAllowed(
+        bytes8 userId,
         string memory appName,
-        string memory dataType,
-        bytes8 userId
+        string memory dataType
     ) public view returns (bool) {
-        return isCollectionAllowedAt(appName, dataType, userId, block.number);
+        return isCollectionAllowedAt(userId, appName, dataType, block.number);
     }
 
     function isCollectionAllowedAt(
+        bytes8 userId,
         string memory appName,
         string memory dataType,
-        bytes8 userId,
         uint256 blockNumber
     ) public view returns (bool) {
-        Consent memory consent = get(userId).collection;
+        ConsentsLib.InputPackage memory inputPackage = ConsentsLib.InputPackage({
+            userId: userId,
+            appName: appName,
+            dataType: dataType
+        });
+
+        ConsentsLib.Consent memory consent = consents.get(inputPackage).collection;
         return consent.allowed && consent.at < blockNumber;
     }
 
-    // TODO: isExchangeAllowed, isExchangeAllowedAt
+    function isExchangeAllowed(
+        bytes8 userId,
+        string memory appName,
+        string memory dataType
+    ) public view returns (bool) {
+        return isExchangeAllowedAt(userId, appName, dataType, block.number);
+    }
+
+    function isExchangeAllowedAt(
+        bytes8 userId,
+        string memory appName,
+        string memory dataType,
+        uint256 blockNumber
+    ) public view returns (bool) {
+        ConsentsLib.InputPackage memory inputPackage = ConsentsLib.InputPackage({
+            userId: userId,
+            appName: appName,
+            dataType: dataType
+        });
+
+        ConsentsLib.Consent memory consent = consents.get(inputPackage).exchange;
+        return consent.allowed && consent.at < blockNumber;
+    }
 }

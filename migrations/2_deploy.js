@@ -2,6 +2,8 @@ const fs = require('fs');
 
 // const Accounts = artifacts.require("Accounts");
 const AppRegistry = artifacts.require("AppRegistry");
+const Consents = artifacts.require("Consents");
+const ConsentsLib = artifacts.require("ConsentsLib");
 // const SchemaRegistry = artifacts.require("SchemaRegistry");
 // const CollectionRegistry = artifacts.require("CollectionRegistry");
 // const Exchange = artifacts.require("Exchange");
@@ -24,6 +26,10 @@ module.exports = function (deployer, network) {
         for (const contract of baseContracts) {
             await deployer.deploy(contract);
         }
+
+        // await deployer.deploy(ConsentsLib);
+        // await deployer.link(ConsentsLib, Consents);
+        // await deployer.deploy(Consents);
 
         // await deployer.deploy([
         //     Accounts,
