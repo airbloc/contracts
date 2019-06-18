@@ -17,11 +17,13 @@
     "flatten": "truffle-flattener",
     "migrate:dev": "truffle migrate --reset --network dev",
     "migrate:local": "truffle migrate --reset --network local",
+    "migrate:klaytn": "node deploy.js",
     "migrate:mainnet": "truffle migrate --reset --network mainnet",
     "test": "truffle test --network dev",
     "test-with-coverage": "solidity-coverage"
   },
   "devDependencies": {
+    "caver-js": "^0.9.5",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
