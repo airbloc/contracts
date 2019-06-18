@@ -14,28 +14,22 @@ import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 contract Consents {
     using ConsentsLib for ConsentsLib.Consents;
 
-    event CollectionConsented(
-        bytes8 indexed userId,
-        bytes32 indexed app,
-        string appName,
-        string /*indexed*/ dataType,
-        bool allowed
-    );
+    enum ActionTypes {
+        Collection,
+        Exchange
+    }
 
-    event ExchangeConsented(
+    event Consented(
+        ActionTypes indexed action,
         bytes8 indexed userId,
         bytes32 indexed app,
         string appName,
-        string /*indexed*/ dataType,
+        string dataType,
         bool allowed
     );
 
     // consents
     ConsentsLib.Consents private consents;
-
-    // action types for consents.
-    bytes4 constant ACTION_TYPE_COLLECTION = bytes4(keccak256("Collection"));
-    bytes4 constant ACTION_TYPE_EXCHANGE = bytes4(keccak256("Exchange"));
 
     Accounts private accounts;
     AppRegistry private apps;
@@ -57,66 +51,59 @@ contract Consents {
     }
 
     modifier onlyDataController() {
-        require(dataControllers.exists(msg.sender), 'caller is not a data controller');
+        require(dataControllers.exists(msg.sender), "caller is not a data controller");
         _;
     }
 
-    function consentCollection(
+    function consent(
+        ActionTypes action,
         string memory appName,
         string memory dataType,
         bool allowed
     ) public {
-
         require(apps.exists(appName), "app does not exists");
         bytes8 userId = accounts.getAccountId(msg.sender);
-        updateConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
-
-        emit CollectionConsented(userId, apps.get(appName).hashedName, appName, dataType, allowed);
+        _updateConsent(action, userId, appName, dataType, allowed);
     }
 
-    function consentCollectionByController(
+    function consentByController(
+        ActionTypes action,
         bytes8 userId,
         string memory appName,
         string memory dataType,
         bool allowed
     ) public onlyDataController {
-
         require(apps.exists(appName), "app does not exists");
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
-        updateConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
 
-        emit CollectionConsented(userId, apps.get(appName).hashedName, appName, dataType, allowed);
+        if (consents.exists(userId, appName, uint(action), dataType)) {
+            revert("controllers can't modify users' consent without password");
+        }
+        _updateConsent(action, userId, appName, dataType, allowed);
     }
 
-    function consentExchange(
-        string memory appName,
-        string memory dataType,
-        bool allowed
-    ) public {
-
-        require(apps.exists(appName), "app does not exists");
-        bytes8 userId = accounts.getAccountId(msg.sender);
-        updateConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
-
-        emit ExchangeConsented(userId, apps.get(appName).hashedName, appName, dataType, allowed);
-    }
-
-    function consentExchangeByController(
+    function modifyConsentByController(
+        ActionTypes action,
         bytes8 userId,
         string memory appName,
         string memory dataType,
-        bool allowed
+        bool allowed,
+        bytes memory passwordSignature
     ) public onlyDataController {
-
+        require(apps.exists(appName), "app does not exists");
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
-        updateConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
 
-        emit ExchangeConsented(userId, apps.get(appName).hashedName, appName, dataType, allowed);
+        // changing an already given consent requires a password key
+        bytes memory message = abi.encodePacked(action, userId, appName, dataType, allowed);
+        require(
+            userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
+            "password mismatch"
+        );
+        _updateConsent(action, userId, appName, dataType, allowed);
     }
 
-
-    function updateConsent(
-        bytes4 actionType,
+    function _updateConsent(
+        ActionTypes action,
         bytes8 userId,
         string memory appName,
         string memory dataType,
@@ -126,64 +113,31 @@ contract Consents {
         require(apps.exists(appName), "app does not exist");
         require(dataTypes.exists(dataType), "data type does not exist");
 
-        ConsentsLib.ConsentBase memory consentBase;
-
-        if (!consents.exists(userId, appName, dataType)) {
-            consentBase = consents.newConsent(userId, appName, dataType);
-        } else {
-            consentBase = consents.get(userId, appName, dataType);
-        }
-
-        if (actionType == ACTION_TYPE_COLLECTION) {
-            consentBase.collection = ConsentsLib.Consent({
-                allowed: allowed,
-                at: block.number
-            });
-        }
-
-        if (actionType == ACTION_TYPE_EXCHANGE) {
-            consentBase.exchange = ConsentsLib.Consent({
-                allowed: allowed,
-                at: block.number
-            });
-        }
-
-        consents.update(consentBase, userId, appName, dataType);
+        ConsentsLib.Consent memory consent = ConsentsLib.Consent({
+            allowed: allowed,
+            at: block.number
+        });
+        consents.update(userId, appName, uint(action), dataType, consent);
+        emit Consented(action, userId, apps.get(appName).hashedName, appName, dataType, allowed);
     }
 
-    function isCollectionAllowed(
+    function isAllowed(
+        ActionTypes action,
         bytes8 userId,
         string memory appName,
         string memory dataType
     ) public view returns (bool) {
-        return isCollectionAllowedAt(userId, appName, dataType, block.number);
+        return isAllowedAt(action, userId, appName, dataType, block.number);
     }
 
-    function isCollectionAllowedAt(
+    function isAllowedAt(
+        ActionTypes action,
         bytes8 userId,
         string memory appName,
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consent = consents.get(userId, appName, dataType).collection;
-        return consent.allowed && consent.at < blockNumber;
-    }
-
-    function isExchangeAllowed(
-        bytes8 userId,
-        string memory appName,
-        string memory dataType
-    ) public view returns (bool) {
-        return isExchangeAllowedAt(userId, appName, dataType, block.number);
-    }
-
-    function isExchangeAllowedAt(
-        bytes8 userId,
-        string memory appName,
-        string memory dataType,
-        uint256 blockNumber
-    ) public view returns (bool) {
-        ConsentsLib.Consent memory consent = consents.get(userId, appName, dataType).exchange;
+        ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
         return consent.allowed && consent.at < blockNumber;
     }
 }
