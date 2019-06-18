@@ -54,10 +54,11 @@ library ExchangeLib {
         Orderbook storage self,
         Offer memory _offer
     ) internal returns (bytes8) {
+        require(_offer.dataIds.length <= 128, "dataIds length exceeded (max 128)");
         require(_offer.at == 0, "offer.at should be zero in neutral state");
         require(_offer.until == 0, "offer.until should be zero in neutral state");
-        require(_offer.status == OfferStatus.NEUTRAL, "neutral state only");
         require(_offer.escrow.addr.isContract(), "not contract address");
+        require(_offer.status == OfferStatus.NEUTRAL, "neutral state only");
 
         bytes8 offerId = bytes8(
             keccak256(
@@ -85,7 +86,7 @@ library ExchangeLib {
         Offer storage offer = _get(self, _offerId);
 
         require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
-        require(offer.dataIds.length + _dataIds.length <= 255, "dataIds length exceeded (max 255)");
+        require(offer.dataIds.length + _dataIds.length <= 128, "dataIds length exceeded (max 128)");
 
         for (uint8 i = 0; i < _dataIds.length; i++) {
             offer.dataIds.push(_dataIds[i]);
