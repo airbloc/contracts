@@ -22,18 +22,18 @@ library ExchangeLib {
     }
 
     function exec(
-        Escrow storage _escrow,
-        bytes32 _offerId
+        Escrow storage escrow,
+        bytes32 offerId
     ) internal returns (bool, bytes memory) {
-        bytes memory data = abi.encode(_offerId);
-        if (_escrow.args.length > 0) {
+        bytes memory data = abi.encode(offerId);
+        if (escrow.args.length > 0) {
             data = abi.encodePacked(
-                _escrow.args,
-                _offerId
+                escrow.args,
+                offerId
             );
         }
-        data = abi.encodePacked(_escrow.sign, data);
-        return _escrow.addr.call(data);
+        data = abi.encodePacked(escrow.sign, data);
+        return escrow.addr.call(data);
     }
 
     struct Offer {
@@ -52,53 +52,53 @@ library ExchangeLib {
 
     function prepare(
         Orderbook storage self,
-        Offer memory _offer
+        Offer memory offer
     ) internal returns (bytes8) {
-        require(_offer.dataIds.length <= 128, "dataIds length exceeded (max 128)");
-        require(_offer.at == 0, "offer.at should be zero in neutral state");
-        require(_offer.until == 0, "offer.until should be zero in neutral state");
-        require(_offer.escrow.addr.isContract(), "not contract address");
-        require(_offer.status == OfferStatus.NEUTRAL, "neutral state only");
+        require(offer.dataIds.length <= 128, "dataIds length exceeded (max 128)");
+        require(offer.at == 0, "offer.at should be zero in neutral state");
+        require(offer.until == 0, "offer.until should be zero in neutral state");
+        require(offer.escrow.addr.isContract(), "not contract address");
+        require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
 
         bytes8 offerId = bytes8(
             keccak256(
                 abi.encodePacked(
-                    _offer.at,
+                    offer.at,
                     msg.sender,
-                    _offer.from,
-                    _offer.to,
-                    _offer.escrow.addr
+                    offer.from,
+                    offer.to,
+                    offer.escrow.addr
                 )
             )
         );
 
-        _offer.status = OfferStatus.NEUTRAL;
-        self.orders[offerId] = _offer;
+        offer.status = OfferStatus.NEUTRAL;
+        self.orders[offerId] = offer;
 
         return offerId;
     }
 
     function addDataIds(
         Orderbook storage self,
-        bytes8 _offerId,
-        bytes20[] memory _dataIds
+        bytes8 offerId,
+        bytes20[] memory dataIds
     ) internal {
-        Offer storage offer = _get(self, _offerId);
+        Offer storage offer = get(self, offerId);
 
         require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
-        require(offer.dataIds.length + _dataIds.length <= 128, "dataIds length exceeded (max 128)");
+        require(offer.dataIds.length + dataIds.length <= 128, "dataIds length exceeded (max 128)");
 
-        for (uint8 i = 0; i < _dataIds.length; i++) {
-            offer.dataIds.push(_dataIds[i]);
+        for (uint8 i = 0; i < dataIds.length; i++) {
+            offer.dataIds.push(dataIds[i]);
         }
     }
 
     function order(
         Orderbook storage self,
-        bytes8 _offerId,
+        bytes8 offerId,
         uint256 timeout
     ) internal {
-        Offer storage offer = _get(self, _offerId);
+        Offer storage offer = get(self, offerId);
 
         require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
 
@@ -109,21 +109,21 @@ library ExchangeLib {
 
     function cancel(
         Orderbook storage self,
-        bytes8 _offerId
+        bytes8 offerId
     ) internal {
-        Offer storage offer = _get(self, _offerId);
+        Offer storage offer = get(self, offerId);
 
         require(offer.status == OfferStatus.PENDING, "pending state only");
 
         offer.status = OfferStatus.CANCELED;
     }
 
-    // settle and open
+    // settle
     function settle(
         Orderbook storage self,
-        bytes8 _offerId
+        bytes8 offerId
     ) internal returns (bytes memory) {
-        Offer storage offer = _get(self, _offerId);
+        Offer storage offer = get(self, offerId);
         Escrow storage escrow = offer.escrow;
 
         require(block.number <= offer.until, "outdated order");
@@ -131,7 +131,7 @@ library ExchangeLib {
 
         offer.status = OfferStatus.SETTLED;
 
-        (bool success, bytes memory result) = exec(escrow, _offerId);
+        (bool success, bytes memory result) = exec(escrow, offerId);
 
         require(success, "failed to call escrow contract");
 
@@ -140,9 +140,9 @@ library ExchangeLib {
 
     function reject(
         Orderbook storage self,
-        bytes8 _offerId
+        bytes8 offerId
     ) internal {
-        Offer storage offer = _get(self, _offerId);
+        Offer storage offer = get(self, offerId);
 
         require(offer.status == OfferStatus.PENDING, "pending state only");
 
@@ -151,23 +151,15 @@ library ExchangeLib {
 
     function get(
         Orderbook storage self,
-        bytes8 _offerId
-    ) internal view returns (Offer memory) {
-        require(exists(self, _offerId), "offer does not exist");
-        return _get(self, _offerId);
-    }
-
-    function _get(
-        Orderbook storage self,
-        bytes8 _offerId
+        bytes8 offerId
     ) internal view returns (Offer storage) {
-        return self.orders[_offerId];
+        return self.orders[offerId];
     }
 
     function exists(
         Orderbook storage self,
-        bytes8 _offerId
+        bytes8 offerId
     ) internal view returns (bool) {
-        return _get(self, _offerId).escrow.addr != address(0x0);
+        return get(self, offerId).escrow.addr != address(0x0);
     }
 }

@@ -5,30 +5,33 @@ import "./AppRegistry.sol";
 import "./ExchangeLib.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 
-
+/**
+ * @title Exchange contract is exchange feature implementation of airbloc protocol.
+ * This makes users of protocol to exchange data each other.
+ */
 contract Exchange is ReentrancyGuard {
     using ExchangeLib for ExchangeLib.Offer;
     using ExchangeLib for ExchangeLib.Orderbook;
 
     // offeror - prepare
-    event OfferPrepared(bytes8 indexed _offerId, address _by, uint256 _at);
+    event OfferPrepared(bytes8 indexed offerId, address by, uint256 at);
 
     // offeror - order/cancel
-    event OfferPresented(bytes8 indexed _offerId, address _by, uint256 _at);
-    event OfferCanceled(bytes8 indexed _offerId, address _by, uint256 _at);
+    event OfferPresented(bytes8 indexed offerId, address by, uint256 at);
+    event OfferCanceled(bytes8 indexed offerId, address by, uint256 at);
 
     // offeree - settle+receipt
-    event OfferSettled(bytes8 indexed _offerId, address _by, uint256 _at);
+    event OfferSettled(bytes8 indexed offerId, address by, uint256 at);
     event OfferReceipt(
-        bytes8 indexed _offerId,
-        bytes32 indexed _from,
-        bytes32 indexed _to,
-        bytes _result,
-        uint256 _at
+        bytes8 indexed offerId,
+        bytes32 indexed from,
+        bytes32 indexed to,
+        bytes result,
+        uint256 at
     );
 
     // offeree - reject
-    event OfferRejected(bytes8 indexed _offerId, address _by, uint256 _at);
+    event OfferRejected(bytes8 indexed offerId, address by, uint256 at);
 
     ExchangeLib.Orderbook private orderbook;
 
@@ -37,42 +40,42 @@ contract Exchange is ReentrancyGuard {
 
     AppRegistry private apps;
 
-    constructor(AppRegistry _apps) public {
-        apps = _apps;
+    constructor(AppRegistry appReg) public {
+        apps = appReg;
     }
 
     /**
      * @dev escrow's method must have bytes8 argument last of them.
      * ex) testEscrowMethod(uint256 arg1, bytes32 arg2, [bytes8 offerId] <- must have);
-     * @param _to offeree app name (registered in app regsitry)
-     * @param _escrow address of escrow contract
-     * @param _escrowSign signature of escrow contract's method
-     * @param _escrowArgs argument of escrow contract's method
-     * @param _dataIds bundle of dataIds you want exchange
+     * @param to offeree app name (registered in app regsitry)
+     * @param escrow address of escrow contract
+     * @param escrowSign signature of escrow contract's method
+     * @param escrowArgs argument of escrow contract's method
+     * @param dataIds bundle of dataIds you want exchange
      * @return id of prepared offer
      */
     function prepare(
-        string memory _from,
-        string memory _to,
-        address _escrow,
-        bytes4 _escrowSign,
-        bytes memory _escrowArgs,
-        bytes20[] memory _dataIds
+        string memory from,
+        string memory to,
+        address escrow,
+        bytes4 escrowSign,
+        bytes memory escrowArgs,
+        bytes20[] memory dataIds
     ) public returns (bytes8) {
-        require(apps.exists(_from), "offeror app does not exists");
-        require(apps.exists(_to), "offeree app does not exist");
+        require(apps.exists(from), "offeror app does not exists");
+        require(apps.exists(to), "offeree app does not exist");
 
         bytes8 offerId = orderbook.prepare(
             ExchangeLib.Offer({
-                from: _from,
-                to: _to,
-                dataIds: _dataIds,
+                from: from,
+                to: to,
+                dataIds: dataIds,
                 at: 0,
                 until: 0,
                 escrow: ExchangeLib.Escrow({
-                    addr: _escrow,
-                    sign: _escrowSign,
-                    args: _escrowArgs
+                    addr: escrow,
+                    sign: escrowSign,
+                    args: escrowArgs
                 }),
                 status: ExchangeLib.OfferStatus.NEUTRAL
             })
@@ -84,62 +87,62 @@ contract Exchange is ReentrancyGuard {
     }
 
     /**
-     * @param _offerId id of prepared offer
-     * @param _dataIds bundle of dataIds you want add
+     * @param offerId id of prepared offer
+     * @param dataIds bundle of dataIds you want add
      */
     function addDataIds(
-        bytes8 _offerId,
-        bytes20[] memory _dataIds
+        bytes8 offerId,
+        bytes20[] memory dataIds
     ) public {
-        ExchangeLib.Offer memory offer = orderbook.get(_offerId);
+        ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
         require(msg.sender == apps.get(offer.from).owner, "should have required authority");
 
-        orderbook.addDataIds(_offerId, _dataIds);
+        orderbook.addDataIds(offerId, dataIds);
     }
 
     /**
      * @dev order prepared offer
-     * @param _offerId id of prepared offer
+     * @param offerId id of prepared offer
      */
-    function order(bytes8 _offerId) public {
-        ExchangeLib.Offer memory offer = orderbook.get(_offerId);
+    function order(bytes8 offerId) public {
+        ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
         require(msg.sender == apps.get(offer.from).owner, "should have required authority");
 
-        orderbook.order(_offerId, DEFAULT_TIMEOUT);
+        orderbook.order(offerId, DEFAULT_TIMEOUT);
 
-        emit OfferPresented(_offerId, msg.sender, block.number);
+        emit OfferPresented(offerId, msg.sender, block.number);
     }
 
     /**
      * @dev cancel specific offer
-     * @param _offerId id of proposed offer
+     * @param offerId id of proposed offer
      */
-    function cancel(bytes8 _offerId) public {
-        ExchangeLib.Offer memory offer = orderbook.get(_offerId);
+    function cancel(bytes8 offerId) public {
+        ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
         require(msg.sender == apps.get(offer.from).owner, "should have required authority");
 
-        orderbook.cancel(_offerId);
+        orderbook.cancel(offerId);
 
-        emit OfferCanceled(_offerId, msg.sender, block.number);
+        emit OfferCanceled(offerId, msg.sender, block.number);
     }
 
     /**
      * @dev settle specific offer
-     * @param _offerId id of proposed offer
+     * @param offerId id of proposed offer
      */
-    function settle(bytes8 _offerId) public nonReentrant {
-        ExchangeLib.Offer memory offer = orderbook.get(_offerId);
+    function settle(bytes8 offerId) public nonReentrant {
+        ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
         require(msg.sender == apps.get(offer.to).owner, "should have required authority");
 
-        bytes memory result = orderbook.settle(_offerId);
+        bytes memory result = orderbook.settle(offerId);
 
-        emit OfferSettled(_offerId, msg.sender, block.number);
+        emit OfferSettled(offerId, msg.sender, block.number);
         emit OfferReceipt(
-            _offerId,
+            offerId,
             apps.get(offer.to).hashedName,
             apps.get(offer.from).hashedName,
             result, block.number
@@ -148,27 +151,32 @@ contract Exchange is ReentrancyGuard {
 
     /**
      * @dev reject specific offer
-     * @param _offerId id of proposed offer
+     * @param offerId id of proposed offer
      */
-    function reject(bytes8 _offerId) public {
-        ExchangeLib.Offer memory offer = orderbook.get(_offerId);
+    function reject(bytes8 offerId) public {
+        ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
         require(msg.sender == apps.get(offer.to).owner, "should have required authority");
 
-        orderbook.reject(_offerId);
+        orderbook.reject(offerId);
 
-        emit OfferRejected(_offerId, msg.sender, block.number);
+        emit OfferRejected(offerId, msg.sender, block.number);
     }
 
     /**
-     * @param _offerId offer's id you want to get
+     * @param offerId offer's id you want to get
      * @return offer object
      */
-    function getOffer(bytes8 _offerId)
-        public
-        view
-        returns (ExchangeLib.Offer memory)
-    {
-        return orderbook.get(_offerId);
+    function getOffer(bytes8 offerId) public view returns (ExchangeLib.Offer memory) {
+        return orderbook.get(offerId);
     }
+
+    /**
+     * @param offerId offer's id you want to get
+     * @return owners of from, to apps
+     */
+     function getOfferMembers(bytes8 offerId) public view returns (address, address) {
+         ExchangeLib.Offer memory offer = orderbook.get(offerId);
+        return (apps.get(offer.from).owner, apps.get(offer.to).owner);
+     }
 }
