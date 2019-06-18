@@ -100,7 +100,7 @@ library ConsentsLib {
         string memory appName,
         string memory dataType
     ) public view returns (bool) {
-        return _get(self, userId, appName, dataType).owner != bytes8(0x0);
+        return _get(self, userId, appName, dataType).userId != bytes8(0x0);
     }
 
     /**

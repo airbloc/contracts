@@ -17,6 +17,7 @@ contract Consents {
     event CollectionConsented(
         bytes8 indexed userId,
         bytes32 indexed app,
+        string appName,
         string /*indexed*/ dataType,
         bool allowed
     );
@@ -24,6 +25,7 @@ contract Consents {
     event ExchangeConsented(
         bytes8 indexed userId,
         bytes32 indexed app,
+        string appName,
         string /*indexed*/ dataType,
         bool allowed
     );
@@ -69,7 +71,7 @@ contract Consents {
         bytes8 userId = accounts.getAccountId(msg.sender);
         updateConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
 
-        emit CollectionConsented(userId, app.hashedName, dataType, allowed);
+        emit CollectionConsented(userId, apps.get(appName).hashedName, appName, dataType, allowed);
     }
 
     function consentCollectionByController(
@@ -83,7 +85,7 @@ contract Consents {
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
         updateConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
 
-        emit CollectionConsented(userId, app.hashedName, dataType, allowed);
+        emit CollectionConsented(userId, apps.get(appName).hashedName, appName, dataType, allowed);
     }
 
     function consentExchange(
@@ -96,7 +98,7 @@ contract Consents {
         bytes8 userId = accounts.getAccountId(msg.sender);
         updateConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
 
-        emit ExchangeConsented(userId, app.hashedName, dataType, allowed);
+        emit ExchangeConsented(userId, apps.get(appName).hashedName, appName, dataType, allowed);
     }
 
     function consentExchangeByController(
@@ -107,9 +109,9 @@ contract Consents {
     ) public onlyDataController {
 
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
-        updateConsent(ACTION_TYPE_EXCHANGE, userId, app, dataType, true);
+        updateConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
 
-        emit ExchangeConsented(userId, app.hashedName, dataType, allowed);
+        emit ExchangeConsented(userId, apps.get(appName).hashedName, appName, dataType, allowed);
     }
 
 
@@ -126,10 +128,10 @@ contract Consents {
 
         ConsentsLib.ConsentBase memory consentBase;
 
-        if (!consents.exists(userId, app.name, dataType)) {
-            consentBase = consents.newConsent(userId, app.name, dataType);
+        if (!consents.exists(userId, appName, dataType)) {
+            consentBase = consents.newConsent(userId, appName, dataType);
         } else {
-            consentBase = consents.get(userId, app.name, dataType);
+            consentBase = consents.get(userId, appName, dataType);
         }
 
         if (actionType == ACTION_TYPE_COLLECTION) {
@@ -146,7 +148,7 @@ contract Consents {
             });
         }
 
-        consents.update(consentBase, userId, app.name, dataType);
+        consents.update(consentBase, userId, appName, dataType);
     }
 
     function isCollectionAllowed(
