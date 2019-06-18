@@ -93,6 +93,6 @@ contract AppRegistry is Ownable {
         address oldOwner = app.owner;
         app.owner = newOwner;
 
-        emit AppOwnerTransferred(appName, oldOwner, newOwner);
+        emit AppOwnerTransferred(app.hashedName, appName, oldOwner, newOwner);
     }
 }
