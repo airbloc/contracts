@@ -125,18 +125,12 @@ contract Consents {
         require(app.owner == address(0x0), "app does not exist");
         require(dataTypes.exists(dataType), "data type does not exist");
 
-        ConsentsLib.InputPackage memory inputPackage = ConsentsLib.InputPackage({
-            userId: userId,
-            appName: app.name,
-            dataType: dataType
-        });
-
         ConsentsLib.ConsentBase memory consentBase;
 
-        if (!consents.exists(inputPackage)) {
-            consentBase = consents.newConsent(inputPackage);
+        if (!consents.exists(userId, app.name, dataType)) {
+            consentBase = consents.newConsent(userId, app.name, dataType);
         } else {
-            consentBase = consents.get(inputPackage);
+            consentBase = consents.get(userId, app.name, dataType);
         }
 
         if (actionType == ACTION_TYPE_COLLECTION) {
@@ -153,7 +147,7 @@ contract Consents {
             });
         }
 
-        consents.update(consentBase, inputPackage);
+        consents.update(consentBase, userId, app.name, dataType);
     }
 
     function isCollectionAllowed(
@@ -170,13 +164,7 @@ contract Consents {
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
-        ConsentsLib.InputPackage memory inputPackage = ConsentsLib.InputPackage({
-            userId: userId,
-            appName: appName,
-            dataType: dataType
-        });
-
-        ConsentsLib.Consent memory consent = consents.get(inputPackage).collection;
+        ConsentsLib.Consent memory consent = consents.get(userId, appName, dataType).collection;
         return consent.allowed && consent.at < blockNumber;
     }
 
@@ -194,13 +182,7 @@ contract Consents {
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
-        ConsentsLib.InputPackage memory inputPackage = ConsentsLib.InputPackage({
-            userId: userId,
-            appName: appName,
-            dataType: dataType
-        });
-
-        ConsentsLib.Consent memory consent = consents.get(inputPackage).exchange;
+        ConsentsLib.Consent memory consent = consents.get(userId, appName, dataType).exchange;
         return consent.allowed && consent.at < blockNumber;
     }
 }

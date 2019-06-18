@@ -27,15 +27,6 @@ library ConsentsLib {
     }
 
     /**
-     * InputPackage contains input data related in consent methods
-     */
-    struct InputPackage {
-        bytes8 userId;
-        string appName;
-        string dataType;
-    }
-
-    /**
      * Consents struct is implementation of consent data structure
      * UserId -> AppName -> DataTypeName -> ConsentBase
      */
@@ -45,17 +36,21 @@ library ConsentsLib {
 
     /**
      * @dev register new consent information
-     * @param input package of needed input
+     * @param userId user's id registered in accounts contract
+     * @param appName app's name registered in app registry
+     * @param dataType name of data type registered in data type registry
      */
     function newConsent(
         Consents storage self,
-        InputPackage memory input
+        bytes8 userId,
+        string memory appName,
+        string memory dataType
     ) public returns (ConsentBase memory){
-        ConsentBase storage base = _get(self, input);
+        ConsentBase storage base = _get(self, userId, appName, dataType);
 
-        base.owner = input.userId;
-        base.app = input.appName;
-        base.dataType = input.dataType;
+        base.owner = userId;
+        base.app = appName;
+        base.dataType = dataType;
 
         return base;
     }
@@ -63,51 +58,67 @@ library ConsentsLib {
     /**
      * @dev Reverts if the given user identity or data type does not exists.
      * Use this in non-payable or payable method.
-     * @param input package of needed input
+     * @param userId user's id registered in accounts contract
+     * @param appName app's name registered in app registry
+     * @param dataType name of data type registered in data type registry
      * @return ConsentBase object
      */
     function get(
         Consents storage self,
-        InputPackage memory input
+        bytes8 userId,
+        string memory appName,
+        string memory dataType
     ) public view returns (ConsentBase memory) {
-        require(exists(self, input), "app does not exists");
-        return _get(self, input);
+        require(exists(self, userId, appName, dataType), "app does not exists");
+        return _get(self, userId, appName, dataType);
     }
 
     /**
-     * @param input package of needed input
+     * @param userId user's id registered in accounts contract
+     * @param appName app's name registered in app registry
+     * @param dataType name of data type registered in data type registry
      * @return ConsentBase storage object even if it does not exists.
      */
     function _get(
         Consents storage self,
-        InputPackage memory input
+        bytes8 userId,
+        string memory appName,
+        string memory dataType
     ) internal view returns (ConsentBase storage) {
-        return self.consents[input.userId][input.appName][input.dataType];
+        return self.consents[userId][appName][dataType];
     }
 
     /**
-     * @param input package of needed input
+     * @param userId user's id registered in accounts contract
+     * @param appName app's name registered in app registry
+     * @param dataType name of data type registered in data type registry
      * @return false if consents does not exists
      */
     function exists(
         Consents storage self,
-        InputPackage memory input
+        bytes8 userId,
+        string memory appName,
+        string memory dataType
     ) public view returns (bool) {
-        return _get(self, input).owner != bytes8(0x0);
+        return _get(self, userId, appName, dataType).owner != bytes8(0x0);
     }
 
     /**
      * @dev update consent base of consents struct
      * IMPORTANT : Before calling this method, you must check the authority of caller.
      * @param base ConsentBase object which you want update
-     * @param input package of needed input
+     * @param userId user's id registered in accounts contract
+     * @param appName app's name registered in app registry
+     * @param dataType name of data type registered in data type registry
      */
     function update(
         Consents storage self,
         ConsentBase memory base,
-        InputPackage memory input
+        bytes8 userId,
+        string memory appName,
+        string memory dataType
     ) public {
-        self.consents[input.userId][input.appName][input.dataType] = base;
+        self.consents[userId][appName][dataType] = base;
     }
 
     /**
