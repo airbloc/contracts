@@ -158,4 +158,8 @@ contract Accounts is Ownable {
         bytes memory seed = abi.encodePacked(creator, block.number, uniqueData);
         return bytes8(keccak256(seed));
     }
+
+    function exists(bytes8 userId) public view returns (bool) {
+        return accounts[userId].owner == address(0x0);
+    }
 }

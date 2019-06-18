@@ -2,8 +2,8 @@ pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 /**
- * @author Airbloc Foundation 2019
- * @title Consents library for consents.sol
+ * @title ConsentsLib is a library which describes consent data structure.
+ * Defined structs can work only CRUD actions.
  */
 library ConsentsLib {
 

@@ -8,7 +8,6 @@ import "./DataTypeRegistry.sol";
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
- * @author Airbloc Foundation 2019
  * @title Consents is a contract managing users' consent for applications
  * doing specific actions (e.g. Data Collecting, Data Exchanging) to data types.
  */
@@ -65,10 +64,10 @@ contract Consents {
         string memory dataType,
         bool allowed
     ) public {
-        AppRegistry.App memory app = apps.get(appName);
 
+        require(apps.exists(appName), "app does not exists");
         bytes8 userId = accounts.getAccountId(msg.sender);
-        updateConsent(ACTION_TYPE_COLLECTION, userId, app, dataType, true);
+        updateConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
 
         emit CollectionConsented(userId, app.hashedName, dataType, allowed);
     }
@@ -79,10 +78,10 @@ contract Consents {
         string memory dataType,
         bool allowed
     ) public onlyDataController {
-        AppRegistry.App memory app = apps.get(appName);
 
+        require(apps.exists(appName), "app does not exists");
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
-        updateConsent(ACTION_TYPE_COLLECTION, userId, app, dataType, true);
+        updateConsent(ACTION_TYPE_COLLECTION, userId, appName, dataType, true);
 
         emit CollectionConsented(userId, app.hashedName, dataType, allowed);
     }
@@ -92,10 +91,10 @@ contract Consents {
         string memory dataType,
         bool allowed
     ) public {
-        AppRegistry.App memory app = apps.get(appName);
 
+        require(apps.exists(appName), "app does not exists");
         bytes8 userId = accounts.getAccountId(msg.sender);
-        updateConsent(ACTION_TYPE_EXCHANGE, userId, app, dataType, true);
+        updateConsent(ACTION_TYPE_EXCHANGE, userId, appName, dataType, true);
 
         emit ExchangeConsented(userId, app.hashedName, dataType, allowed);
     }
@@ -106,7 +105,6 @@ contract Consents {
         string memory dataType,
         bool allowed
     ) public onlyDataController {
-        AppRegistry.App memory app = apps.get(appName);
 
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
         updateConsent(ACTION_TYPE_EXCHANGE, userId, app, dataType, true);
@@ -118,11 +116,12 @@ contract Consents {
     function updateConsent(
         bytes4 actionType,
         bytes8 userId,
-        AppRegistry.App memory app,
+        string memory appName,
         string memory dataType,
         bool allowed
     ) internal {
-        require(app.owner == address(0x0), "app does not exist");
+        require(accounts.exists(userId), "user does not exists");
+        require(apps.exists(appName), "app does not exist");
         require(dataTypes.exists(dataType), "data type does not exist");
 
         ConsentsLib.ConsentBase memory consentBase;
