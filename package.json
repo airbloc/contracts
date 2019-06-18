@@ -23,7 +23,7 @@
     "migrate:klaytn": "node deploy.js",
     "migrate:mainnet": "truffle migrate --reset --network mainnet",
     "test": "truffle test --network dev",
-    "test-with-coverage": "solidity-coverage"
+    "test-with-coverage": "ganache-cli-coverage --emitFreeLogs true --allowUnlimitedContractSize true --gasLimit 0xfffffffffff --port 8555 > /dev/null; solidity-coverage"
   },
   "devDependencies": {
     "caver-js": "^0.9.5",
