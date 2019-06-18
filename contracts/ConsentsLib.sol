@@ -69,7 +69,7 @@ library ConsentsLib {
         string memory appName,
         string memory dataType
     ) public view returns (ConsentBase memory) {
-        require(exists(self, userId, appName, dataType), "app does not exists");
+        require(exists(self, userId, appName, dataType), "consent does not exists");
         return _get(self, userId, appName, dataType);
     }
 
