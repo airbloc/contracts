@@ -15,7 +15,6 @@
     "coveralls": "yarn coverage; cat ./coverage/lcov.info | coveralls",
     "dev": "truffle develop",
     "flatten": "truffle-flattener",
-    "ganache": "node ganache-wrapper.js",
     "migrate:dev": "truffle migrate --reset --network dev",
     "migrate:local": "truffle migrate --reset --network local",
     "migrate:mainnet": "truffle migrate --reset --network mainnet",
