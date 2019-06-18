@@ -1,4 +1,5 @@
 pragma solidity ^0.5.0;
+pragma experimental ABIEncoderV2;
 
 import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
@@ -61,7 +62,7 @@ contract Accounts is Ownable {
     }
 
     function createTemporary(bytes32 identityHash)
-        external
+        public
         onlyDataController
     {
         require(identityHashToAccount[identityHash] == bytes8(0), "account already exists");
@@ -74,8 +75,8 @@ contract Accounts is Ownable {
         emit TemporaryCreated(msg.sender, identityHash, accountId);
     }
 
-    function unlockTemporary(bytes32 identityPreimage, address newOwner, bytes calldata passwordSignature)
-        external
+    function unlockTemporary(bytes32 identityPreimage, address newOwner, bytes memory passwordSignature)
+        public
         onlyDataController
     {
         // check that keccak256(identityPreimage) == account.identityHash
@@ -153,8 +154,12 @@ contract Accounts is Ownable {
         return accounts[accountId].delegate == sender;
     }
 
-    function generateId(bytes32 uniqueData, address creator) internal pure returns (bytes8) {
+    function generateId(bytes32 uniqueData, address creator) internal view returns (bytes8) {
         bytes memory seed = abi.encodePacked(creator, block.number, uniqueData);
         return bytes8(keccak256(seed));
+    }
+
+    function exists(bytes8 userId) public view returns (bool) {
+        return accounts[userId].owner != address(0x0);
     }
 }

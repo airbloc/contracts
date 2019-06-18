@@ -31,6 +31,15 @@ contract('AppRegistry', async (accounts) => {
         expect(app.owner).to.equal(me);
     });
 
+    it('should fail to get if it is not registered', async () => {
+        const apps = await AppRegistry.new();
+        
+        await truffleAssert.fails(
+            apps.get('test-app'),
+            truffleAssert.ErrorType.REVERT, 'app does not exist',
+        );
+    })
+
     it('should able to check existance', async () => {
         const apps = await AppRegistry.new();
         await apps.register('test-app');
