@@ -20,7 +20,7 @@ contract ControllerRegistry is Ownable {
         uint256 usersCount;
     }
 
-    mapping(address => DataController) public controllers;
+    mapping(address => DataController) private controllers;
 
     /**
      * @dev Creates a new application.
@@ -39,15 +39,19 @@ contract ControllerRegistry is Ownable {
      * @dev Returns an application object.
      * Reverts if the given name does not exist.
      */
-    function get(address controller) internal view returns (DataController storage) {
+    function get(address controller) internal view returns (DataController memory) {
         require(exists(controller), "controller does not exist");
-        return controllers[controller];
+        return _get(controller);
     }
 
     /**
      * @return true if given app name exists.
      */
     function exists(address controller) public view returns (bool) {
-        return get(controller).controller != address(0x0);
+        return _get(controller).controller != address(0x0);
+    }
+
+    function _get(address controller) internal view returns (DataController storage) {
+        return controllers[controller];
     }
 }
