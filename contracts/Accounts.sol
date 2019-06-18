@@ -160,6 +160,6 @@ contract Accounts is Ownable {
     }
 
     function exists(bytes8 userId) public view returns (bool) {
-        return accounts[userId].owner == address(0x0);
+        return accounts[userId].owner != address(0x0);
     }
 }
