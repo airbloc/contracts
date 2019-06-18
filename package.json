@@ -4,10 +4,13 @@
   "description": "",
   "keywords": [],
   "license": "ISC",
-  "author": "",
+  "author": "Airbloc",
   "main": "truffle-config.js",
   "directories": {
     "test": "test"
+  },
+  "engines": {
+    "node": ">=8.1.0 <12.0.0"
   },
   "scripts": {
     "compile": "truffle compile",
@@ -28,11 +31,17 @@
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
     "coveralls": "^3.0.4",
+    "eslint": "^5.16.0",
+    "eslint-config-airbnb-base": "^13.1.0",
+    "eslint-plugin-import": "^2.17.3",
+    "eslint-plugin-node": "^9.1.0",
     "eth-gas-reporter": "^0.2.0",
     "ganache-cli": "^6.4.3",
     "ganache-cli-coverage": "https://github.com/frangio/ganache-cli/releases/download/v6.4.1-coverage/ganache-cli-coverage-6.4.1.tgz",
     "istanbul": "^0.4.5",
+    "prettier-eslint": "^9.0.0",
     "solc": "^0.5.9",
+    "solhint": "^2.1.0",
     "solidity-coverage": "https://github.com/leapdao/solidity-coverage",
     "truffle": "^5.0.21",
     "truffle-assertions": "^0.9.1",

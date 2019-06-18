@@ -16,43 +16,11 @@ library ConsentsLib {
     }
 
     /**
-     * ConsentBase contains all informations about user's consent.
-     */
-    struct ConsentBase {
-        bytes8 userId;
-        string appName;
-        string dataType;
-        Consent collection;
-        Consent exchange;
-    }
-
-    /**
      * Consents struct is implementation of consent data structure
-     * UserId -> AppName -> DataTypeName -> ConsentBase
+     * UserId -> AppName -> Action -> DataTypeName
      */
     struct Consents {
-        mapping(bytes8 => mapping(string => mapping(string => ConsentBase))) consents;
-    }
-
-    /**
-     * @dev register new consent information
-     * @param userId user's id registered in accounts contract
-     * @param appName app's name registered in app registry
-     * @param dataType name of data type registered in data type registry
-     */
-    function newConsent(
-        Consents storage self,
-        bytes8 userId,
-        string memory appName,
-        string memory dataType
-    ) public returns (ConsentBase memory){
-        ConsentBase storage base = _get(self, userId, appName, dataType);
-
-        base.userId = userId;
-        base.appName = appName;
-        base.dataType = dataType;
-
-        return base;
+        mapping(bytes8 => mapping(string => mapping(uint => mapping(string => Consent)))) consents;
     }
 
     /**
@@ -61,64 +29,68 @@ library ConsentsLib {
      * @param userId user's id registered in accounts contract
      * @param appName app's name registered in app registry
      * @param dataType name of data type registered in data type registry
-     * @return ConsentBase object
+     * @return Consent object
      */
     function get(
         Consents storage self,
         bytes8 userId,
         string memory appName,
+        uint actionType,
         string memory dataType
-    ) public view returns (ConsentBase memory) {
-        require(exists(self, userId, appName, dataType), "consent does not exists");
-        return _get(self, userId, appName, dataType);
+    ) internal view returns (Consent memory) {
+        require(exists(self, userId, appName, actionType, dataType), "consent does not exists");
+        return _get(self, userId, appName, actionType, dataType);
     }
 
     /**
      * @param userId user's id registered in accounts contract
      * @param appName app's name registered in app registry
      * @param dataType name of data type registered in data type registry
-     * @return ConsentBase storage object even if it does not exists.
+     * @return Consent object even if it does not exists.
      */
     function _get(
         Consents storage self,
         bytes8 userId,
         string memory appName,
+        uint actionType,
         string memory dataType
-    ) internal view returns (ConsentBase storage) {
-        return self.consents[userId][appName][dataType];
+    ) internal view returns (Consent storage) {
+        return self.consents[userId][appName][actionType][dataType];
     }
 
     /**
      * @param userId user's id registered in accounts contract
      * @param appName app's name registered in app registry
      * @param dataType name of data type registered in data type registry
-     * @return false if consents does not exists
+     * @return false if the consent does not exist
      */
     function exists(
         Consents storage self,
         bytes8 userId,
         string memory appName,
+        uint actionType,
         string memory dataType
-    ) public view returns (bool) {
-        return _get(self, userId, appName, dataType).userId != bytes8(0x0);
+    ) internal view returns (bool) {
+        return _get(self, userId, appName, actionType, dataType).at != 0;
     }
 
     /**
      * @dev update consent base of consents struct
      * IMPORTANT : Before calling this method, you must check the authority of caller.
-     * @param base ConsentBase object which you want update
      * @param userId user's id registered in accounts contract
      * @param appName app's name registered in app registry
+     * @param actionType type of data actions (e.g. Collection, )
      * @param dataType name of data type registered in data type registry
      */
     function update(
         Consents storage self,
-        ConsentBase memory base,
         bytes8 userId,
         string memory appName,
-        string memory dataType
-    ) public {
-        self.consents[userId][appName][dataType] = base;
+        uint actionType,
+        string memory dataType,
+        Consent memory consent
+    ) internal {
+        self.consents[userId][appName][actionType][dataType] = consent;
     }
 
     /**
@@ -128,12 +100,13 @@ library ConsentsLib {
      * @param appName app's name registered in app registry
      * @param dataType name of data type registered in data type registry
      */
-    function removeConsent(
+    function remove(
         Consents storage self,
         bytes8 userId,
         string memory appName,
+        uint actionType,
         string memory dataType
-    ) public {
-        delete self.consents[userId][appName][dataType];
+    ) internal {
+        delete self.consents[userId][appName][actionType][dataType];
     }
 }
