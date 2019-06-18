@@ -19,8 +19,8 @@ library ConsentsLib {
      * ConsentBase contains all informations about user's consent.
      */
     struct ConsentBase {
-        bytes8 owner;
-        string app;
+        bytes8 userId;
+        string appName;
         string dataType;
         Consent collection;
         Consent exchange;
@@ -48,8 +48,8 @@ library ConsentsLib {
     ) public returns (ConsentBase memory){
         ConsentBase storage base = _get(self, userId, appName, dataType);
 
-        base.owner = userId;
-        base.app = appName;
+        base.userId = userId;
+        base.appName = appName;
         base.dataType = dataType;
 
         return base;
