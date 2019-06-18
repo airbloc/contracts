@@ -1,0 +1,20 @@
+{
+  "extends": [
+      "airbnb-base",
+      "plugin:node/recommended"
+  ],
+  "globals": {
+    "artifacts": false,
+    "contract": false,
+    "web3": false,
+    "before": false,
+    "after": false,
+    "beforeEach": false,
+    "afterEach": false,
+    "it": false
+  },
+  "rules": {
+    "strict": "off",
+    "node/no-unpublished-require": "off"
+  }
+}
