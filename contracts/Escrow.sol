@@ -18,6 +18,8 @@ contract Escrow is ReentrancyGuard {
 
     Exchange private ex;
 
+    string public constant TRANSACT_SIGNATURE = "transact(address,uin256,bytes8)";
+
     constructor(Exchange exchangeContract) public {
         ex = exchangeContract;
     }
@@ -29,7 +31,7 @@ contract Escrow is ReentrancyGuard {
         uint256 amount,
         bytes20[] memory dataIds
     ) public {
-        bytes4 escrowSign = bytes4(keccak256("transact(address,uin256,bytes8)"));
+        bytes4 escrowSign = bytes4(keccak256(bytes(TRANSACT_SIGNATURE)));
         bytes memory escrowArgs = abi.encodePacked(token, amount);
 
         bytes8 offerId = ex.prepare(from, to, address(this), escrowSign, escrowArgs, dataIds);
