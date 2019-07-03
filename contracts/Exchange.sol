@@ -62,7 +62,8 @@ contract Exchange is ReentrancyGuard {
         bytes memory escrowArgs,
         bytes20[] memory dataIds
     ) public returns (bytes8) {
-        require(apps.exists(from), "offeror app does not exists");
+        require(apps.exists(from), "offeror app does not exist");
+        require(msg.sender == apps.get(from).owner, "should have required authority");
         require(apps.exists(to), "offeree app does not exist");
 
         bytes8 offerId = orderbook.prepare(
@@ -168,7 +169,9 @@ contract Exchange is ReentrancyGuard {
      * @return offer object
      */
     function getOffer(bytes8 offerId) public view returns (ExchangeLib.Offer memory) {
-        return orderbook.get(offerId);
+        ExchangeLib.Offer memory offer = orderbook.get(offerId);
+        apps.get(offer.from);
+        return offer;
     }
 
     /**
@@ -176,7 +179,7 @@ contract Exchange is ReentrancyGuard {
      * @return owners of from, to apps
      */
      function getOfferMembers(bytes8 offerId) public view returns (address, address) {
-         ExchangeLib.Offer memory offer = orderbook.get(offerId);
+        ExchangeLib.Offer memory offer = orderbook.get(offerId);
         return (apps.get(offer.from).owner, apps.get(offer.to).owner);
      }
 }
