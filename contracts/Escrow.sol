@@ -18,7 +18,7 @@ contract Escrow is ReentrancyGuard {
 
     Exchange private ex;
 
-    string public constant TRANSACT_SIGNATURE = "transact(address,uin256,bytes8)";
+    string public constant TRANSACT_SIGNATURE = "transact(address,uint256,bytes8)";
 
     constructor(Exchange exchangeContract) public {
         ex = exchangeContract;
