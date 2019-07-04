@@ -50,7 +50,7 @@ contract Escrow is ReentrancyGuard {
         IERC20 token,
         uint256 amount,
         bytes8 offerId
-    ) public nonReentrant {
+    ) public nonReentrant returns (string memory) {
         ExchangeLib.Offer memory offer = ex.getOffer(offerId);
         (address from, address to) = ex.getOfferMembers(offerId);
 
@@ -65,5 +65,6 @@ contract Escrow is ReentrancyGuard {
         require(token.allowance(from, address(this)) <= token.balanceOf(from), "low balance");
 
         token.safeTransferFrom(from, to, amount);
+        return 'success!';
     }
 }
