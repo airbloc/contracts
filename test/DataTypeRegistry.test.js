@@ -3,65 +3,77 @@ const { expect } = require('./test-utils');
 
 const DataTypeRegistry = artifacts.require('DataTypeRegistry');
 
-contract('DataTypeRegistry', async (accounts) => {
-  const [me, stranger] = accounts;
+// test data
+const DATA_SCHEMA = JSON.stringify({
+  type: 'string',
+  default: 'This is test lul',
+});
+const SCHEMA_HASH = web3.utils.sha3(DATA_SCHEMA);
 
-  // test data
-  const dataSchema = '{"type": "string", "default": "This is test lul"}';
-  const schemaHash = web3.utils.sha3(dataSchema);
+contract('DataTypeRegistry', async (ethAccounts) => {
+  const [me, stranger] = ethAccounts;
+  let dataTypes;
 
-  it('should register', async () => {
-    const dataTypes = await DataTypeRegistry.new();
-
-    const result = await dataTypes.register('test-data', schemaHash);
-    truffleAssert.eventEmitted(result, 'Registration', event => event.name === 'test-data');
+  beforeEach(async () => {
+    dataTypes = await DataTypeRegistry.new();
   });
 
-  it('should fail to register if the name duplicates', async () => {
-    const dataTypes = await DataTypeRegistry.new();
-    await dataTypes.register('test-data', schemaHash);
+  describe('#register()', () => {
+    it('should done correctly', async () => {
+      const result = await dataTypes.register('test-data', SCHEMA_HASH);
+      truffleAssert.eventEmitted(result, 'Registration', event => event.name === 'test-data');
+    });
 
-    await truffleAssert.fails(
-      dataTypes.register('test-data', schemaHash),
-      truffleAssert.ErrorType.REVERT,
-      'already exists',
-    );
+    it('should fail if the name duplicates', async () => {
+      await truffleAssert.passes(dataTypes.register('test-data', SCHEMA_HASH));
+      await truffleAssert.fails(
+        dataTypes.register('test-data', SCHEMA_HASH),
+        truffleAssert.ErrorType.REVERT,
+        'already exists',
+      );
+    });
   });
 
-  it('should able to get registered app data', async () => {
-    const dataTypes = await DataTypeRegistry.new();
-    await dataTypes.register('test-data', schemaHash);
+  describe('#get()', () => {
+    it('should retrieve registered app data', async () => {
+      await dataTypes.register('test-data', SCHEMA_HASH);
 
-    const dataType = await dataTypes.get('test-data');
-    expect(dataType.name).to.equal('test-data');
-    expect(dataType.schemaHash).to.equal(schemaHash);
-    expect(dataType.owner).to.equal(me);
+      const dataType = await dataTypes.get('test-data');
+      expect(dataType.name).to.equal('test-data');
+      expect(dataType.schemaHash).to.equal(SCHEMA_HASH);
+      expect(dataType.owner).to.equal(me);
+    });
+
+    it('should fail on unregistered app name', async () => {
+      await truffleAssert.fails(dataTypes.get('unregistered-app'), truffleAssert.ErrorType.REVERT);
+    });
   });
 
-  it('should able to check existance', async () => {
-    const dataTypes = await DataTypeRegistry.new();
-    await dataTypes.register('test-data', schemaHash);
+  describe('#exists()', () => {
+    it('should able to check existence', async () => {
+      await dataTypes.register('test-data', SCHEMA_HASH);
 
-    await expect(dataTypes.exists('test-data')).to.eventually.be.true;
-    await expect(dataTypes.exists('wrong-test-data')).to.eventually.be.false;
+      await expect(dataTypes.exists('test-data')).to.eventually.be.true;
+      await expect(dataTypes.exists('wrong-test-data')).to.eventually.be.false;
+    });
   });
 
-  it('should unregister', async () => {
-    const dataTypes = await DataTypeRegistry.new();
-    await dataTypes.register('test-data', schemaHash);
+  describe('#unregister()', () => {
+    it('should unregister correctly', async () => {
+      await dataTypes.register('test-data', SCHEMA_HASH);
 
-    const result = await dataTypes.unregister('test-data');
-    truffleAssert.eventEmitted(result, 'Unregistration', event => event.name === 'test-data');
-  });
+      const result = await dataTypes.unregister('test-data');
+      truffleAssert.eventEmitted(result, 'Unregistration', event => event.name === 'test-data');
+    });
 
-  it('should fail to unregister if it is not by the owner', async () => {
-    const dataTypes = await DataTypeRegistry.new();
-    await dataTypes.register('test-data', schemaHash);
+    it('should fail to unregister if it is not by the owner', async () => {
+      await dataTypes.register('test-data', SCHEMA_HASH);
 
-    await truffleAssert.fails(
-      dataTypes.unregister('test-data', { from: stranger }),
-      truffleAssert.ErrorType.REVERT,
-      'unauthorized',
-    );
+      await truffleAssert.fails(
+        dataTypes.unregister('test-data', { from: stranger }),
+        truffleAssert.ErrorType.REVERT,
+        'unauthorized',
+      );
+    });
   });
 });
