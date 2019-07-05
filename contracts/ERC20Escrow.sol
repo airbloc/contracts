@@ -49,7 +49,7 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         bytes8 offerId
     ) public nonReentrant {
         ExchangeLib.Offer memory offer = ex.getOffer(offerId);
-        (address from, address to) = ex.getOfferMembers(offerId);
+        (address provider, address consumer) = ex.getOfferMembers(offerId);
 
         // check authority
         require(msg.sender == address(ex), "should have authority");
@@ -58,9 +58,9 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         require(offer.escrow.addr == address(this), "invalid contract information");
 
         // check allowance/balance
-        require(amount <= token.allowance(from, address(this)), "low allowance");
-        require(token.allowance(from, address(this)) <= token.balanceOf(from), "low balance");
+        require(amount <= token.allowance(consumer, address(this)), "low allowance");
+        require(token.allowance(consumer, address(this)) <= token.balanceOf(consumer), "low balance");
 
-        token.safeTransferFrom(from, to, amount);
+        token.safeTransferFrom(consumer, provider, amount);
     }
 }
