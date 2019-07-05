@@ -3,7 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./Exchange.sol";
 import "./ExchangeLib.sol";
-import "./ExchangeContract.sol";
+import "./IEscrow.sol";
 
 import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
@@ -14,7 +14,7 @@ import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
  * @title Simple escrow contract for exchange
  * This contract going to be called by ExchangeLib.sol
  */
-contract Escrow is ReentrancyGuard, ExchangeContract {
+contract Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     Exchange private ex;
