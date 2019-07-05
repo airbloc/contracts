@@ -15,16 +15,19 @@
   "scripts": {
     "compile": "truffle compile",
     "console": "truffle console --network",
-    "coveralls": "yarn coverage; cat ./coverage/lcov.info | coveralls",
+    "lint": "yarn run lint:js && yarn run lint:sol",
+    "lint:js": "eslint test/*.js",
+    "lint:sol": "solhint \"contracts/**/*.sol\"",
     "dev": "truffle develop",
     "flatten": "truffle-flattener",
     "migrate:dev": "truffle migrate --reset --network dev",
     "migrate:local": "truffle migrate --reset --network local",
     "migrate:mainnet": "truffle migrate --reset --network mainnet",
     "test": "truffle test --network dev",
-    "test-with-coverage": "solidity-coverage"
+    "test-with-coverage": "ganache-cli-coverage --emitFreeLogs true --allowUnlimitedContractSize true --gasLimit 0xfffffffffff --port 8555 > /dev/null & solidity-coverage"
   },
   "devDependencies": {
+    "bignumber.js": "^9.0.0",
     "chai": "^4.2.0",
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
