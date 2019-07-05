@@ -454,6 +454,7 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should fail to settle order if order is not on pending state', async () => {});
+    
     it('should fail to settle order if sender is not owner of this app', async () => {});
     it('should fail to settle order if order is outdated', async () => {});
     it('should fail to settle order if unable to call escrow method', async () => {});
