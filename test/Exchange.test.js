@@ -57,7 +57,6 @@ contract('Exchange', async (accounts) => {
     // happy path
     it('should able to prepare order', async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -94,7 +93,6 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should fail to prepare order if offeror app name is not registered', async () => {
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -116,7 +114,6 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to prepare order if sender is not owner of offeror app', async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -139,7 +136,6 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to prepare order if dataIds length exceeds limit', async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -161,7 +157,6 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to prepare order if escrow is not contract', async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrowSign, escrowArgs, dataIds,
@@ -185,7 +180,6 @@ contract('Exchange', async (accounts) => {
     // happy path
     it('should able to add dataIds', async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -210,7 +204,6 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to add dataIds if sender is not owner of this app', async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -236,7 +229,6 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to add dataIds if order is not on neutral state', async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -265,7 +257,6 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to add dataIds if its length exceeds limlt', async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -295,7 +286,6 @@ contract('Exchange', async (accounts) => {
 
     beforeEach(async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow,
@@ -356,7 +346,6 @@ contract('Exchange', async (accounts) => {
 
     beforeEach(async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       const {
         escrow, escrowSign, escrowArgs, dataIds,
@@ -423,7 +412,6 @@ contract('Exchange', async (accounts) => {
 
     beforeEach(async () => {
       await registerApp('me', me);
-      await registerApp('stranger', stranger);
 
       escrow = await Escrow.new(exchange.address);
 
