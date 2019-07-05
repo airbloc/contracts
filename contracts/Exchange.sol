@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "./AppRegistry.sol";
 import "./ExchangeLib.sol";
+
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 
 /**
@@ -25,7 +26,7 @@ contract Exchange is ReentrancyGuard {
     event OfferReceipt(
         bytes8 indexed offerId,
         bytes32 indexed from,
-        bytes32 indexed to,
+        address indexed to,
         bytes result,
         uint256 at
     );
@@ -55,7 +56,7 @@ contract Exchange is ReentrancyGuard {
      */
     function prepare(
         string memory from,
-        string memory to,
+        address to,
         address escrow,
         bytes4 escrowSign,
         bytes memory escrowArgs,
@@ -63,7 +64,6 @@ contract Exchange is ReentrancyGuard {
     ) public returns (bytes8) {
         require(apps.exists(from), "offeror app does not exist");
         require(msg.sender == apps.get(from).owner, "should have required authority");
-        require(apps.exists(to), "offeree app does not exist");
 
         bytes8 offerId = orderbook.prepare(
             ExchangeLib.Offer({
@@ -96,7 +96,7 @@ contract Exchange is ReentrancyGuard {
     ) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == apps.get(offer.from).owner, "should have required authority");
+        require(apps.isOwner(offer.from, msg.sender), "should have required authority");
 
         orderbook.addDataIds(offerId, dataIds);
     }
@@ -108,7 +108,7 @@ contract Exchange is ReentrancyGuard {
     function order(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == apps.get(offer.from).owner, "should have required authority");
+        require(apps.isOwner(offer.from, msg.sender), "should have required authority");
 
         orderbook.order(offerId, DEFAULT_TIMEOUT);
 
@@ -122,7 +122,7 @@ contract Exchange is ReentrancyGuard {
     function cancel(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == apps.get(offer.from).owner, "should have required authority");
+        require(apps.isOwner(offer.from, msg.sender), "should have required authority");
 
         orderbook.cancel(offerId);
 
@@ -136,7 +136,7 @@ contract Exchange is ReentrancyGuard {
     function settle(bytes8 offerId) public nonReentrant {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == apps.get(offer.to).owner, "should have required authority");
+        require(msg.sender == offer.to, "should have required authority");
 
         (bool success, bytes memory result) = orderbook.settle(offerId);
 
@@ -144,8 +144,8 @@ contract Exchange is ReentrancyGuard {
             emit OfferSettled(offerId, msg.sender, block.number);
             emit OfferReceipt(
                 offerId,
-                apps.get(offer.to).hashedName,
                 apps.get(offer.from).hashedName,
+                offer.to,
                 result, block.number
             );
         } else {
@@ -160,7 +160,7 @@ contract Exchange is ReentrancyGuard {
     function reject(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == apps.get(offer.to).owner, "should have required authority");
+        require(msg.sender == offer.to, "should have required authority");
 
         orderbook.reject(offerId);
 
@@ -172,9 +172,7 @@ contract Exchange is ReentrancyGuard {
      * @return offer object
      */
     function getOffer(bytes8 offerId) public view returns (ExchangeLib.Offer memory) {
-        ExchangeLib.Offer memory offer = orderbook.get(offerId);
-        apps.get(offer.from);
-        return offer;
+        return orderbook.get(offerId);
     }
 
     /**
@@ -183,6 +181,6 @@ contract Exchange is ReentrancyGuard {
      */
      function getOfferMembers(bytes8 offerId) public view returns (address, address) {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
-        return (apps.get(offer.from).owner, apps.get(offer.to).owner);
+        return (apps.get(offer.from).owner, offer.to);
      }
 }

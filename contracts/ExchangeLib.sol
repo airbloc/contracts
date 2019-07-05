@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./ExchangeContract.sol";
+import "./IEscrow.sol";
 
 import "openzeppelin-solidity/contracts/utils/Address.sol";
 
@@ -27,18 +27,18 @@ library ExchangeLib {
         Escrow storage escrow,
         bytes8 offerId
     ) internal returns (bool, bytes memory) {
-        bytes memory data = ExchangeContract(escrow.addr).convert(
+        bytes memory escrowCalldata = IEscrow(escrow.addr).convert(
             escrow.sign,
             escrow.args,
             offerId
         );
 
-        return escrow.addr.call(data);
+        return escrow.addr.delegatecall(escrowCalldata);
     }
 
     struct Offer {
         string from;
-        string to;
+        address to;
         bytes20[] dataIds;
         uint256 at;
         uint256 until;
