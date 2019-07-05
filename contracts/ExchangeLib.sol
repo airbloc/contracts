@@ -1,6 +1,8 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
+import "./ExchangeContract.sol";
+
 import "openzeppelin-solidity/contracts/utils/Address.sol";
 
 
@@ -23,16 +25,14 @@ library ExchangeLib {
 
     function exec(
         Escrow storage escrow,
-        bytes32 offerId
+        bytes8 offerId
     ) internal returns (bool, bytes memory) {
-        bytes memory data = abi.encode(offerId);
-        if (escrow.args.length > 0) {
-            data = abi.encodePacked(
-                escrow.args,
-                offerId
-            );
-        }
-        data = abi.encodePacked(escrow.sign, data);
+        bytes memory data = ExchangeContract(escrow.addr).convert(
+            escrow.sign,
+            escrow.args,
+            offerId
+        );
+
         return escrow.addr.call(data);
     }
 
@@ -122,7 +122,7 @@ library ExchangeLib {
     function settle(
         Orderbook storage self,
         bytes8 offerId
-    ) internal returns (bytes memory) {
+    ) internal returns (bool, bytes memory) {
         Offer storage offer = get(self, offerId);
         Escrow storage escrow = offer.escrow;
 
@@ -131,11 +131,7 @@ library ExchangeLib {
 
         offer.status = OfferStatus.SETTLED;
 
-        (bool success, bytes memory result) = exec(escrow, offerId);
-
-        require(success, "failed to call escrow contract");
-
-        return result;
+        return exec(escrow, offerId);
     }
 
     function reject(

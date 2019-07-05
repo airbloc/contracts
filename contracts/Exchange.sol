@@ -29,6 +29,7 @@ contract Exchange is ReentrancyGuard {
         bytes result,
         uint256 at
     );
+    event OfferReceiptFail(bytes data);
 
     // offeree - reject
     event OfferRejected(bytes8 indexed offerId, address by, uint256 at);
@@ -45,12 +46,10 @@ contract Exchange is ReentrancyGuard {
     }
 
     /**
-     * @dev escrow's method must have bytes8 argument last of them.
-     * ex) testEscrowMethod(uint256 arg1, bytes32 arg2, [bytes8 offerId] <- must have);
      * @param to offeree app name (registered in app regsitry)
      * @param escrow address of escrow contract
      * @param escrowSign signature of escrow contract's method
-     * @param escrowArgs argument of escrow contract's method
+     * @param escrowArgs argument of escrow contract's method, (must be decodable (use abi.encode() )
      * @param dataIds bundle of dataIds you want exchange
      * @return id of prepared offer
      */
@@ -139,15 +138,19 @@ contract Exchange is ReentrancyGuard {
 
         require(msg.sender == apps.get(offer.to).owner, "should have required authority");
 
-        bytes memory result = orderbook.settle(offerId);
+        (bool success, bytes memory result) = orderbook.settle(offerId);
 
-        emit OfferSettled(offerId, msg.sender, block.number);
-        emit OfferReceipt(
-            offerId,
-            apps.get(offer.to).hashedName,
-            apps.get(offer.from).hashedName,
-            result, block.number
-        );
+        if (success) {
+            emit OfferSettled(offerId, msg.sender, block.number);
+            emit OfferReceipt(
+                offerId,
+                apps.get(offer.to).hashedName,
+                apps.get(offer.from).hashedName,
+                result, block.number
+            );
+        } else {
+            emit OfferReceiptFail(result);
+        }
     }
 
     /**
