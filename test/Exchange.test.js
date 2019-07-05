@@ -12,20 +12,12 @@ const Exchange = artifacts.require('Exchange');
 const TestToken = artifacts.require('SimpleToken');
 
 contract('Exchange', async (accounts) => {
-  const [me, stranger] = accounts;
+  const [provider, consumer, stranger] = accounts;
   let apps;
   let exchange;
   let token;
 
-  const registerApp = async (appName, sender) => {
-    await apps.register(appName, { from: sender });
-
-    const app = await apps.get(appName);
-    expect(app.name).to.equal(appName);
-    expect(app.owner).to.equal(sender);
-  };
-
-  const getEscrowArgs = async () => {
+  async function getEscrowArgs() {
     const escrow = await Escrow.new(exchange.address);
 
     const transactSignature = await escrow.TRANSACT_SIGNATURE.call();
@@ -45,18 +37,18 @@ contract('Exchange', async (accounts) => {
       escrowArgs,
       dataIds,
     };
-  };
+  }
 
   beforeEach(async () => {
     apps = await AppRegistry.new();
     exchange = await Exchange.new(apps.address);
-    token = await TestToken.new({ from: me });
+    token = await TestToken.new({ from: provider });
   });
 
   describe('preparing order', async () => {
     // happy path
     it('should able to prepare order', async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow,
@@ -64,7 +56,7 @@ contract('Exchange', async (accounts) => {
       } = await getEscrowArgs();
 
       const result = await exchange.prepare(
-        'me', stranger,
+        'provider', consumer,
         escrow.address,
         escrowSign,
         escrowArgs,
@@ -72,12 +64,11 @@ contract('Exchange', async (accounts) => {
       );
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
-        const offer = await exchange.getOffer(evt.offerId.slice(0, 20));
+        const offer = await exchange.getOffer(evt.offerId.slice(0, 18));
 
         return (
           // event
-          evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+          evt.by === provider.address
 
           // offer
           && offer.from === 'me'
@@ -93,7 +84,6 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should fail to prepare order if offeror app name is not registered', async () => {
-
       const {
         escrow,
         escrowSign, escrowArgs, dataIds,
@@ -101,7 +91,7 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.fails(
         exchange.prepare(
-          'me', stranger,
+          'provider', consumer,
           escrow.address,
           escrowSign,
           escrowArgs,
@@ -113,7 +103,7 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should fail to prepare order if sender is not owner of offeror app', async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow,
@@ -122,7 +112,7 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.fails(
         exchange.prepare(
-          'me', stranger,
+          'provider', consumer,
           escrow.address,
           escrowSign,
           escrowArgs,
@@ -135,7 +125,7 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should fail to prepare order if dataIds length exceeds limit', async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow,
@@ -144,7 +134,7 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.fails(
         exchange.prepare(
-          'me', stranger,
+          'provider', consumer,
           escrow.address,
           escrowSign,
           escrowArgs,
@@ -156,7 +146,7 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should fail to prepare order if escrow is not contract', async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrowSign, escrowArgs, dataIds,
@@ -164,8 +154,8 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.fails(
         exchange.prepare(
-          'me', stranger,
-          stranger,
+          'provider', consumer,
+          consumer,
           escrowSign,
           escrowArgs,
           dataIds.slice(0, 64),
@@ -179,7 +169,7 @@ contract('Exchange', async (accounts) => {
   describe('updating order', async () => {
     // happy path
     it('should able to add dataIds', async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow,
@@ -187,7 +177,7 @@ contract('Exchange', async (accounts) => {
       } = await getEscrowArgs();
 
       const result = await exchange.prepare(
-        'me', stranger,
+        'provider', consumer,
         escrow.address,
         escrowSign,
         escrowArgs,
@@ -195,15 +185,15 @@ contract('Exchange', async (accounts) => {
       );
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
-        await exchange.addDataIds(evt.offerId.slice(0, 20), dataIds.slice(20, 40));
-        const offer = await exchange.getOffer(evt.offerId.slice(0, 20));
+        await exchange.addDataIds(evt.offerId.slice(0, 18), dataIds.slice(20, 40));
+        const offer = await exchange.getOffer(evt.offerId.slice(0, 18));
 
         expect(offer.dataIds).to.have.members(dataIds.slice(0, 40));
       });
     });
 
     it('should fail to add dataIds if sender is not owner of this app', async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow,
@@ -211,7 +201,7 @@ contract('Exchange', async (accounts) => {
       } = await getEscrowArgs();
 
       const result = await exchange.prepare(
-        'me', stranger,
+        'provider', consumer,
         escrow.address,
         escrowSign,
         escrowArgs,
@@ -220,7 +210,7 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
         await truffleAssert.fails(
-          exchange.addDataIds(evt.offerId.slice(0, 20), dataIds.slice(20, 40), { from: stranger }),
+          exchange.addDataIds(evt.offerId.slice(0, 18), dataIds.slice(20, 40), { from: consumer }),
           truffleAssert.ErrorType.REVERT,
           'should have required authority',
         );
@@ -228,7 +218,7 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should fail to add dataIds if order is not on neutral state', async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow,
@@ -236,7 +226,7 @@ contract('Exchange', async (accounts) => {
       } = await getEscrowArgs();
 
       const result = await exchange.prepare(
-        'me', stranger,
+        'provider', consumer,
         escrow.address,
         escrowSign,
         escrowArgs,
@@ -245,10 +235,10 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
         // change order state
-        await exchange.order(evt.offerId.slice(0, 20));
+        await exchange.order(evt.offerId.slice(0, 18));
 
         await truffleAssert.fails(
-          exchange.addDataIds(evt.offerId.slice(0, 20), dataIds.slice(20, 40)),
+          exchange.addDataIds(evt.offerId.slice(0, 18), dataIds.slice(20, 40)),
           truffleAssert.ErrorType.REVERT,
           'neutral state only',
         );
@@ -256,7 +246,7 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should fail to add dataIds if its length exceeds limlt', async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow,
@@ -264,7 +254,7 @@ contract('Exchange', async (accounts) => {
       } = await getEscrowArgs();
 
       const result = await exchange.prepare(
-        'me', stranger,
+        'provider', consumer,
         escrow.address,
         escrowSign,
         escrowArgs,
@@ -273,7 +263,7 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
         await truffleAssert.fails(
-          exchange.addDataIds(evt.offerId.slice(0, 20), dataIds.slice(20, 200)),
+          exchange.addDataIds(evt.offerId.slice(0, 18), dataIds.slice(20, 200)),
           truffleAssert.ErrorType.REVERT,
           'dataIds length exceeded (max 128)',
         );
@@ -285,7 +275,7 @@ contract('Exchange', async (accounts) => {
     let offerId;
 
     beforeEach(async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow,
@@ -293,7 +283,7 @@ contract('Exchange', async (accounts) => {
       } = await getEscrowArgs();
 
       const result = await exchange.prepare(
-        'me', stranger,
+        'provider', consumer,
         escrow.address,
         escrowSign,
         escrowArgs,
@@ -301,11 +291,10 @@ contract('Exchange', async (accounts) => {
       );
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
-        offerId = evt.offerId.slice(0, 20);
+        offerId = evt.offerId.slice(0, 18);
 
         return (
-          evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+          evt.by === provider.address
         );
       });
     });
@@ -315,9 +304,8 @@ contract('Exchange', async (accounts) => {
       const result = await exchange.order(offerId);
 
       await truffleAssert.eventEmitted(result, 'OfferPresented', async evt => (
-        evt.offerId.slice(0, 20) === offerId
-          && evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+        evt.offerId.slice(0, 18) === offerId
+          && evt.by === provider.address
       ));
     });
 
@@ -334,7 +322,7 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to submit order if sender is not owner of this app', async () => {
       await truffleAssert.fails(
-        exchange.order(offerId, { from: stranger }),
+        exchange.order(offerId, { from: consumer }),
         truffleAssert.ErrorType.REVERT,
         'should have required authority',
       );
@@ -345,14 +333,14 @@ contract('Exchange', async (accounts) => {
     let offerId;
 
     beforeEach(async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       const {
         escrow, escrowSign, escrowArgs, dataIds,
       } = await getEscrowArgs();
 
       let result = await exchange.prepare(
-        'me', stranger,
+        'provider', consumer,
         escrow.address,
         escrowSign,
         escrowArgs,
@@ -360,19 +348,17 @@ contract('Exchange', async (accounts) => {
       );
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
-        offerId = evt.offerId.slice(0, 20);
+        offerId = evt.offerId.slice(0, 18);
 
         return (
-          evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+          evt.by === provider.address
         );
       });
 
       result = await exchange.order(offerId);
       await truffleAssert.eventEmitted(result, 'OfferPresented', async evt => (
         evt.offerId === offerId
-          && evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+          && evt.by === provider.address
       ));
     });
 
@@ -381,8 +367,7 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.eventEmitted(result, 'OfferCanceled', async evt => (
         evt.offerId === offerId
-          && evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+          && evt.by === provider.address
       ));
     });
 
@@ -399,7 +384,7 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to cancel order if sender is not owner of this app', async () => {
       await truffleAssert.fails(
-        exchange.cancel(offerId, { from: stranger }),
+        exchange.cancel(offerId, { from: consumer }),
         truffleAssert.ErrorType.REVERT,
         'should have required authority',
       );
@@ -411,7 +396,7 @@ contract('Exchange', async (accounts) => {
     let escrow;
 
     beforeEach(async () => {
-      await registerApp('me', me);
+      await apps.register('provider', { from: provider });
 
       escrow = await Escrow.new(exchange.address);
 
@@ -420,7 +405,7 @@ contract('Exchange', async (accounts) => {
       } = await getEscrowArgs();
 
       let result = await exchange.prepare(
-        'me', stranger,
+        'provider', consumer,
         escrow.address,
         escrowSign,
         escrowArgs,
@@ -428,58 +413,54 @@ contract('Exchange', async (accounts) => {
       );
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
-        offerId = evt.offerId.slice(0, 20);
+        offerId = evt.offerId.slice(0, 18);
 
         return (
-          evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+          evt.by === provider.address
         );
       });
 
       result = await exchange.order(offerId);
       await truffleAssert.eventEmitted(result, 'OfferPresented', async evt => (
-        evt.offerId.slice(0, 20) === offerId
-          && evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+        evt.offerId.slice(0, 18) === offerId
+          && evt.by === provider.address
       ));
     });
 
     it('should settle order', async () => {
-      await token.mint(stranger, web3.utils.toWei('100', 'ether'), { from: me });
-      await token.approve(escrow.address, web3.utils.toWei('100', 'ether'), { from: stranger });
+      await token.mint(consumer, web3.utils.toWei('200', 'ether'), { from: provider });
+      await token.approve(escrow.address, web3.utils.toWei('200', 'ether'), { from: consumer });
 
-      const result = await exchange.settle(offerId, { from: stranger });
+      const result = await exchange.settle(offerId, { from: consumer });
       await truffleAssert.eventEmitted(result, 'OfferSettled', evt => (
-        evt.offerId.slice(0, 20) === offerId
-          && evt.by === me.address
-          && evt.at === result.receipt.blockNumber
+        evt.offerId.slice(0, 18) === offerId
+          && evt.by === consumer
       ));
       await truffleAssert.eventEmitted(result, 'OfferReceipt', evt => (
-        evt.offerId.slice(0, 20) === offerId
-          && evt.at === result.receipt.blockNumber
+        evt.offerId.slice(0, 18) === offerId
       ));
 
       // TODO: compare token balance
     });
 
     it('should fail to settle order if order is not on pending state', async () => {
-      await token.mint(stranger, web3.utils.toWei('100', 'ether'), { from: me });
-      await token.approve(escrow.address, web3.utils.toWei('100', 'ether'), { from: stranger });
+      await token.mint(consumer, web3.utils.toWei('100', 'ether'), { from: provider });
+      await token.approve(escrow.address, web3.utils.toWei('100', 'ether'), { from: consumer });
 
-      const result = await exchange.settle(offerId, { from: stranger });
+      const result = await exchange.settle(offerId, { from: consumer });
       await truffleAssert.eventEmitted(result, 'OfferSettled');
       await truffleAssert.eventEmitted(result, 'OfferReceipt');
 
       await truffleAssert.fails(
-        exchange.settle(offerId, { from: stranger }),
+        exchange.settle(offerId, { from: consumer }),
         truffleAssert.ErrorType.REVERT,
         'pending state only',
       );
     });
 
     it('should fail to settle order if sender is not owner of this app', async () => {
-      await token.mint(stranger, web3.utils.toWei('100', 'ether'), { from: me });
-      await token.approve(escrow.address, web3.utils.toWei('100', 'ether'), { from: stranger });
+      await token.mint(consumer, web3.utils.toWei('100', 'ether'), { from: provider });
+      await token.approve(escrow.address, web3.utils.toWei('100', 'ether'), { from: consumer });
 
       await truffleAssert.fails(
         exchange.settle(offerId),
@@ -511,5 +492,4 @@ contract('Exchange', async (accounts) => {
   describe('rejecting order', async () => {
     it('should reject order', async () => {});
   });
-
 });
