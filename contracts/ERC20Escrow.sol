@@ -14,7 +14,7 @@ import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
  * @title Simple escrow contract for exchange
  * This contract going to be called by ExchangeLib.sol
  */
-contract Escrow is IEscrow, ReentrancyGuard {
+contract ERC20Escrow is IEscrow, ReentrancyGuard {
     using SafeERC20 for IERC20;
 
     Exchange private ex;
