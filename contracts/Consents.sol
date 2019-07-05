@@ -127,6 +127,8 @@ contract Consents {
         string memory appName,
         string memory dataType
     ) public view returns (bool) {
+        // ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
+        // return consent.allowed;
         return isAllowedAt(action, userId, appName, dataType, block.number);
     }
 
@@ -137,7 +139,7 @@ contract Consents {
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
-        return consent.allowed && consent.at < blockNumber;
+        ConsentsLib.Consent memory consent = consents.getPastConsent(userId, appName, uint(action), dataType, blockNumber);
+        return consent.allowed;
     }
 }
