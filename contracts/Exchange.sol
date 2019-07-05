@@ -30,7 +30,7 @@ contract Exchange is ReentrancyGuard {
         bytes result,
         uint256 at
     );
-    event OfferReceiptFail(bytes data);
+    event EscrowExecutionFailed(bytes reason);
 
     // offeree - reject
     event OfferRejected(bytes8 indexed offerId, address by, uint256 at);
@@ -139,18 +139,18 @@ contract Exchange is ReentrancyGuard {
         require(msg.sender == offer.to, "should have required authority");
 
         (bool success, bytes memory result) = orderbook.settle(offerId);
-
-        if (success) {
-            emit OfferSettled(offerId, msg.sender, block.number);
-            emit OfferReceipt(
-                offerId,
-                apps.get(offer.from).hashedName,
-                offer.to,
-                result, block.number
-            );
-        } else {
-            emit OfferReceiptFail(result);
+        if (!success) {
+            emit EscrowExecutionFailed(result);
+            return;
         }
+
+        emit OfferSettled(offerId, msg.sender, block.number);
+        emit OfferReceipt(
+            offerId,
+            apps.get(offer.from).hashedName,
+            offer.to,
+            result, block.number
+        );
     }
 
     /**
