@@ -94,7 +94,7 @@ contract Consents {
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
 
         // changing an already given consent requires a password key
-        bytes memory message = abi.encodePacked(action, userId, appName, dataType, allowed);
+        bytes memory message = abi.encodePacked(uint8(action), userId, appName, dataType, allowed);
         require(
             userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
             "password mismatch"
