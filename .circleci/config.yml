@@ -1,0 +1,23 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/node:11
+      - image: trufflesuite/ganache-cli:v6.4.4
+        command: |
+          -a 10
+          -p 9545
+    steps:
+      - checkout
+      - run:
+          name: Setup Dependencies
+          command: |
+            yarn
+      - run:
+          name: Lint
+          command: |
+            yarn lint
+      - run:
+          name: Run Test
+          command: |
+            yarn test

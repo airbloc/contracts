@@ -3,15 +3,14 @@
       "airbnb-base",
       "plugin:node/recommended"
   ],
+  "env": {
+    "node": true,
+    "mocha": true
+  },
   "globals": {
     "artifacts": false,
     "contract": false,
-    "web3": false,
-    "before": false,
-    "after": false,
-    "beforeEach": false,
-    "afterEach": false,
-    "it": false
+    "web3": false
   },
   "rules": {
     "strict": "off",
