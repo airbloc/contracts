@@ -41,7 +41,7 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
 
     // transact
     string public constant TRANSACT_SIGNATURE = "transact(address,uint256,bytes8)";
-    bytes4 public constant TRANSACT_SELECTOR = 0x0bd9e0f8;
+    bytes4 public constant TRANSACT_SELECTOR = bytes4(keccak256(bytes(TRANSACT_SIGNATURE)));
 
     function transact(
         IERC20 token,
