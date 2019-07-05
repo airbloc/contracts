@@ -1,11 +1,21 @@
 pragma solidity ^0.5.0;
+pragma experimental ABIEncoderV2;
+
+import "./IEscrow.sol";
 
 import "openzeppelin-solidity/contracts/utils/Address.sol";
+
 
 library ExchangeLib {
     using Address for address;
 
-    enum OfferStatus {NEUTRAL, PENDING, SETTLED, REJECTED}
+    /**
+     * Flow of exchange order
+     * NONE -> NEUTRAL -> PENDING |-> SETTLED
+     *    prepare     order       |-> CANCELED
+     *                            |-> REJECTED
+     */
+    enum OfferStatus {NEUTRAL, PENDING, CANCELED, SETTLED, REJECTED}
 
     struct Escrow {
         address addr;
@@ -14,27 +24,26 @@ library ExchangeLib {
     }
 
     function exec(
-        Escrow storage _escrow,
-        bytes32 _offerId
-    ) internal returns (bool) {
-        bytes memory data = abi.encode(_offerId);
-        if (_escrow.args.length > 0) {
-            data = abi.encodePacked(
-                _escrow.args,
-                _offerId
-            );
-        }
-        data = abi.encodePacked(_escrow.sign, data);
-        return _escrow.addr.call(data);
+        Escrow storage escrow,
+        bytes8 offerId
+    ) internal returns (bool, bytes memory) {
+        bytes memory escrowCalldata = IEscrow(escrow.addr).convert(
+            escrow.sign,
+            escrow.args,
+            offerId
+        );
+
+        return escrow.addr.delegatecall(escrowCalldata);
     }
 
     struct Offer {
-        address     from;
-        address      to;
-        bytes20[]   dataIds;
-        Escrow      escrow;
+        string from;
+        address to;
+        bytes20[] dataIds;
+        uint256 at;
+        uint256 until;
+        Escrow escrow;
         OfferStatus status;
-        bool        reverted;
     }
 
     struct Orderbook {
@@ -42,64 +51,111 @@ library ExchangeLib {
     }
 
     function prepare(
-        Orderbook storage _orderbook,
-        Offer memory _offer
+        Orderbook storage self,
+        Offer memory offer
     ) internal returns (bytes8) {
-        require(_offer.status == OfferStatus.NEUTRAL, "neutral state only");
-        require(_offer.escrow.addr.isContract(), "not contract address");
+        require(offer.dataIds.length <= 128, "dataIds length exceeded (max 128)");
+        require(offer.at == 0, "offer.at should be zero in neutral state");
+        require(offer.until == 0, "offer.until should be zero in neutral state");
+        require(offer.escrow.addr.isContract(), "not contract address");
+        require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
+
         bytes8 offerId = bytes8(
             keccak256(
                 abi.encodePacked(
-                    block.number,
+                    offer.at,
                     msg.sender,
-                    _offer.from,
-                    _offer.to,
-                    _offer.escrow.addr
+                    offer.from,
+                    offer.to,
+                    offer.escrow.addr
                 )
             )
         );
-        _offer.status = OfferStatus.NEUTRAL;
-        _orderbook.orders[offerId] = _offer;
+
+        offer.status = OfferStatus.NEUTRAL;
+        self.orders[offerId] = offer;
+
         return offerId;
     }
 
-    function order(
-        Orderbook storage _orderbook,
-        bytes8 _offerId
+    function addDataIds(
+        Orderbook storage self,
+        bytes8 offerId,
+        bytes20[] memory dataIds
     ) internal {
-        Offer storage offer = _orderbook.orders[_offerId];
-        require(msg.sender == offer.from, "only offeror can order offer");
+        Offer storage offer = get(self, offerId);
+
         require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
+        require(offer.dataIds.length + dataIds.length <= 128, "dataIds length exceeded (max 128)");
+
+        for (uint8 i = 0; i < dataIds.length; i++) {
+            offer.dataIds.push(dataIds[i]);
+        }
+    }
+
+    function order(
+        Orderbook storage self,
+        bytes8 offerId,
+        uint256 timeout
+    ) internal {
+        Offer storage offer = get(self, offerId);
+
+        require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
+
+        offer.at = block.number;
+        offer.until = block.number + timeout;
         offer.status = OfferStatus.PENDING;
     }
 
-    // settle and open
-    function settle(
-        Orderbook storage _orderbook,
-        bytes8 _offerId
-    ) internal returns (bool) {
-        Offer storage offer = _orderbook.orders[_offerId];
-        Escrow storage escrow = offer.escrow;
+    function cancel(
+        Orderbook storage self,
+        bytes8 offerId
+    ) internal {
+        Offer storage offer = get(self, offerId);
+
         require(offer.status == OfferStatus.PENDING, "pending state only");
-        require(msg.sender == offer.to, "only offeree can settle offer");
+
+        offer.status = OfferStatus.CANCELED;
+    }
+
+    // settle
+    function settle(
+        Orderbook storage self,
+        bytes8 offerId
+    ) internal returns (bool, bytes memory) {
+        Offer storage offer = get(self, offerId);
+        Escrow storage escrow = offer.escrow;
+
+        require(block.number <= offer.until, "outdated order");
+        require(offer.status == OfferStatus.PENDING, "pending state only");
+
         offer.status = OfferStatus.SETTLED;
-        return exec(escrow, _offerId);
+
+        return exec(escrow, offerId);
     }
 
     function reject(
-        Orderbook storage _orderbook,
-        bytes8 _offerId
+        Orderbook storage self,
+        bytes8 offerId
     ) internal {
-        Offer storage offer = _orderbook.orders[_offerId];
+        Offer storage offer = get(self, offerId);
+
         require(offer.status == OfferStatus.PENDING, "pending state only");
-        require(msg.sender == offer.to, "only offeree can reject offer");
+
         offer.status = OfferStatus.REJECTED;
     }
 
-    function getOffer(
-        Orderbook storage _orderbook,
-        bytes8 _offerId
+    function get(
+        Orderbook storage self,
+        bytes8 offerId
     ) internal view returns (Offer storage) {
-        return _orderbook.orders[_offerId];
+        return self.orders[offerId];
+    }
+
+    function exists(
+        Orderbook storage self,
+        bytes8 offerId
+    ) internal view returns (bool) {
+        return get(self, offerId).escrow.addr != address(0x0);
     }
 }

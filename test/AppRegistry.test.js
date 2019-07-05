@@ -10,7 +10,7 @@ contract('AppRegistry', async (accounts) => {
     const apps = await AppRegistry.new();
 
     const result = await apps.register('test-app');
-    truffleAssert.eventEmitted(result, 'Registration', event => event.name === 'test-app');
+    truffleAssert.eventEmitted(result, 'Registration', event => event.appName === 'test-app');
   });
 
   it('should fail to register if the name duplicates', async () => {
@@ -77,7 +77,7 @@ contract('AppRegistry', async (accounts) => {
     await apps.register('test-app');
 
     const result = await apps.unregister('test-app');
-    truffleAssert.eventEmitted(result, 'Unregistration', event => event.name === 'test-app');
+    truffleAssert.eventEmitted(result, 'Unregistration', event => event.appName === 'test-app');
   });
 
   it('should fail to unregister if it is not by the owner', async () => {

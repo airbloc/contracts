@@ -27,19 +27,9 @@ const config = {
             network_id: 4,
             gas: 3000000
         },
-        test: {
-            provider: getProviderOf('test'),
-            network_id: 1337,
-            gas: 3000000
-        },
         local: {
             host: '127.0.0.1',
             port: 8545,
-            network_id: '*',
-        },
-        dev: {
-            host: '127.0.0.1',
-            port: 9545,
             network_id: '*',
         },
         coverage: {
@@ -49,12 +39,16 @@ const config = {
             gas: 0xfffffffffff,
             gasPrice: 0x01,
         },
-        klaytn: {
+        dev: {
             host: '127.0.0.1',
-            port: 8551,
-            network_id: '1000', // Aspen network id
+            port: 9545,
+            network_id: '*',
+        },
+        klaytn: {
+            provider: getProviderOf('klaytn'),
+            network_id: '1001', // Aspen network id
             gas: 20000000, // transaction gas limit
-            gasPrice: 25000000000, // gasPrice of Aspen is 25 Gpeb
+            gasPrice: null, // gasPrice of Aspen is 25 Gpeb
         },
     },
     solc: {
