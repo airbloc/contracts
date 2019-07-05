@@ -16,3 +16,21 @@ function getFirstEvent(txResult) {
   return logs[0].args;
 }
 exports.getFirstEvent = getFirstEvent;
+
+/**
+ * Creates a password signature, created by Accounts and used on Airbloc contracts.
+ *
+ * @param {Array} args Contract call arguments (except last passwordSignature parameter)
+ * @param {String} password Password. Will derive a private key from it.
+ */
+function createPasswordSignature(args, password) {
+  // in production, we need to use PBKDF2.
+  // this is test purpose - DO NOT USE Keccak256 as an KDF in production.
+  const kdf = web3.utils.keccak256;
+  const passwordKey = web3.eth.accounts.privateKeyToAccount(kdf(password));
+
+  const message = web3.utils.soliditySha3(...args);
+  const { signature } = passwordKey.sign(message);
+  return signature;
+}
+exports.createPasswordSignature = createPasswordSignature;
