@@ -33,7 +33,7 @@ library ExchangeLib {
             offerId
         );
 
-        return escrow.addr.delegatecall(escrowCalldata);
+        return escrow.addr.call(escrowCalldata);
     }
 
     struct Offer {
