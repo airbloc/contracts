@@ -3,6 +3,7 @@
 
 ## Dev
 truffle-config.local.js
+deploy.js
 
 ## Intellij
 .idea
