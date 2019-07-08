@@ -26,8 +26,8 @@ function decodeErrorReason(data) {
   if (!data.startsWith(ErrorSelector)) {
     return '';
   }
-  const returndata = data.slice(10); // remove selector
+  const returnData = data.slice(10); // remove selector
 
-  return web3.eth.abi.decodeParameter('string', `0x${returndata}`);
+  return web3.eth.abi.decodeParameter('string', `0x${returnData}`);
 }
 exports.decodeErrorReason = decodeErrorReason;

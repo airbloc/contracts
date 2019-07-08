@@ -129,14 +129,14 @@ library ExchangeLib {
         require(block.number <= offer.until, "outdated order");
         require(offer.status == OfferStatus.PENDING, "pending state only");
 
-        (bool success, bytes memory returndata) = exec(escrow, offerId);
+        (bool success, bytes memory returnData) = exec(escrow, offerId);
         if (!success) {
-            return (false, returndata);
+            return (false, returnData);
         }
 
         offer.status = OfferStatus.SETTLED;
 
-        return (true, returndata);
+        return (true, returnData);
     }
 
     function reject(
