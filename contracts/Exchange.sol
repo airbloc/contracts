@@ -51,7 +51,7 @@ contract Exchange is ReentrancyGuard {
      * @param consumer consumer address
      * @param escrow address of escrow contract
      * @param escrowSign signature of escrow contract's method
-     * @param escrowArgs argument of escrow contract's method, (must be decodable (use abi.encode() )
+     * @param escrowArgs argument of escrow contract's method, (must be decodable using abi.encode())
      * @param dataIds bundle of dataIds you want exchange
      * @return id of prepared offer
      */
