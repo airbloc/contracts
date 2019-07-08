@@ -62,8 +62,8 @@ contract Exchange is ReentrancyGuard {
         bytes memory escrowArgs,
         bytes20[] memory dataIds
     ) public returns (bytes8) {
-        require(apps.exists(provider), "offeror app does not exist");
-        require(apps.isOwner(provider, msg.sender), "only app owner can prepare order");
+        require(apps.exists(provider), "provider app does not exist");
+        require(apps.isOwner(provider, msg.sender), "only provider app owner can prepare order");
 
         bytes8 offerId = orderbook.prepare(
             ExchangeLib.Offer({
@@ -96,7 +96,7 @@ contract Exchange is ReentrancyGuard {
     ) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(apps.isOwner(offer.provider, msg.sender), "should have required authority");
+        require(apps.isOwner(offer.provider, msg.sender), "only provider app owner can update order");
 
         orderbook.addDataIds(offerId, dataIds);
     }
@@ -108,7 +108,7 @@ contract Exchange is ReentrancyGuard {
     function order(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(apps.isOwner(offer.provider, msg.sender), "should have required authority");
+        require(apps.isOwner(offer.provider, msg.sender), "only provider app owner can present order");
 
         orderbook.order(offerId, DEFAULT_TIMEOUT_BLOCKS);
 
@@ -122,7 +122,7 @@ contract Exchange is ReentrancyGuard {
     function cancel(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(apps.isOwner(offer.provider, msg.sender), "should have required authority");
+        require(apps.isOwner(offer.provider, msg.sender), "only provider app owner can cancel order");
 
         orderbook.cancel(offerId);
 
@@ -136,7 +136,7 @@ contract Exchange is ReentrancyGuard {
     function settle(bytes8 offerId) public nonReentrant {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == offer.consumer, "should have required authority");
+        require(msg.sender == offer.consumer, "only consumer can settle order");
 
         (bool success, bytes memory result) = orderbook.settle(offerId);
         if (!success) {
@@ -160,7 +160,7 @@ contract Exchange is ReentrancyGuard {
     function reject(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == offer.consumer, "should have required authority");
+        require(msg.sender == offer.consumer, "only consumer can reject order");
 
         orderbook.reject(offerId);
 
