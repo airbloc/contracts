@@ -8,7 +8,7 @@ const crypto = require('crypto');
 const { expect, decodeErrorReason } = require('./test-utils');
 
 const AppRegistry = artifacts.require('AppRegistry');
-const Escrow = artifacts.require('ERC20Escrow');
+const ERC20Escrow = artifacts.require('ERC20Escrow');
 const Exchange = artifacts.require('Exchange');
 const SimpleToken = artifacts.require('SimpleToken');
 
@@ -44,7 +44,7 @@ contract('Exchange', async (accounts) => {
   beforeEach(async () => {
     apps = await AppRegistry.new();
     exchange = await Exchange.new(apps.address);
-    escrow = await Escrow.new(exchange.address);
+    escrow = await ERC20Escrow.new(exchange.address);
     token = await SimpleToken.new({ from: minter });
   });
 
