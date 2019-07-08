@@ -21,7 +21,9 @@ const Web3 = require('web3');
 
 const web3 = new Web3();
 
-const ErrorSelector = '0x08c379a0';
+// This equals to bytes4(keccak256("Error(string)"))
+// For details, please see EIP-838: https://github.com/ethereum/EIPs/issues/838
+const ErrorSelector = '0x08c379a0'; 
 function decodeErrorReason(data) {
   if (!data.startsWith(ErrorSelector)) {
     return '';
