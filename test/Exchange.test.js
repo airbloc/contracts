@@ -91,11 +91,11 @@ contract('Exchange', async (accounts) => {
           { from: provider },
         ),
         truffleAssert.ErrorType.REVERT,
-        'offeror app does not exist',
+        'provider app does not exist',
       );
     });
 
-    it('should fail to prepare order if sender is not owner of offeror app', async () => {
+    it('should fail to prepare order if sender is not owner of provider app', async () => {
       await apps.register('provider', { from: provider });
 
       const { escrowSign, escrowArgs } = await getEscrowArgs();
@@ -110,7 +110,7 @@ contract('Exchange', async (accounts) => {
           { from: stranger },
         ),
         truffleAssert.ErrorType.REVERT,
-        'should have required authority',
+        'only provider app owner can prepare order',
       );
     });
 
@@ -190,7 +190,7 @@ contract('Exchange', async (accounts) => {
       await truffleAssert.fails(
         exchange.addDataIds(offerId, dataIds.slice(20, 40), { from: stranger }),
         truffleAssert.ErrorType.REVERT,
-        'should have required authority',
+        'only provider app owner can update order',
       );
     });
 
@@ -267,7 +267,7 @@ contract('Exchange', async (accounts) => {
       await truffleAssert.fails(
         exchange.order(offerId, { from: stranger }),
         truffleAssert.ErrorType.REVERT,
-        'should have required authority',
+        'only provider app owner can present order',
       );
     });
   });
@@ -324,7 +324,7 @@ contract('Exchange', async (accounts) => {
       await truffleAssert.fails(
         exchange.cancel(offerId, { from: stranger }),
         truffleAssert.ErrorType.REVERT,
-        'should have required authority',
+        'only provider app owner can cancel order',
       );
     });
   });
@@ -406,7 +406,7 @@ contract('Exchange', async (accounts) => {
       await truffleAssert.fails(
         exchange.settle(offerId, { from: stranger }),
         truffleAssert.ErrorType.REVERT,
-        'should have required authority',
+        'only consumer can settle order',
       );
     });
 
@@ -475,7 +475,7 @@ contract('Exchange', async (accounts) => {
       await truffleAssert.fails(
         exchange.reject(offerId, { from: stranger }),
         truffleAssert.ErrorType.REVERT,
-        'should have required authority',
+        'only consumer can reject order',
       );
     });
 
