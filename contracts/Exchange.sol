@@ -15,25 +15,24 @@ contract Exchange is ReentrancyGuard {
     using ExchangeLib for ExchangeLib.Orderbook;
 
     // offeror - prepare
-    event OfferPrepared(bytes8 indexed offerId, bytes32 indexed by, uint256 at);
+    event OfferPrepared(bytes8 indexed offerId, bytes32 indexed hashedProviderName);
 
     // offeror - order/cancel
-    event OfferPresented(bytes8 indexed offerId, bytes32 indexed by, uint256 at);
-    event OfferCanceled(bytes8 indexed offerId, bytes32 indexed by, uint256 at);
+    event OfferPresented(bytes8 indexed offerId, bytes32 indexed hashedProviderName);
+    event OfferCanceled(bytes8 indexed offerId, bytes32 indexed hashedProviderName);
 
     // offeree - settle+receipt
-    event OfferSettled(bytes8 indexed offerId, address indexed by, uint256 at);
+    event OfferSettled(bytes8 indexed offerId, address indexed consumer);
     event OfferReceipt(
         bytes8 indexed offerId,
-        bytes32 indexed provider,
+        bytes32 indexed hashedProviderName,
         address indexed consumer,
-        bytes result,
-        uint256 at
+        bytes result
     );
     event EscrowExecutionFailed(bytes reason);
 
     // offeree - reject
-    event OfferRejected(bytes8 indexed offerId, address indexed by, uint256 at);
+    event OfferRejected(bytes8 indexed offerId, address indexed consumer);
 
     ExchangeLib.Orderbook private orderbook;
 
@@ -64,7 +63,7 @@ contract Exchange is ReentrancyGuard {
         bytes20[] memory dataIds
     ) public returns (bytes8) {
         require(apps.exists(provider), "offeror app does not exist");
-        require(msg.sender == apps.get(provider).owner, "should have required authority");
+        require(apps.isOwner(provider, msg.sender), "only app owner can prepare order");
 
         bytes8 offerId = orderbook.prepare(
             ExchangeLib.Offer({
@@ -82,7 +81,7 @@ contract Exchange is ReentrancyGuard {
             })
         );
 
-        emit OfferPrepared(offerId, apps.get(provider).hashedName, block.number);
+        emit OfferPrepared(offerId, apps.get(provider).hashedName);
 
         return offerId;
     }
@@ -113,7 +112,7 @@ contract Exchange is ReentrancyGuard {
 
         orderbook.order(offerId, DEFAULT_TIMEOUT_BLOCKS);
 
-        emit OfferPresented(offerId, apps.get(offer.provider).hashedName, block.number);
+        emit OfferPresented(offerId, apps.get(offer.provider).hashedName);
     }
 
     /**
@@ -127,7 +126,7 @@ contract Exchange is ReentrancyGuard {
 
         orderbook.cancel(offerId);
 
-        emit OfferCanceled(offerId, apps.get(offer.provider).hashedName, block.number);
+        emit OfferCanceled(offerId, apps.get(offer.provider).hashedName);
     }
 
     /**
@@ -145,12 +144,12 @@ contract Exchange is ReentrancyGuard {
             return;
         }
 
-        emit OfferSettled(offerId, msg.sender, block.number);
+        emit OfferSettled(offerId, msg.sender);
         emit OfferReceipt(
             offerId,
             apps.get(offer.provider).hashedName,
             offer.consumer,
-            result, block.number
+            result
         );
     }
 
@@ -165,7 +164,7 @@ contract Exchange is ReentrancyGuard {
 
         orderbook.reject(offerId);
 
-        emit OfferRejected(offerId, msg.sender, block.number);
+        emit OfferRejected(offerId, msg.sender);
     }
 
     /**
