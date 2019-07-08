@@ -15,17 +15,17 @@ contract Exchange is ReentrancyGuard {
     using ExchangeLib for ExchangeLib.Orderbook;
 
     // offeror - prepare
-    event OfferPrepared(bytes8 indexed offerId, string appName);
+    event OfferPrepared(bytes8 indexed offerId, string providerAppName);
 
     // offeror - order/cancel
-    event OfferPresented(bytes8 indexed offerId, string appName);
-    event OfferCanceled(bytes8 indexed offerId, string appName);
+    event OfferPresented(bytes8 indexed offerId, string providerAppName);
+    event OfferCanceled(bytes8 indexed offerId, string providerAppName);
 
     // offeree - settle+receipt
     event OfferSettled(bytes8 indexed offerId, address indexed consumer);
     event OfferReceipt(
         bytes8 indexed offerId,
-        bytes32 indexed hashedAppName,
+        string providerAppName,
         address indexed consumer,
         bytes result
     );
@@ -147,7 +147,7 @@ contract Exchange is ReentrancyGuard {
         emit OfferSettled(offerId, msg.sender);
         emit OfferReceipt(
             offerId,
-            apps.get(offer.provider).hashedName,
+            offer.provider,
             offer.consumer,
             result
         );
