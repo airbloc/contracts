@@ -66,13 +66,11 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.eventEmitted(result, 'OfferPrepared', async (evt) => {
         const offer = await exchange.getOffer(evt.offerId.slice(0, 18));
-        const app = await apps.get(offer.provider);
-
         const offerExists = await exchange.offerExists(evt.offerId.slice(0, 18));
 
         return (
           // event
-          evt.by === app.hashedName
+          evt.providerAppName === offer.provider
           && offerExists === true
         );
       });
@@ -243,11 +241,10 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.eventEmitted(result, 'OfferPresented', async (evt) => {
         const offer = await exchange.getOffer(evt.offerId.slice(0, 18));
-        const app = await apps.get(offer.provider);
 
         return (
           evt.offerId.slice(0, 18) === offerId
-          && evt.by === app.hashedName
+          && evt.providerAppName === offer.provider
         );
       });
     });
@@ -300,11 +297,10 @@ contract('Exchange', async (accounts) => {
 
       await truffleAssert.eventEmitted(result, 'OfferCanceled', async (evt) => {
         const offer = await exchange.getOffer(evt.offerId.slice(0, 18));
-        const app = await apps.get(offer.provider);
 
         return (
           evt.offerId.slice(0, 18) === offerId
-          && evt.by === app.hashedName
+          && evt.providerAppName === offer.provider
         );
       });
     });
@@ -368,11 +364,10 @@ contract('Exchange', async (accounts) => {
       ));
       await truffleAssert.eventEmitted(result, 'OfferReceipt', async (evt) => {
         const offer = await exchange.getOffer(evt.offerId.slice(0, 18));
-        const app = await apps.get(offer.provider);
 
         return (
           evt.offerId.slice(0, 18) === offerId
-          && evt.provider === app.hashedName
+          && evt.providerAppName === offer.provider
           && evt.consumer === consumer
         );
       });
