@@ -16,3 +16,18 @@ function getFirstEvent(txResult) {
   return logs[0].args;
 }
 exports.getFirstEvent = getFirstEvent;
+
+const Web3 = require('web3');
+
+const web3 = new Web3();
+
+const ErrorSelector = '0x08c379a0';
+function decodeErrorReason(data) {
+  if (!data.startsWith(ErrorSelector)) {
+    return '';
+  }
+  const returndata = data.slice(10); // remove selector
+
+  return web3.eth.abi.decodeParameter('string', `0x${returndata}`);
+}
+exports.decodeErrorReason = decodeErrorReason;
