@@ -37,7 +37,7 @@ contract Exchange is ReentrancyGuard {
 
     ExchangeLib.Orderbook private orderbook;
 
-    uint256 constant DEFAULT_TIMEOUT = 60; // block = 900 sec = 15 min
+    uint256 constant DEFAULT_TIMEOUT_BLOCKS = 60; // block = 900 sec = 15 min
     uint256 constant MAX_OPT_LENGTH = 10;
 
     AppRegistry private apps;
@@ -111,7 +111,7 @@ contract Exchange is ReentrancyGuard {
 
         require(apps.isOwner(offer.provider, msg.sender), "should have required authority");
 
-        orderbook.order(offerId, DEFAULT_TIMEOUT);
+        orderbook.order(offerId, DEFAULT_TIMEOUT_BLOCKS);
 
         emit OfferPresented(offerId, apps.get(offer.provider).hashedName, block.number);
     }
