@@ -37,8 +37,8 @@ library ExchangeLib {
     }
 
     struct Offer {
-        string from;
-        address to;
+        string provider;
+        address consumer;
         bytes20[] dataIds;
         uint256 at;
         uint256 until;
@@ -65,8 +65,8 @@ library ExchangeLib {
                 abi.encodePacked(
                     offer.at,
                     msg.sender,
-                    offer.from,
-                    offer.to,
+                    offer.provider,
+                    offer.consumer,
                     offer.escrow.addr
                 )
             )
@@ -129,9 +129,14 @@ library ExchangeLib {
         require(block.number <= offer.until, "outdated order");
         require(offer.status == OfferStatus.PENDING, "pending state only");
 
+        (bool success, bytes memory returnData) = exec(escrow, offerId);
+        if (!success) {
+            return (false, returnData);
+        }
+
         offer.status = OfferStatus.SETTLED;
 
-        return exec(escrow, offerId);
+        return (true, returnData);
     }
 
     function reject(
