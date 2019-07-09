@@ -44,7 +44,7 @@ contract Accounts is Ownable {
     }
 
     modifier onlyDataController() {
-        require(dataControllers.exists(msg.sender), 'caller is not a data controller');
+        require(dataControllers.exists(msg.sender), "caller is not a data controller");
         _;
     }
 
@@ -91,7 +91,7 @@ contract Accounts is Ownable {
             "account must be unlocked through the designated data controller"
         );
         require(
-            addressToAccount[msg.sender] == bytes8(0),
+            addressToAccount[newOwner] == bytes8(0),
             "you can make only one account per one Ethereum Account"
         );
         account.owner = newOwner;
@@ -107,7 +107,7 @@ contract Accounts is Ownable {
     function setDelegate(address delegate) external {
         // the delegate and the proxy cannot modify delegate.
         // a delegate can be set only through the account owner's direct transaction.
-        require(addressToAccount[msg.sender] != bytes8(0), "Account does not exist.");
+        require(addressToAccount[msg.sender] != bytes8(0), "account does not exist");
 
         Account storage account = accounts[addressToAccount[msg.sender]];
         account.delegate = delegate;
@@ -117,7 +117,7 @@ contract Accounts is Ownable {
         // user uses his/her own password to derive a sign key.
         // since ECRECOVER returns address (not public key itself),
         // we need to use address as a password proof.
-        address passwordProof = keccak256(message).recover(passwordSignature);
+        address passwordProof = keccak256(message).toEthSignedMessageHash().recover(passwordSignature);
 
         // password proof should be unique, since unique account ID is also used for key derivation
         require(passwordToAccount[passwordProof] == bytes8(0x0), "password proof is not unique");
@@ -127,6 +127,7 @@ contract Accounts is Ownable {
     }
 
     function getAccount(bytes8 accountId) public view returns (Account memory) {
+        require(exists(accountId), "account does not exist");
         return accounts[accountId];
     }
 
@@ -137,7 +138,7 @@ contract Accounts is Ownable {
     }
 
     function getAccountIdFromSignature(bytes32 messageHash, bytes memory signature) public view returns (bytes8) {
-        address passwordProof = messageHash.recover(signature);
+        address passwordProof = messageHash.toEthSignedMessageHash().recover(signature);
         bytes8 accountId = passwordToAccount[passwordProof];
 
         if (accounts[accountId].status == AccountStatus.NONE) {
@@ -159,7 +160,7 @@ contract Accounts is Ownable {
         return bytes8(keccak256(seed));
     }
 
-    function exists(bytes8 userId) public view returns (bool) {
-        return accounts[userId].owner != address(0x0);
+    function exists(bytes8 accountId) public view returns (bool) {
+        return accounts[accountId].status != AccountStatus.NONE;
     }
 }

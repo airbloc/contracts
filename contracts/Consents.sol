@@ -94,7 +94,7 @@ contract Consents {
         require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
 
         // changing an already given consent requires a password key
-        bytes memory message = abi.encodePacked(action, userId, appName, dataType, allowed);
+        bytes memory message = abi.encodePacked(uint8(action), userId, appName, dataType, allowed);
         require(
             userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
             "password mismatch"
@@ -127,7 +127,8 @@ contract Consents {
         string memory appName,
         string memory dataType
     ) public view returns (bool) {
-        return isAllowedAt(action, userId, appName, dataType, block.number);
+        ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
+        return consent.allowed;
     }
 
     function isAllowedAt(
@@ -137,7 +138,7 @@ contract Consents {
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
-        return consent.allowed && consent.at < blockNumber;
+        ConsentsLib.Consent memory consent = consents.getPastConsent(userId, appName, uint(action), dataType, blockNumber);
+        return consent.allowed;
     }
 }
