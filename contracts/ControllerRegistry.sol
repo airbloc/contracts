@@ -14,9 +14,6 @@ contract ControllerRegistry is Ownable {
 
     struct DataController {
         address controller;
-
-        // TODO: list
-        mapping(bytes8 => bool) delegatingUsers;
         uint256 usersCount;
     }
 
@@ -39,7 +36,7 @@ contract ControllerRegistry is Ownable {
      * @dev Returns an application object.
      * Reverts if the given name does not exist.
      */
-    function get(address controller) internal view returns (DataController memory) {
+    function get(address controller) public view returns (DataController memory) {
         require(exists(controller), "controller does not exist");
         return _get(controller);
     }
