@@ -47,14 +47,14 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         (address provider, address consumer) = ex.getOfferMembers(offerId);
 
         // check authority
-        require(msg.sender == address(ex), "should have authority");
+        require(msg.sender == address(ex), "ERC20Escrow: should have authority");
 
         // check contract address
-        require(offer.escrow.addr == address(this), "invalid contract information");
+        require(offer.escrow.addr == address(this), "ERC20Escrow: invalid contract information");
 
         // check allowance/balance
-        require(amount <= token.allowance(consumer, address(this)), "low allowance");
-        require(token.allowance(consumer, address(this)) <= token.balanceOf(consumer), "low balance");
+        require(amount <= token.allowance(consumer, address(this)), "ERC20Escrow: low allowance");
+        require(token.allowance(consumer, address(this)) <= token.balanceOf(consumer), "ERC20Escrow: low balance");
 
         token.safeTransferFrom(consumer, provider, amount);
     }
