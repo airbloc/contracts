@@ -2,6 +2,7 @@ pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
 import "./AppRegistry.sol";
+import "./ErrorHandler.sol";
 import "./ExchangeLib.sol";
 
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
@@ -40,9 +41,11 @@ contract Exchange is ReentrancyGuard {
     uint256 constant MAX_OPT_LENGTH = 10;
 
     AppRegistry private apps;
+    address private error;
 
     constructor(AppRegistry appReg) public {
         apps = appReg;
+        error = address(new ErrorHandler());
     }
 
     /**
@@ -140,7 +143,7 @@ contract Exchange is ReentrancyGuard {
 
         (bool success, bytes memory result) = orderbook.settle(offerId);
         if (!success) {
-            emit EscrowExecutionFailed(result);
+            address(error).call(result);
             return;
         }
 
