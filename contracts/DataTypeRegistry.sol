@@ -3,6 +3,7 @@ pragma experimental ABIEncoderV2;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 contract DataTypeRegistry is Ownable {
 
     event Registration(string name);
