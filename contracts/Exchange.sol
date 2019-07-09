@@ -41,11 +41,9 @@ contract Exchange is ReentrancyGuard {
     uint256 constant MAX_OPT_LENGTH = 10;
 
     AppRegistry private apps;
-    address private error;
 
     constructor(AppRegistry appReg) public {
         apps = appReg;
-        error = address(new ErrorHandler());
     }
 
     /**
@@ -143,7 +141,7 @@ contract Exchange is ReentrancyGuard {
 
         (bool success, bytes memory result) = orderbook.settle(offerId);
         if (!success) {
-            address(error).call(result);
+            emit EscrowExecutionFailed(result);
             return;
         }
 
