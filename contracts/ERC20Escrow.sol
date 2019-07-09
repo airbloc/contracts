@@ -29,7 +29,7 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         bytes memory args,
         bytes8 offerId
     ) public pure returns (bytes memory) {
-        if (sign == TRANSACT_SELECTOR) {
+        if (sign == getTransactSelector()) {
             (
                 address token,
                 uint256 amount
@@ -38,10 +38,6 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
             return abi.encodeWithSelector(sign, token, amount, offerId);
         }
     }
-
-    // transact
-    string public constant TRANSACT_SIGNATURE = "transact(address,uint256,bytes8)";
-    bytes4 public constant TRANSACT_SELECTOR = bytes4(keccak256(bytes(TRANSACT_SIGNATURE)));
 
     function transact(
         IERC20 token,
@@ -62,5 +58,9 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         require(token.allowance(consumer, address(this)) <= token.balanceOf(consumer), "low balance");
 
         token.safeTransferFrom(consumer, provider, amount);
+    }
+
+    function getTransactSelector() public pure returns (bytes4) {
+        return this.transact.selector;
     }
 }
