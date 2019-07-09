@@ -127,9 +127,8 @@ contract Consents {
         string memory appName,
         string memory dataType
     ) public view returns (bool) {
-        // ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
-        // return consent.allowed;
-        return isAllowedAt(action, userId, appName, dataType, block.number);
+        ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
+        return consent.allowed;
     }
 
     function isAllowedAt(
