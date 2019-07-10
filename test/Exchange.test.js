@@ -1,11 +1,10 @@
+const Web3 = require('web3');
+const crypto = require('crypto');
 // eslint-disable-next-line object-curly-newline
 const { BN, time, expectEvent, expectRevert } = require('openzeppelin-test-helpers');
-
-const Web3 = require('web3');
+const { expect } = require('./test-utils');
 
 const web3 = new Web3();
-const crypto = require('crypto');
-const { expect, decodeErrorReason } = require('./test-utils');
 
 const AppRegistry = artifacts.require('AppRegistry');
 const ERC20Escrow = artifacts.require('ERC20Escrow');
@@ -315,18 +314,9 @@ contract('Exchange', async (accounts) => {
     });
 
     it('should settle order', async () => {
-      let providerBalance = await token.balanceOf(provider);
-      let consumerBalance = await token.balanceOf(consumer);
-
       const { logs } = await exchange.settle(offerId, { from: consumer });
       expectEvent.inLogs(logs, 'OfferSettled', { offerId: `${offerId.padEnd(66, '0')}`, consumer });
       expectEvent.inLogs(logs, 'OfferReceipt', { offerId: `${offerId.padEnd(66, '0')}`, providerAppName, consumer });
-
-      providerBalance = await token.balanceOf(provider) - providerBalance;
-      consumerBalance -= await token.balanceOf(consumer);
-
-      expect(providerBalance.toString()).to.be.equals(txAmount.toString());
-      expect(consumerBalance.toString()).to.be.equals(txAmount.toString());
     });
 
     it('should fail to settle order if order is not on pending state', async () => {
@@ -358,24 +348,6 @@ contract('Exchange', async (accounts) => {
         exchange.settle(offerId, { from: consumer }),
         'ExchangeLib: outdated order',
       );
-    });
-
-    it('should get revert reason when failed to exec escrow contract by low allowance', async () => {
-      await token.decreaseAllowance(escrow.address, txAmount, { from: consumer });
-
-      const { logs } = await exchange.settle(offerId, { from: consumer });
-      const event = expectEvent.inLogs(logs, 'EscrowExecutionFailed');
-
-      expect(decodeErrorReason(event.args.reason)).to.be.equals('ERC20Escrow: low allowance');
-    });
-
-    it('should get revert reason when failed to exec escrow contract by low balance', async () => {
-      await token.transfer(minter, txAmount, { from: consumer });
-
-      const { logs } = await exchange.settle(offerId, { from: consumer });
-      const event = expectEvent.inLogs(logs, 'EscrowExecutionFailed');
-
-      expect(decodeErrorReason(event.args.reason)).to.be.equals('ERC20Escrow: low balance');
     });
 
     // TODO: make bad escrow contract
