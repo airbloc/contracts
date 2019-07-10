@@ -1,4 +1,4 @@
-const truffleAssert = require('truffle-assertions');
+const { expectEvent, expectRevert } = require('openzeppelin-test-helpers');
 const { expect, getFirstEvent, createPasswordSignature } = require('./test-utils');
 
 const Accounts = artifacts.require('Accounts');
@@ -29,59 +29,55 @@ contract('Accounts', async (ethAccounts) => {
 
   describe('#create()', () => {
     it('should done correctly', async () => {
-      const result = await accounts.create({ from: user });
-      truffleAssert.eventEmitted(result, 'SignUp', event => event.owner === user);
+      const { logs } = await accounts.create({ from: user });
+      expectEvent.inLogs(logs, 'SignUp', { owner: user });
     });
 
     it('should fail when it called twice', async () => {
       await accounts.create({ from: user });
-
-      await truffleAssert.fails(
+      await expectRevert(
         accounts.create({ from: user }),
-        truffleAssert.ErrorType.REVERT,
-        'only one account',
+        'Accounts: you can make only one account per one Ethereum Account',
       );
     });
   });
 
   describe('#createTemporary()', () => {
     it('should create temporary account with temporary state', async () => {
-      const result = await accounts.createTemporary(IDENTITY_HASH, { from: controller });
-      truffleAssert.eventEmitted(result, 'TemporaryCreated', event => event.proxy === controller);
+      const { logs } = await accounts.createTemporary(IDENTITY_HASH, { from: controller });
+      const { args: { accountId } } = expectEvent.inLogs(logs, 'TemporaryCreated', { proxy: controller });
 
-      const { accountId } = getFirstEvent(result);
       const account = await accounts.getAccount(accountId);
       expect(account.status).to.be.equal(String(ACCOUNT_STATUS_TEMPORARY));
     });
 
     it('should fail when it is called by non-controllers', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         accounts.createTemporary(IDENTITY_HASH, { from: stranger }),
-        truffleAssert.ErrorType.REVERT,
+        'Accounts: caller is not a data controller',
       );
     });
 
     it('should fail when given ID already exists', async () => {
       await accounts.createTemporary(IDENTITY_HASH, { from: controller });
-      await truffleAssert.fails(
+      await expectRevert(
         accounts.createTemporary(IDENTITY_HASH, { from: controller }),
-        truffleAssert.ErrorType.REVERT,
-        'already exists',
+        'Accounts: account already exists',
       );
     });
   });
 
   describe('#isTemporary()', () => {
     it('should return true for temporary account', async () => {
-      const result = await accounts.createTemporary(IDENTITY_HASH, { from: controller });
-      const { accountId } = getFirstEvent(result);
+      const { logs } = await accounts.createTemporary(IDENTITY_HASH, { from: controller });
+      const { args: { accountId } } = expectEvent.inLogs(logs, 'TemporaryCreated', { proxy: controller });
 
       await expect(accounts.isTemporary(accountId)).to.eventually.be.true;
     });
 
     it('should return false for created account', async () => {
-      const result = await accounts.create({ from: user });
-      const { accountId } = getFirstEvent(result);
+      const { logs } = await accounts.create({ from: user });
+      const { args: { accountId } } = expectEvent.inLogs(logs, 'SignUp', { owner: user });
 
       await expect(accounts.isTemporary(accountId)).to.eventually.be.false;
     });
@@ -95,16 +91,16 @@ contract('Accounts', async (ethAccounts) => {
   describe('#unlockTemporary()', () => {
     let accountId;
     beforeEach(async () => {
-      const result = await accounts.createTemporary(IDENTITY_HASH, { from: controller });
-      ({ accountId } = getFirstEvent(result));
+      const { logs } = await accounts.createTemporary(IDENTITY_HASH, { from: controller });
+      ({ args: { accountId } } = expectEvent.inLogs(logs, 'TemporaryCreated', { proxy: controller }));
     });
 
     it('should done correctly', async () => {
       const passwordSig = createPasswordSignature([IDENTITY_PREIMAGE, user], PASSWORD);
-      const unlockResult = await accounts.unlockTemporary(IDENTITY_PREIMAGE, user, passwordSig, {
+      const { logs } = await accounts.unlockTemporary(IDENTITY_PREIMAGE, user, passwordSig, {
         from: controller,
       });
-      truffleAssert.eventEmitted(unlockResult, 'Unlocked', event => event.accountId.slice(0, 18) === accountId);
+      expectEvent.inLogs(logs, 'Unlocked', { accountId: `${accountId.padEnd(66, '0')}` });
 
       const account = await accounts.getAccount(accountId);
       expect(account.status).to.be.equal(String(ACCOUNT_STATUS_CREATED));
@@ -113,9 +109,9 @@ contract('Accounts', async (ethAccounts) => {
 
     it('should fail when it is called by non-controllers', async () => {
       const passwordSig = createPasswordSignature([IDENTITY_PREIMAGE, user], PASSWORD);
-      await truffleAssert.fails(
+      await expectRevert(
         accounts.unlockTemporary(IDENTITY_PREIMAGE, user, passwordSig, { from: stranger }),
-        truffleAssert.ErrorType.REVERT,
+        'Accounts: caller is not a data controller',
       );
     });
 
@@ -124,11 +120,11 @@ contract('Accounts', async (ethAccounts) => {
       await controllers.register(notOriginalController, { from: contractOwner });
 
       const passwordSig = createPasswordSignature([IDENTITY_PREIMAGE, user], PASSWORD);
-      await truffleAssert.fails(
+      await expectRevert(
         accounts.unlockTemporary(IDENTITY_PREIMAGE, user, passwordSig, {
           from: notOriginalController,
         }),
-        truffleAssert.ErrorType.REVERT,
+        'Accounts: account must be unlocked through the designated data controller',
       );
     });
 
@@ -136,9 +132,9 @@ contract('Accounts', async (ethAccounts) => {
       await accounts.create({ from: user });
 
       const passwordSig = createPasswordSignature([IDENTITY_PREIMAGE, user], PASSWORD);
-      await truffleAssert.fails(
+      await expectRevert(
         accounts.unlockTemporary(IDENTITY_PREIMAGE, user, passwordSig, { from: controller }),
-        truffleAssert.ErrorType.REVERT,
+        'Accounts: you can make only one account per one Ethereum Account',
       );
     });
   });
@@ -153,8 +149,8 @@ contract('Accounts', async (ethAccounts) => {
   describe('#isDelegateOf()', () => {
     let accountId;
     beforeEach(async () => {
-      const result = await accounts.create({ from: user });
-      ({ accountId } = getFirstEvent(result));
+      const { logs } = await accounts.create({ from: user });
+      ({ args: { accountId } } = expectEvent.inLogs(logs, 'SignUp', { owner: user }));
 
       await accounts.setDelegate(controller, { from: user });
     });
@@ -171,8 +167,8 @@ contract('Accounts', async (ethAccounts) => {
   describe('#getAccountIdFromSignature()', () => {
     let accountId;
     beforeEach(async () => {
-      const result = await accounts.createTemporary(IDENTITY_HASH, { from: controller });
-      ({ accountId } = getFirstEvent(result));
+      const { logs } = await accounts.createTemporary(IDENTITY_HASH, { from: controller });
+      ({ args: { accountId } } = expectEvent.inLogs(logs, 'TemporaryCreated', { proxy: controller }));
 
       const passwordSig = createPasswordSignature([IDENTITY_PREIMAGE, user], PASSWORD);
       await accounts.unlockTemporary(IDENTITY_PREIMAGE, user, passwordSig, { from: controller });
@@ -190,10 +186,9 @@ contract('Accounts', async (ethAccounts) => {
       const messageHash = web3.utils.keccak256('someParam');
       const passwordSig = createPasswordSignature(['someParam'], 'WRONG_PASSWORD');
 
-      await truffleAssert.fails(
+      await expectRevert(
         accounts.getAccountIdFromSignature(messageHash, passwordSig),
-        truffleAssert.ErrorType.REVERT,
-        'password mismatch',
+        'Accounts: password mismatch',
       );
     });
   });
@@ -209,11 +204,7 @@ contract('Accounts', async (ethAccounts) => {
 
     it('should fail if unknown ID is given', async () => {
       const unknownId = '0xdeadbeefcafebabe';
-      await truffleAssert.fails(
-        accounts.getAccount(unknownId),
-        truffleAssert.ErrorType.REVERT,
-        'not exist',
-      );
+      await expectRevert(accounts.getAccount(unknownId), 'Accounts: account does not exist');
     });
   });
 
@@ -224,11 +215,7 @@ contract('Accounts', async (ethAccounts) => {
     });
 
     it('should fail if unknown address is given', async () => {
-      await truffleAssert.fails(
-        accounts.getAccountId(stranger),
-        truffleAssert.ErrorType.REVERT,
-        'unknown',
-      );
+      await expectRevert(accounts.getAccountId(stranger), 'Accounts: unknown address');
     });
   });
 });
