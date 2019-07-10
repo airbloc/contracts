@@ -27,7 +27,9 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         bytes4 sign,
         bytes memory args,
         bytes8 offerId
-    ) public pure returns (bytes memory) {
+    ) public view returns (bytes memory) {
+        require(ex.offerExists(offerId), "ERC20Escrow: offer does not exists");
+
         if (sign == getTransactSelector()) {
             (
                 address token,
@@ -36,6 +38,8 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
 
             return abi.encodeWithSelector(sign, token, amount, offerId);
         }
+
+        revert("ERC20Escrow: invalid selector");
     }
 
     function transact(
@@ -47,7 +51,7 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         (address provider, address consumer) = ex.getOfferMembers(offerId);
 
         // check authority
-        require(msg.sender == address(ex), "ERC20Escrow: should have authority");
+        require(msg.sender == address(ex), "ERC20Escrow: only exchange contract can execute this method");
 
         // check contract address
         require(offer.escrow.addr == address(this), "ERC20Escrow: invalid contract information");
