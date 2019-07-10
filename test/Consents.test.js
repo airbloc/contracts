@@ -274,7 +274,7 @@ contract('Consents', async (ethAccounts) => {
           { from: controller },
           'WRONG_PASSWORD',
         );
-        await expectRevert(tx, 'password');
+        await expectRevert(tx, 'Accounts: password mismatch');
       });
 
       it('should fail when it called by others (e.g. apps)', async () => {
@@ -282,7 +282,7 @@ contract('Consents', async (ethAccounts) => {
           ACTION_COLLECTION, userId, APP_NAME, DATA_TYPE, false,
           { from: stranger },
         );
-        await expectRevert(tx, 'data controller');
+        await expectRevert(tx, 'Consents: caller is not a data controller');
       });
 
       it('should fail if the called controller is not a delegate of the user', async () => {
@@ -299,7 +299,7 @@ contract('Consents', async (ethAccounts) => {
           ACTION_COLLECTION, userId, 'UNKNOWN_APP_NAME', DATA_TYPE, false,
           { from: controller },
         );
-        await expectRevert(tx, 'Consents: app');
+        await expectRevert(tx, 'Consents: app does not exist');
       });
 
       it('should fail when the user is unregistered', async () => {
@@ -316,7 +316,7 @@ contract('Consents', async (ethAccounts) => {
           ACTION_COLLECTION, userId, APP_NAME, 'UNKNOWN_DATA_TYPE', false,
           { from: controller },
         );
-        await expectRevert(tx, 'Consents: data type');
+        await expectRevert(tx, 'Consents: data type does not exist');
       });
     });
   });
