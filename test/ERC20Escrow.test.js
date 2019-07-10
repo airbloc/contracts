@@ -81,14 +81,14 @@ contract('ERC20Escrow', async (accounts) => {
     });
 
     it('should fail on offer does not exists', async () => {
-      expectRevert(
+      await expectRevert(
         escrow.convert(escrowSign, escrowArgs, '0xdeadbeefdeadbeef'),
         'ERC20Escrow: offer does not exists',
       );
     });
 
     it('should fail on there is no supported method in contract', async () => {
-      expectRevert(
+      await expectRevert(
         escrow.convert('0xdeadbeef', escrowArgs, offerId),
         'ERC20Escrow: invalid selector',
       );
@@ -136,7 +136,7 @@ contract('ERC20Escrow', async (accounts) => {
     });
 
     it('should fail on sender is not exchange (account)', async () => {
-      expectRevert(
+      await expectRevert(
         escrow.transact(
           token.address,
           web3.utils.toWei('100', 'ether'),
@@ -148,7 +148,7 @@ contract('ERC20Escrow', async (accounts) => {
     });
 
     it('should fail on sender is not exchange (contract)', async () => {
-      expectRevert(
+      await expectRevert(
         escrow.transact(
           token.address,
           web3.utils.toWei('100', 'ether'),
@@ -174,7 +174,7 @@ contract('ERC20Escrow', async (accounts) => {
       const event = expectEvent.inLogs(logs, 'OfferPrepared', { providerAppName });
       const otherOfferId = event.args.offerId.slice(0, 18);
 
-      expectRevert(
+      await expectRevert(
         escrow.transact(
           token.address,
           web3.utils.toWei('100', 'ether'),
