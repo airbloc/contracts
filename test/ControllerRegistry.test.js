@@ -1,4 +1,4 @@
-const truffleAssert = require('truffle-assertions');
+const { expectEvent, expectRevert } = require('openzeppelin-test-helpers');
 const { expect } = require('./test-utils');
 
 const ControllerRegistry = artifacts.require('ControllerRegistry');
@@ -13,15 +13,22 @@ contract('ControllerRegistry', async (accounts) => {
 
   describe('#register()', () => {
     it('should done correctly', async () => {
-      const result = await controllers.register(controllerAddr, { from: contractOwner });
-      truffleAssert.eventEmitted(result, 'Registration', event => event.controller === controllerAddr);
+      const { logs } = await controllers.register(controllerAddr, { from: contractOwner });
+      expectEvent.inLogs(logs, 'Registration', { controller: controllerAddr });
     });
 
     it('should fail when it called by non-owners', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         controllers.register(controllerAddr, { from: stranger }),
-        truffleAssert.ErrorType.REVERT,
-        'not the owner',
+        'Ownable: caller is not the owner',
+      );
+    });
+
+    it('should fail when controller already registered', async () => {
+      await controllers.register(controllerAddr);
+      await expectRevert(
+        controllers.register(controllerAddr),
+        'ControllerRegistry: already registered',
       );
     });
   });
@@ -35,10 +42,9 @@ contract('ControllerRegistry', async (accounts) => {
     });
 
     it('should fail if unknown address is given', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         controllers.get(stranger),
-        truffleAssert.ErrorType.REVERT,
-        'does not exist',
+        'ControllerRegistry: controller does not exist',
       );
     });
   });
