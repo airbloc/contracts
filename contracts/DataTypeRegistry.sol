@@ -22,7 +22,7 @@ contract DataTypeRegistry is Ownable {
      * @param schemaHash SHA256 hash of the JSON schema of the data type.
      */
     function register(string memory name, bytes32 schemaHash) public {
-        require(!exists(name), "data type name already exists");
+        require(!exists(name), "DataTypeRegistry: data type name already exists");
 
         DataType storage dataType = _get(name);
         dataType.name = name;
@@ -37,7 +37,7 @@ contract DataTypeRegistry is Ownable {
      * Reverts if the given name does not exist.
      */
     function get(string memory name) public view returns (DataType memory) {
-        require(exists(name), "data type does not exist");
+        require(exists(name), "DataTypeRegistry: data type does not exist");
         return _get(name);
     }
 
@@ -64,7 +64,7 @@ contract DataTypeRegistry is Ownable {
     }
 
     function unregister(string memory name) public {
-        require(isOwner(name, msg.sender), "unauthorized");
+        require(isOwner(name, msg.sender), "DataTypeRegistry: unauthorized");
 
         bytes32 hashedName = keccak256(abi.encodePacked(name));
         delete dataTypes[hashedName];
