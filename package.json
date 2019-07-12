@@ -22,7 +22,10 @@
     "flatten": "truffle-flattener",
     "migrate:dev": "truffle migrate --reset --network dev",
     "migrate:local": "truffle migrate --reset --network local",
-    "migrate:mainnet": "truffle migrate --reset --network mainnet",
+    "migrate:ether:ropsten": "truffle migrate --reset --network ropsten",
+    "migrate:ether:mainnet": "truffle migrate --reset --network mainnet",
+    "migrate:klaytn:baobab": "node klaytn-deployer.js --network 'klaytn:baobab'",
+    "migrate:klaytn:cypress": "node klaytn-deployer.js --network 'klaytn:cypress'",
     "test": "truffle test --network dev",
     "test-with-coverage": "ganache-cli-coverage --emitFreeLogs true --allowUnlimitedContractSize true --gasLimit 0xfffffffffff --port 8555 > /dev/null & solidity-coverage"
   },
@@ -50,6 +53,7 @@
   },
   "dependencies": {
     "caver-js": "^1.0.0",
+    "minimist": "^1.2.0",
     "openzeppelin-solidity": "^2.3.0",
     "truffle-privatekey-provider": "^1.1.0",
     "web3": "^1.0.0-beta.55"

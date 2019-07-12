@@ -20,12 +20,12 @@ const config = {
       gasPrice: 12000000000, // 12 Gwei
     },
     ropsten: {
-      provider: getProviderOf('ropsten'),
+      provider: getProviderOf('ethereum:ropsten'),
       network_id: 3,
       gas: 3000000,
     },
     rinkeby: {
-      provider: getProviderOf('rinkeby'),
+      provider: getProviderOf('ethereum:rinkeby'),
       network_id: 4,
       gas: 3000000,
     },
@@ -46,11 +46,17 @@ const config = {
       port: 9545,
       network_id: '*',
     },
-    klaytn: {
-      provider: getProviderOf('klaytn'),
-      network_id: '1001', // Aspen network id
+    baobab: {
+      provider: getProviderOf('klaytn:baobab'),
+      network_id: '1001', // Baobab network id
       gas: 20000000, // transaction gas limit
       gasPrice: null, // gasPrice of Aspen is 25 Gpeb
+    },
+    cypress: {
+      provider: getProviderOf('klaytn:cypress'),
+      network_id: '*', // unknown
+      gas: 20000000,
+      gasPrice: null,
     },
   },
   solc: {
