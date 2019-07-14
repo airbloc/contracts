@@ -2,9 +2,11 @@
  * Since Klaytn does not support Truffle ^0.5.x,
  * Here is a deployer script used for deploying Airbloc contracts.
  */
-const argv = require('minimist')(process.argv.slice(2), { default: { network: 'klaytn:baobab' } });
+const minimist = require('minimist');
 const fs = require('fs');
 const Caver = require('caver-js');
+
+const argv = minimist(process.argv.slice(2), { default: { network: 'klaytn:baobab' } });
 
 const config = {
   klaytnEndpoint: 'TODO: ENDPOINT_HERE',
