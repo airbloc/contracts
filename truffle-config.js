@@ -14,7 +14,7 @@ if (fs.existsSync('truffle-config.local.js')) {
 const config = {
   networks: {
     mainnet: {
-      provider: getProviderOf('mainnet'),
+      provider: getProviderOf('ethereum:mainnet'),
       network_id: 1,
       gas: 500000,
       gasPrice: 12000000000, // 12 Gwei
@@ -22,12 +22,12 @@ const config = {
     ropsten: {
       provider: getProviderOf('ethereum:ropsten'),
       network_id: 3,
-      gas: 3000000,
+      skipDryRun: true,
     },
     rinkeby: {
       provider: getProviderOf('ethereum:rinkeby'),
       network_id: 4,
-      gas: 3000000,
+      skipDryRun: true,
     },
     local: {
       host: '127.0.0.1',
@@ -46,18 +46,18 @@ const config = {
       port: 9545,
       network_id: '*',
     },
-    baobab: {
-      provider: getProviderOf('klaytn:baobab'),
-      network_id: '1001', // Baobab network id
-      gas: 20000000, // transaction gas limit
-      gasPrice: null, // gasPrice of Aspen is 25 Gpeb
-    },
-    cypress: {
-      provider: getProviderOf('klaytn:cypress'),
-      network_id: '*', // unknown
-      gas: 20000000,
-      gasPrice: null,
-    },
+    // baobab: {
+    //   provider: getProviderOf('klaytn:baobab'),
+    //   network_id: '1001', // Baobab network id
+    //   gas: 20000000, // transaction gas limit
+    //   gasPrice: null, // gasPrice of Aspen is 25 Gpeb
+    // },
+    // cypress: {
+    //   provider: getProviderOf('klaytn:cypress'),
+    //   network_id: '*', // unknown
+    //   gas: 20000000,
+    //   gasPrice: null,
+    // },
   },
   solc: {
     optimizer: {
