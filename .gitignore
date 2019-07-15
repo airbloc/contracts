@@ -4,11 +4,12 @@
 ## Dev
 truffle-config.local.js
 deploy.js
+deployment.local.json
 
 ## Intellij
 .idea
 
-## Solidity 
+## Solidity
 build/
 
 ### Code ###
