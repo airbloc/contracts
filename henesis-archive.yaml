@@ -11,89 +11,82 @@ blockchain:
 contracts:
   accounts:
     contract:
-      address: '0x'
       path: Accounts.sol
       name: Accounts
     handlers:
-      accounts-signUp:
+      accounts-sign-up:
         event: SignUp(address,bytes8)
-      accounts-temporaryCreated:
+      accounts-temporary-created:
         event: TemporaryCreated(address,bytes32,bytes8)
       accounts-unlocked:
         event: Unlocked(bytes32,bytes8,address)
     # custom webhook is here
     # webhook:
-    #   url: localhost:3000
+    #   url: localhost:8080
     #   method: GET
     #   headers:
     #     Authorization: 'Bearer YOUR-OWN-TOKEN'
-  appRegistry:
+  app-registry:
     contract:
-      address: '0x'
       path: AppRegistry.sol
       name: AppRegistry
     handlers:
-      appRegistry-registration:
+      app-registry-registration:
         event: Registration(bytes32,string)
-      appRegistry-unregistration:
+      app-registry-unregistration:
         event: Unregistration(bytes32,string)
   consents:
     contract:
-      address: '0x'
       path: Consents.sol
       name: Consents
     handlers:
       consents-consented:
         event: Consented(uint8,bytes8,bytes32,string,string,bool)
-  controllerRegistry:
+  controller-registry:
     contract:
-      address: '0x'
       path: ControllerRegistry.sol
       name: ControllerRegistry
     handlers:
-      controllerRegistry-registration:
+      controller-registry-registration:
         event: Registration(address)
-      controllerRegistry-unregistration:
+      controller-registry-unregistration:
         event: Unregistration(address)
-  dataTypeRegistry:
+  data-type-registry:
     contract:
-      address: '0x'
       path: DataTypeRegistry.sol
       name: DataTypeRegistry
     handlers:
-      dataTypeRegistry-registration:
+      data-type-registry-registration:
         event: Registration(string)
-      dataTypeRegistry-unregistration:
+      data-type-registry-unregistration:
         event: Unregistration(string)
   exchange:
     contract:
-      address: '0x'
       path: Exchange.sol
-      name: ExchangeEvents
+      name: Exchange
     handlers:
-      exchange-offerPrepared:
+      exchange-offer-prepared:
         event: OfferPrepared(bytes8,string)
-      exchange-offerPresented:
+      exchange-offer-presented:
         event: OfferPresented(bytes8,string)
-      exchange-offerCanceled:
+      exchange-offer-canceled:
         event: OfferCanceled(bytes8,string)
-      exchange-offerSettled:
+      exchange-offer-settled:
         event: OfferSettled(bytes8,address)
-      exchange-offerReceipt:
+      exchange-offer-receipt:
         event: OfferReceipt(bytes8,string,address,bytes)
-      exchange-offerRejected:
+      exchange-offer-rejected:
         event: OfferRejected(bytes8,address)
-      exchange-escrowExecutionFailed:
+      exchange-escrow-execution-failed:
         event: EscrowExecutionFailed(bytes)
-  simpleToken:
+  simple-token:
     contract:
-      address: '0x'
       path: SimpleToken.sol
       name: SimpleToken
     handlers:
-      simpleToken-transfer:
+      simple-token-transfer:
         event: Transfer(address,address,uint256)
-      simpleToken-approval:
+      simple-token-approval:
         event: Approval(address,address,uint256)
 
 # global webhook
