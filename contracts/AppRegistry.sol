@@ -30,7 +30,7 @@ contract AppRegistry is Ownable {
      * @dev Creates a new application.
      */
     function register(string memory appName) public {
-        require(!exists(appName), "app name already exists");
+        require(!exists(appName), "AppRegistry: app name already exist");
 
         App storage app = _get(appName);
         app.name = appName;
@@ -44,7 +44,7 @@ contract AppRegistry is Ownable {
      * @dev Removes an application.
      */
     function unregister(string memory appName) public {
-        require(isOwner(appName, msg.sender), "unauthorized");
+        require(isOwner(appName, msg.sender), "AppRegistry: unauthorized");
 
         App memory app = get(appName);
         delete apps[appName];
@@ -58,7 +58,7 @@ contract AppRegistry is Ownable {
      * Reverts if the given name does not exist.
      */
     function get(string memory appName) public view returns (App memory) {
-        require(exists(appName), "app does not exist");
+        require(exists(appName), "AppRegistry: app does not exist");
         return _get(appName);
     }
 
@@ -87,7 +87,7 @@ contract AppRegistry is Ownable {
      * @dev Transfers an ownership of app to other account.
      */
     function transferAppOwner(string memory appName, address newOwner) public {
-        require(isOwner(appName, msg.sender), "only owner can transfer ownership");
+        require(isOwner(appName, msg.sender), "AppRegistry: only owner can transfer ownership");
 
         App storage app = _get(appName);
         address oldOwner = app.owner;

@@ -1,4 +1,4 @@
-const truffleAssert = require('truffle-assertions');
+const { BN, expectEvent, expectRevert } = require('openzeppelin-test-helpers');
 const { expect, getFirstEvent, createPasswordSignature } = require('./test-utils');
 
 const Consents = artifacts.require('Consents');
@@ -60,43 +60,38 @@ contract('Consents', async (ethAccounts) => {
 
   describe('#consent()', () => {
     it('should fail if the app does not exist', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         consents.consent(ACTION_COLLECTION, 'WRONG_APP_NAME', DATA_TYPE, true, { from: user }),
-        truffleAssert.ErrorType.REVERT,
-        'app',
+        'Consents: app does not exist',
       );
     });
 
     it('should fail when the user is unregistered', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         consents.consent(ACTION_COLLECTION, APP_NAME, DATA_TYPE, true, { from: stranger }),
-        truffleAssert.ErrorType.REVERT,
-        'unknown address',
+        'Accounts: unknown address',
       );
     });
 
     it('should fail when the data type is not registered', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         consents.consent(ACTION_COLLECTION, APP_NAME, 'WRONG_DATA_TYPE', true, { from: user }),
-        truffleAssert.ErrorType.REVERT,
-        'data type',
+        'Consents: data type does not exist',
       );
     });
 
     context('when first time', async () => {
       it('should be done correctly', async () => {
-        const txReceipt = await consents.consent(ACTION_COLLECTION, APP_NAME, DATA_TYPE, true, {
+        const { logs } = await consents.consent(ACTION_COLLECTION, APP_NAME, DATA_TYPE, true, {
           from: user,
         });
-        truffleAssert.eventEmitted(
-          txReceipt,
-          'Consented',
-          event => event.action.toNumber() === ACTION_COLLECTION
-            && event.appName === APP_NAME
-            && event.dataType === DATA_TYPE
-            && event.userId.slice(0, 18) === userId
-            && event.allowed === true,
-        );
+        expectEvent.inLogs(logs, 'Consented', {
+          action: new BN(ACTION_COLLECTION),
+          appName: APP_NAME,
+          dataType: DATA_TYPE,
+          userId: `${userId.padEnd(66, '0')}`,
+          allowed: true,
+        });
       });
     });
 
@@ -115,17 +110,16 @@ contract('Consents', async (ethAccounts) => {
 
   describe('#consentByController()', () => {
     it('should fail when it called by others (e.g. apps)', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         consents.consentByController(ACTION_COLLECTION, userId, APP_NAME, DATA_TYPE, true, {
           from: app,
         }),
-        truffleAssert.ErrorType.REVERT,
-        'not a data controller',
+        'Consents: caller is not a data controller',
       );
     });
 
     it('should fail if the app does not exist', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         consents.consentByController(
           ACTION_COLLECTION,
           userId,
@@ -134,8 +128,7 @@ contract('Consents', async (ethAccounts) => {
           true,
           { from: controller },
         ),
-        truffleAssert.ErrorType.REVERT,
-        'app does not exist',
+        'Consents: app does not exist',
       );
     });
 
@@ -143,7 +136,7 @@ contract('Consents', async (ethAccounts) => {
       const registrationEvent = getFirstEvent(await accounts.create({ from: stranger }));
       const unregisteredUserId = registrationEvent.accountId;
 
-      await truffleAssert.fails(
+      await expectRevert(
         consents.consentByController(
           ACTION_COLLECTION,
           unregisteredUserId,
@@ -152,13 +145,12 @@ contract('Consents', async (ethAccounts) => {
           true,
           { from: controller },
         ),
-        truffleAssert.ErrorType.REVERT,
-        'must be delegate of this user',
+        'Consents: sender must be delegate of this user',
       );
     });
 
     it('should fail when the data type is not registered', async () => {
-      await truffleAssert.fails(
+      await expectRevert(
         consents.consentByController(
           ACTION_COLLECTION,
           userId,
@@ -167,14 +159,13 @@ contract('Consents', async (ethAccounts) => {
           true,
           { from: controller },
         ),
-        truffleAssert.ErrorType.REVERT,
-        'data type',
+        'Consents: data type',
       );
     });
 
     context('when first time', async () => {
       it('should be done correctly', async () => {
-        const txReceipt = await consents.consentByController(
+        const { logs } = await consents.consentByController(
           ACTION_COLLECTION,
           userId,
           APP_NAME,
@@ -182,15 +173,13 @@ contract('Consents', async (ethAccounts) => {
           true,
           { from: controller },
         );
-        truffleAssert.eventEmitted(
-          txReceipt,
-          'Consented',
-          event => event.action.toNumber() === ACTION_COLLECTION
-            && event.appName === APP_NAME
-            && event.dataType === DATA_TYPE
-            && event.userId.slice(0, 18) === userId
-            && event.allowed === true,
-        );
+        expectEvent.inLogs(logs, 'Consented', {
+          action: new BN(ACTION_COLLECTION),
+          appName: APP_NAME,
+          dataType: DATA_TYPE,
+          userId: `${userId.padEnd(66, '0')}`,
+          allowed: true,
+        });
       });
     });
 
@@ -204,7 +193,7 @@ contract('Consents', async (ethAccounts) => {
           true,
           { from: controller },
         );
-        await truffleAssert.fails(
+        await expectRevert(
           consents.consentByController(
             ACTION_COLLECTION,
             userId,
@@ -213,8 +202,7 @@ contract('Consents', async (ethAccounts) => {
             false,
             { from: controller },
           ),
-          truffleAssert.ErrorType.REVERT,
-          "can't modify",
+          "Consents: controllers can't modify users' consent without password",
         );
       });
     });
@@ -286,7 +274,7 @@ contract('Consents', async (ethAccounts) => {
           { from: controller },
           'WRONG_PASSWORD',
         );
-        await truffleAssert.fails(tx, truffleAssert.ErrorType.REVERT, 'password');
+        await expectRevert(tx, 'Accounts: password mismatch');
       });
 
       it('should fail when it called by others (e.g. apps)', async () => {
@@ -294,7 +282,7 @@ contract('Consents', async (ethAccounts) => {
           ACTION_COLLECTION, userId, APP_NAME, DATA_TYPE, false,
           { from: stranger },
         );
-        await truffleAssert.fails(tx, truffleAssert.ErrorType.REVERT, 'data controller');
+        await expectRevert(tx, 'Consents: caller is not a data controller');
       });
 
       it('should fail if the called controller is not a delegate of the user', async () => {
@@ -303,15 +291,15 @@ contract('Consents', async (ethAccounts) => {
           ACTION_COLLECTION, userId, APP_NAME, DATA_TYPE, false,
           { from: stranger },
         );
-        await truffleAssert.fails(tx, truffleAssert.ErrorType.REVERT, 'delegate');
+        await expectRevert(tx, 'Consents: sender must be delegate of this user');
       });
-      
+
       it('should fail if the app does not exist', async () => {
         const tx = callModifyConsentByController(
           ACTION_COLLECTION, userId, 'UNKNOWN_APP_NAME', DATA_TYPE, false,
           { from: controller },
         );
-        await truffleAssert.fails(tx, truffleAssert.ErrorType.REVERT, 'app');
+        await expectRevert(tx, 'Consents: app does not exist');
       });
 
       it('should fail when the user is unregistered', async () => {
@@ -320,7 +308,7 @@ contract('Consents', async (ethAccounts) => {
           ACTION_COLLECTION, unknownUserId, APP_NAME, DATA_TYPE, false,
           { from: controller },
         );
-        await truffleAssert.fails(tx, truffleAssert.ErrorType.REVERT);
+        await expectRevert(tx, 'Consents: sender must be delegate of this user');
       });
 
       it('should fail when the data type is not registered', async () => {
@@ -328,7 +316,7 @@ contract('Consents', async (ethAccounts) => {
           ACTION_COLLECTION, userId, APP_NAME, 'UNKNOWN_DATA_TYPE', false,
           { from: controller },
         );
-        await truffleAssert.fails(tx, truffleAssert.ErrorType.REVERT, 'data type');
+        await expectRevert(tx, 'Consents: data type does not exist');
       });
     });
   });

@@ -3032,7 +3032,7 @@ ethereumjs-wallet@0.6.2:
     utf8 "^3.0.0"
     uuid "^3.3.2"
 
-ethereumjs-wallet@^0.6.0:
+ethereumjs-wallet@^0.6.3:
   version "0.6.3"
   resolved "https://registry.yarnpkg.com/ethereumjs-wallet/-/ethereumjs-wallet-0.6.3.tgz#b0eae6f327637c2aeb9ccb9047b982ac542e6ab1"
   integrity sha512-qiXPiZOsStem+Dj/CQHbn5qex+FVkuPmGH7SvSnA9F3tdRDt8dLMyvIj3+U05QzVZNPYh4HXEdnzoYI4dZkr9w==
@@ -3063,10 +3063,26 @@ ethers@4.0.0-beta.1:
     uuid "2.0.1"
     xmlhttprequest "1.8.0"
 
-ethers@^4.0.0-beta.1, ethers@^4.0.18, ethers@^4.0.27:
+ethers@^4.0.0-beta.1, ethers@^4.0.27:
   version "4.0.32"
   resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.32.tgz#46378864cb3bf29b57c2effd17508b560743abf6"
   integrity sha512-r0k2tBNF6MYEsvwmINeP3VPppD/7eAZyiOk/ifDDawXGCKqr3iEQkPq6OZSDVD+4Jie38WPteS9thXzpn2+A5Q==
+  dependencies:
+    "@types/node" "^10.3.2"
+    aes-js "3.0.0"
+    bn.js "^4.4.0"
+    elliptic "6.3.3"
+    hash.js "1.1.3"
+    js-sha3 "0.5.7"
+    scrypt-js "2.0.4"
+    setimmediate "1.0.4"
+    uuid "2.0.1"
+    xmlhttprequest "1.8.0"
+
+ethers@^4.0.18:
+  version "4.0.33"
+  resolved "https://registry.yarnpkg.com/ethers/-/ethers-4.0.33.tgz#f7b88d2419d731a39aefc37843a3f293e396f918"
+  integrity sha512-lAHkSPzBe0Vj+JrhmkEHLtUEKEheVktIjGDyE9gbzF4zf1vibjYgB57LraDHu4/ItqWVkztgsm8GWqcDMN+6vQ==
   dependencies:
     "@types/node" "^10.3.2"
     aes-js "3.0.0"
@@ -4945,11 +4961,6 @@ lodash.assign@^4.0.3, lodash.assign@^4.0.6:
   version "4.2.0"
   resolved "https://registry.yarnpkg.com/lodash.assign/-/lodash.assign-4.2.0.tgz#0d99f3ccd7a6d261d19bdaeb9245005d285808e7"
   integrity sha1-DZnzzNem0mHRm9rrkkUAXShYCOc=
-
-lodash.isequal@^4.5.0:
-  version "4.5.0"
-  resolved "https://registry.yarnpkg.com/lodash.isequal/-/lodash.isequal-4.5.0.tgz#415c4478f2bcc30120c22ce10ed3226f7d3e18e0"
-  integrity sha1-QVxEePK8wwEgwizhDtMib30+GOA=
 
 lodash.merge@^4.6.0:
   version "4.6.1"
@@ -7665,14 +7676,6 @@ trim-right@^1.0.1:
   resolved "https://registry.yarnpkg.com/trim-right/-/trim-right-1.0.1.tgz#cb2e1203067e0c8de1f614094b9fe45704ea6003"
   integrity sha1-yy4SAwZ+DI3h9hQJS5/kVwTqYAM=
 
-truffle-assertions@^0.9.1:
-  version "0.9.1"
-  resolved "https://registry.yarnpkg.com/truffle-assertions/-/truffle-assertions-0.9.1.tgz#74379a208f1175d6de9f33fba9a8cbb3aec27aa5"
-  integrity sha512-MtcyXMTzRfg8WfE3TfrbVJm9HWMTPFksWg0K/8ZhajaxzFyPJ56/9AzNjQCROQluI0X1vs6XDsegwMlT1UFUNw==
-  dependencies:
-    assertion-error "^1.1.0"
-    lodash.isequal "^4.5.0"
-
 truffle-blockchain-utils@^0.0.10:
   version "0.0.10"
   resolved "https://registry.yarnpkg.com/truffle-blockchain-utils/-/truffle-blockchain-utils-0.0.10.tgz#18b772673635a95a893f7083f7be6bd62227462b"
@@ -7727,13 +7730,13 @@ truffle-interface-adapter@^0.1.6:
     bn.js "^4.11.8"
     web3 "1.0.0-beta.37"
 
-truffle-privatekey-provider@^1.1.0:
-  version "1.1.0"
-  resolved "https://registry.yarnpkg.com/truffle-privatekey-provider/-/truffle-privatekey-provider-1.1.0.tgz#92faaa2679df90d14e3c541c2d94555da34d2902"
-  integrity sha512-zaCBkdarpMbUFhWkLJtyVb210IZ+zqpVQ9F72DS7J9G68CEtmanL7SgJvcvgB41DEJ1EeApu5JpLpu8eHA2NHw==
+truffle-privatekey-provider@^1.3.0:
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/truffle-privatekey-provider/-/truffle-privatekey-provider-1.3.0.tgz#cf2c6829e0feae730c282f9803d4a3bbc05a05e3"
+  integrity sha512-9L4gtNQRa8pQOD4Z8bVh/6/n+sVQ+ZDKtL2UkKOWzm+IrlCRScLBaePJLCfU0dveTV1LZvmzUsliUHB3Cf2qQw==
   dependencies:
-    ethereumjs-wallet "^0.6.0"
-    web3-provider-engine "^14.1.0"
+    ethereumjs-wallet "^0.6.3"
+    web3-provider-engine "git+https://github.com/trufflesuite/provider-engine.git#web3-one"
 
 truffle@^5.0.21:
   version "5.0.22"
@@ -8608,10 +8611,9 @@ web3-provider-engine@14.1.0:
     xhr "^2.2.0"
     xtend "^4.0.1"
 
-web3-provider-engine@^14.1.0:
-  version "14.2.0"
-  resolved "https://registry.yarnpkg.com/web3-provider-engine/-/web3-provider-engine-14.2.0.tgz#2efec157b2c429c5c674c079aea96b0a06de8b3d"
-  integrity sha512-sfLH5VhGjJrJJT5WcF8aGehcIKRUQ553q9tjQkkLaKU2AaLsRcwffnnWvrgeTkmKSf0y9dwkDTa48RVp+GUCSg==
+"web3-provider-engine@git+https://github.com/trufflesuite/provider-engine.git#web3-one":
+  version "14.0.6"
+  resolved "git+https://github.com/trufflesuite/provider-engine.git#3538c60bc4836b73ccae1ac3f64c8fed8ef19c1a"
   dependencies:
     async "^2.5.0"
     backoff "^2.5.0"

@@ -51,7 +51,7 @@ contract Consents {
     }
 
     modifier onlyDataController() {
-        require(dataControllers.exists(msg.sender), "caller is not a data controller");
+        require(dataControllers.exists(msg.sender), "Consents: caller is not a data controller");
         _;
     }
 
@@ -61,7 +61,7 @@ contract Consents {
         string memory dataType,
         bool allowed
     ) public {
-        require(apps.exists(appName), "app does not exists");
+        require(apps.exists(appName), "Consents: app does not exist");
         bytes8 userId = accounts.getAccountId(msg.sender);
         _updateConsent(action, userId, appName, dataType, allowed);
     }
@@ -73,11 +73,11 @@ contract Consents {
         string memory dataType,
         bool allowed
     ) public onlyDataController {
-        require(apps.exists(appName), "app does not exists");
-        require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(accounts.isDelegateOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         if (consents.exists(userId, appName, uint(action), dataType)) {
-            revert("controllers can't modify users' consent without password");
+            revert("Consents: controllers can't modify users' consent without password");
         }
         _updateConsent(action, userId, appName, dataType, allowed);
     }
@@ -90,14 +90,14 @@ contract Consents {
         bool allowed,
         bytes memory passwordSignature
     ) public onlyDataController {
-        require(apps.exists(appName), "app does not exists");
-        require(accounts.isDelegateOf(msg.sender, userId), "sender must be delegate of this user");
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(accounts.isDelegateOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         // changing an already given consent requires a password key
         bytes memory message = abi.encodePacked(uint8(action), userId, appName, dataType, allowed);
         require(
             userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
-            "password mismatch"
+            "Consents: password mismatch"
         );
         _updateConsent(action, userId, appName, dataType, allowed);
     }
@@ -109,9 +109,9 @@ contract Consents {
         string memory dataType,
         bool allowed
     ) internal {
-        require(accounts.exists(userId), "user does not exists");
-        require(apps.exists(appName), "app does not exist");
-        require(dataTypes.exists(dataType), "data type does not exist");
+        require(accounts.exists(userId), "Consents: user does not exist");
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(dataTypes.exists(dataType), "Consents: data type does not exist");
 
         ConsentsLib.Consent memory consent = ConsentsLib.Consent({
             allowed: allowed,

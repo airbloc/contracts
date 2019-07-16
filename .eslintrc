@@ -15,5 +15,13 @@
   "rules": {
     "strict": "off",
     "node/no-unpublished-require": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["*.test.js", "*.spec.js"],
+      "rules": {
+        "no-unused-expressions": "off"
+      }
+    }
+  ]
 }

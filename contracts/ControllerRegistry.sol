@@ -23,7 +23,7 @@ contract ControllerRegistry is Ownable {
      * @dev Creates a new application.
      */
     function register(address controllerAddr) public onlyOwner {
-        require(!exists(controllerAddr), "already registered");
+        require(!exists(controllerAddr), "ControllerRegistry: already registered");
 
         DataController storage controller = controllers[controllerAddr];
         controller.controller = controllerAddr;
@@ -37,7 +37,7 @@ contract ControllerRegistry is Ownable {
      * Reverts if the given name does not exist.
      */
     function get(address controller) public view returns (DataController memory) {
-        require(exists(controller), "controller does not exist");
+        require(exists(controller), "ControllerRegistry: controller does not exist");
         return _get(controller);
     }
 

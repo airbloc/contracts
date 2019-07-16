@@ -44,14 +44,14 @@ contract Accounts is Ownable {
     }
 
     modifier onlyDataController() {
-        require(dataControllers.exists(msg.sender), "caller is not a data controller");
+        require(dataControllers.exists(msg.sender), "Accounts: caller is not a data controller");
         _;
     }
 
     function create() external {
         require(
             addressToAccount[msg.sender] == bytes8(0),
-            "you can make only one account per one Ethereum Account");
+            "Accounts: you can make only one account per one Ethereum Account");
 
         bytes8 accountId = generateId(bytes32(0), msg.sender);
         accounts[accountId].owner = msg.sender;
@@ -65,7 +65,7 @@ contract Accounts is Ownable {
         public
         onlyDataController
     {
-        require(identityHashToAccount[identityHash] == bytes8(0), "account already exists");
+        require(identityHashToAccount[identityHash] == bytes8(0), "Accounts: account already exists");
 
         bytes8 accountId = generateId(identityHash, msg.sender);
         accounts[accountId].delegate = msg.sender;
@@ -83,16 +83,16 @@ contract Accounts is Ownable {
         bytes32 identityHash = keccak256(abi.encodePacked(identityPreimage));
         bytes8 accountId = identityHashToAccount[identityHash];
 
-        require(isTemporary(accountId), "it's not temporary account");
+        require(isTemporary(accountId), "Accounts: it's not temporary account");
         Account storage account = accounts[accountId];
 
         require(
             msg.sender == account.delegate,
-            "account must be unlocked through the designated data controller"
+            "Accounts: account must be unlocked through the designated data controller"
         );
         require(
             addressToAccount[newOwner] == bytes8(0),
-            "you can make only one account per one Ethereum Account"
+            "Accounts: you can make only one account per one Ethereum Account"
         );
         account.owner = newOwner;
         addressToAccount[newOwner] = accountId;
@@ -107,7 +107,7 @@ contract Accounts is Ownable {
     function setDelegate(address delegate) external {
         // the delegate and the proxy cannot modify delegate.
         // a delegate can be set only through the account owner's direct transaction.
-        require(addressToAccount[msg.sender] != bytes8(0), "account does not exist");
+        require(addressToAccount[msg.sender] != bytes8(0), "Accounts: account does not exist");
 
         Account storage account = accounts[addressToAccount[msg.sender]];
         account.delegate = delegate;
@@ -120,20 +120,20 @@ contract Accounts is Ownable {
         address passwordProof = keccak256(message).toEthSignedMessageHash().recover(passwordSignature);
 
         // password proof should be unique, since unique account ID is also used for key derivation
-        require(passwordToAccount[passwordProof] == bytes8(0x0), "password proof is not unique");
+        require(passwordToAccount[passwordProof] == bytes8(0x0), "Accounts: password proof is not unique");
 
         accounts[accountId].passwordProof = passwordProof;
         passwordToAccount[passwordProof] = accountId;
     }
 
     function getAccount(bytes8 accountId) public view returns (Account memory) {
-        require(exists(accountId), "account does not exist");
+        require(exists(accountId), "Accounts: account does not exist");
         return accounts[accountId];
     }
 
     function getAccountId(address sender) public view returns (bytes8) {
         bytes8 accountId = addressToAccount[sender];
-        require(accounts[accountId].status != AccountStatus.NONE, "unknown address");
+        require(accounts[accountId].status != AccountStatus.NONE, "Accounts: unknown address");
         return accountId;
     }
 
@@ -142,7 +142,7 @@ contract Accounts is Ownable {
         bytes8 accountId = passwordToAccount[passwordProof];
 
         if (accounts[accountId].status == AccountStatus.NONE) {
-            revert("password mismatch");
+            revert("Accounts: password mismatch");
         }
         return accountId;
     }

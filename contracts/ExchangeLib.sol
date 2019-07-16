@@ -54,11 +54,11 @@ library ExchangeLib {
         Orderbook storage self,
         Offer memory offer
     ) internal returns (bytes8) {
-        require(offer.dataIds.length <= 128, "dataIds length exceeded (max 128)");
-        require(offer.at == 0, "offer.at should be zero in neutral state");
-        require(offer.until == 0, "offer.until should be zero in neutral state");
-        require(offer.escrow.addr.isContract(), "not contract address");
-        require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
+        require(offer.dataIds.length <= 128, "ExchangeLib: dataIds length exceeded (max 128)");
+        require(offer.at == 0, "ExchangeLib: offer.at should be zero in neutral state");
+        require(offer.until == 0, "ExchangeLib: offer.until should be zero in neutral state");
+        require(offer.escrow.addr.isContract(), "ExchangeLib: not contract address");
+        require(offer.status == OfferStatus.NEUTRAL, "ExchangeLib: neutral state only");
 
         bytes8 offerId = bytes8(
             keccak256(
@@ -85,8 +85,8 @@ library ExchangeLib {
     ) internal {
         Offer storage offer = get(self, offerId);
 
-        require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
-        require(offer.dataIds.length + dataIds.length <= 128, "dataIds length exceeded (max 128)");
+        require(offer.status == OfferStatus.NEUTRAL, "ExchangeLib: neutral state only");
+        require(offer.dataIds.length + dataIds.length <= 128, "ExchangeLib: dataIds length exceeded (max 128)");
 
         for (uint8 i = 0; i < dataIds.length; i++) {
             offer.dataIds.push(dataIds[i]);
@@ -100,7 +100,7 @@ library ExchangeLib {
     ) internal {
         Offer storage offer = get(self, offerId);
 
-        require(offer.status == OfferStatus.NEUTRAL, "neutral state only");
+        require(offer.status == OfferStatus.NEUTRAL, "ExchangeLib: neutral state only");
 
         offer.at = block.number;
         offer.until = block.number + timeout;
@@ -113,7 +113,7 @@ library ExchangeLib {
     ) internal {
         Offer storage offer = get(self, offerId);
 
-        require(offer.status == OfferStatus.PENDING, "pending state only");
+        require(offer.status == OfferStatus.PENDING, "ExchangeLib: pending state only");
 
         offer.status = OfferStatus.CANCELED;
     }
@@ -126,8 +126,8 @@ library ExchangeLib {
         Offer storage offer = get(self, offerId);
         Escrow storage escrow = offer.escrow;
 
-        require(block.number <= offer.until, "outdated order");
-        require(offer.status == OfferStatus.PENDING, "pending state only");
+        require(block.number <= offer.until, "ExchangeLib: outdated order");
+        require(offer.status == OfferStatus.PENDING, "ExchangeLib: pending state only");
 
         (bool success, bytes memory returnData) = exec(escrow, offerId);
         if (!success) {
@@ -145,7 +145,7 @@ library ExchangeLib {
     ) internal {
         Offer storage offer = get(self, offerId);
 
-        require(offer.status == OfferStatus.PENDING, "pending state only");
+        require(offer.status == OfferStatus.PENDING, "ExchangeLib: pending state only");
 
         offer.status = OfferStatus.REJECTED;
     }
