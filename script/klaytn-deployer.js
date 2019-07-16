@@ -2,8 +2,10 @@
  * Since Klaytn does not support Truffle ^0.5.x,
  * Here is a deployer script used for deploying Airbloc contracts.
  */
+// eslint-disable-next-line import/no-extraneous-dependencies
 const minimist = require('minimist');
 const fs = require('fs');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const Caver = require('caver-js');
 
 const argv = minimist(process.argv.slice(2), { default: { network: 'klaytn:baobab' } });
@@ -11,12 +13,12 @@ const argv = minimist(process.argv.slice(2), { default: { network: 'klaytn:baoba
 const config = {
   klaytnEndpoint: 'TODO: ENDPOINT_HERE',
   privateKey: 'TODO: PRIVATE_KEY_HERE',
-  buildOutputPath: './build/contracts',
+  buildOutputPath: '../build/contracts',
 };
 
-if (fs.existsSync('truffle-config.local.js')) {
+if (fs.existsSync('./truffle-config.local.js')) {
   // eslint-disable-next-line global-require
-  const local = require('./truffle-config.local.js');
+  const local = require('../truffle-config.local.js');
   config.klaytnEndpoint = local.getEndpointOf(argv[argv.network]);
   config.privateKey = local.klaytnPrivateKey;
 }

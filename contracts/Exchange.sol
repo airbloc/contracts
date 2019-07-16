@@ -6,7 +6,14 @@ import "./ExchangeLib.sol";
 
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 
-contract ExchangeEvents {
+/**
+ * @title Exchange contract is exchange feature implementation of airbloc protocol.
+ * This makes users of protocol to exchange data each other.
+ */
+contract Exchange is ReentrancyGuard {
+    using ExchangeLib for ExchangeLib.Offer;
+    using ExchangeLib for ExchangeLib.Orderbook;
+
     // provider (present/cancel order)
     event OfferPrepared(bytes8 indexed offerId, string providerAppName);
     event OfferPresented(bytes8 indexed offerId, string providerAppName);
@@ -17,15 +24,6 @@ contract ExchangeEvents {
     event OfferRejected(bytes8 indexed offerId, address indexed consumer);
     // escrow (settle)
     event EscrowExecutionFailed(bytes reason);
-}
-
-/**
- * @title Exchange contract is exchange feature implementation of airbloc protocol.
- * This makes users of protocol to exchange data each other.
- */
-contract Exchange is ExchangeEvents, ReentrancyGuard {
-    using ExchangeLib for ExchangeLib.Offer;
-    using ExchangeLib for ExchangeLib.Orderbook;
 
     ExchangeLib.Orderbook private orderbook;
 

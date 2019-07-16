@@ -1,0 +1,95 @@
+henesisVersion: v1
+solidityVersion: 0.5.10
+
+namePrefix: airbloc
+pathPrefix: ./contracts
+
+blockchain:
+  platform: ethereum
+  network: ropsten
+
+contracts:
+  accounts:
+    contract:
+      path: Accounts.sol
+      name: Accounts
+    handlers:
+      accounts-sign-up:
+        event: SignUp(address,bytes8)
+      accounts-temporary-created:
+        event: TemporaryCreated(address,bytes32,bytes8)
+      accounts-unlocked:
+        event: Unlocked(bytes32,bytes8,address)
+    # custom webhook is here
+    # webhook:
+    #   url: localhost:8080
+    #   method: GET
+    #   headers:
+    #     Authorization: 'Bearer YOUR-OWN-TOKEN'
+  app-registry:
+    contract:
+      path: AppRegistry.sol
+      name: AppRegistry
+    handlers:
+      app-registry-registration:
+        event: Registration(bytes32,string)
+      app-registry-unregistration:
+        event: Unregistration(bytes32,string)
+  consents:
+    contract:
+      path: Consents.sol
+      name: Consents
+    handlers:
+      consents-consented:
+        event: Consented(uint8,bytes8,bytes32,string,string,bool)
+  controller-registry:
+    contract:
+      path: ControllerRegistry.sol
+      name: ControllerRegistry
+    handlers:
+      controller-registry-registration:
+        event: Registration(address)
+      controller-registry-unregistration:
+        event: Unregistration(address)
+  data-type-registry:
+    contract:
+      path: DataTypeRegistry.sol
+      name: DataTypeRegistry
+    handlers:
+      data-type-registry-registration:
+        event: Registration(string)
+      data-type-registry-unregistration:
+        event: Unregistration(string)
+  exchange:
+    contract:
+      path: Exchange.sol
+      name: Exchange
+    handlers:
+      exchange-offer-prepared:
+        event: OfferPrepared(bytes8,string)
+      exchange-offer-presented:
+        event: OfferPresented(bytes8,string)
+      exchange-offer-canceled:
+        event: OfferCanceled(bytes8,string)
+      exchange-offer-settled:
+        event: OfferSettled(bytes8,address)
+      exchange-offer-receipt:
+        event: OfferReceipt(bytes8,string,address,bytes)
+      exchange-offer-rejected:
+        event: OfferRejected(bytes8,address)
+      exchange-escrow-execution-failed:
+        event: EscrowExecutionFailed(bytes)
+  simple-token:
+    contract:
+      path: SimpleToken.sol
+      name: SimpleToken
+    handlers:
+      simple-token-transfer:
+        event: Transfer(address,address,uint256)
+      simple-token-approval:
+        event: Approval(address,address,uint256)
+
+# global webhook
+webhook:
+  url: localhost:3000
+  method: GET
