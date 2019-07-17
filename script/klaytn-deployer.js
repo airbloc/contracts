@@ -20,7 +20,7 @@ if (fs.existsSync('./truffle-config.local.js')) {
   // eslint-disable-next-line global-require
   const local = require('../truffle-config.local.js');
   config.klaytnEndpoint = local.getEndpointOf(argv[argv.network]);
-  config.privateKey = local.klaytnPrivateKey;
+  config.privateKey = local.privateKey;
 }
 
 const caver = new Caver(config.klaytnEndpoint);
