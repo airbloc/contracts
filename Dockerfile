@@ -17,7 +17,7 @@ COPY --from=builder '/contracts/node_modules' ./node_modules
 
 # start temporary ganache and deploy contract
 RUN mkdir /contracts/db
-RUN nohup bash -c "node /contracts/script/run-ganache.js --seed airbloc_test --db /contracts/db &" && sleep 4 && yarn migrate:local
+RUN nohup bash -c "npx ganache-cli --seed airbloc_test --db /contracts/db &" && sleep 4 && yarn migrate:local
 RUN nohup bash -c "node /contracts/script/run-deployment.js &"
 
 EXPOSE 8545 8500
