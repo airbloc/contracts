@@ -32,23 +32,16 @@ const fs = require('fs');
 const PrivateKeyProvider = require("truffle-privatekey-provider");
 const privateKey = fs.readFileSync('../private.key').toString();
 
-const ethereum = ['ethereum:mainnet', 'ethereum:ropsten', 'ethereum:rinkeby'];
-const klaytn = ['klaytn:cypress', 'klaytn:baobab'];
-const networks = [...ethereum, ...klaytn];
-
 module.exports = {
   getEndpointOf(network) {
-    network = network.replace(/ethereum:|klaytn:/g, '');
-
-    if (ethereum.includes(network)) return `https://${network}.infura.io/v3/SOME_API_KEY`;
-    if (klaytn.includes(network)) return `https://api.${network}.klaytn.net:8651`;
+    if (network === 'ethereum') return `https://${network}.eth.io`;
+    if (network === 'klaytn') return `https://${network}.klay.io`;
     return '';
   },
   getProviderOf(network) {
     const endpoint = getEndpointOf(network);
-
-    if (endpoint === '') return () => `${network} is not implemented!`;
-    if (networks.includes(network)) return new PrivateKeyProvider(privateKey, endpoint);
+    if ('ethereum' === network) return new PrivateKeyProvider(privateKey, endpoint);
+    if ('klaytn' === network) return new PrivateKeyProvider(privateKey, endpoint);
     return new PrivateKeyProvider(privateKey, 'MY_DEFAULT_ENDPOINT');
   },
 };
