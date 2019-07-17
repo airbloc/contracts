@@ -41,7 +41,7 @@ module.exports = {
     network = network.replace(/ethereum:|klaytn:/g, '');
 
     if (ethereum.includes(network)) return `https://${network}.infura.io/v3/SOME_API_KEY`;
-    else if (klaytn.includes(network)) return `https://api.${network}.klaytn.net:8651`;
+    if (klaytn.includes(network)) return `https://api.${network}.klaytn.net:8651`;
     return '';
   },
   getProviderOf(network) {
