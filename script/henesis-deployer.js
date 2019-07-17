@@ -1,8 +1,7 @@
-/* eslint-disable import/no-extraneous-dependencies */
-/* eslint-disable no-restricted-syntax */
-/* eslint-disable guard-for-in */
+// eslint-disable-next-line import/no-extraneous-dependencies
 const csv = require('csvtojson');
 const fs = require('fs');
+// eslint-disable-next-line import/no-extraneous-dependencies
 const yaml = require('yaml');
 const { spawn } = require('child_process');
 
@@ -33,10 +32,10 @@ function exec(name, command, args, isLive = true) {
 
     child.on('close', (code) => {
       if (code !== 0) {
-        console.log(`Command execution failed with code: ${code}`);
+        console.log(`${name} - Command execution failed with code: ${code}`);
         reject(errbuf);
       } else {
-        console.log(`Command execution completed with code: ${code}`);
+        console.log(`${name} - Command execution completed with code: ${code}`);
         resolve(outbuf);
       }
     });
@@ -64,10 +63,9 @@ const henesis = {
   deleteAll: async () => {
     const status = await henesis.status();
 
-    for (const st of status) {
-      // eslint-disable-next-line no-await-in-loop
-      await exec('deleteAll', 'henesis', ['integration:delete', st.Id], true);
-    }
+    status.forEach((stat) => {
+      exec('deleteAll', 'henesis', ['integration:delete', stat.Id], true);
+    });
   },
 };
 
@@ -85,8 +83,8 @@ async function main() {
 
   console.log(await henesis.status());
 
-  for (const name in henesisArchive.contracts) {
-    const { contract, handlers, webhook } = henesisArchive.contracts[name];
+  Object.entries(henesisArchive.contracts).forEach((contractName, contractInfo) => {
+    const { contract, handlers, webhook } = contractInfo;
 
     const updateSource = { contract, handlers };
 
@@ -96,7 +94,7 @@ async function main() {
 
     Object.assign(config, updateSource);
 
-    config.name = `${henesisArchive.namePrefix}-${name}`;
+    config.name = `${henesisArchive.namePrefix}-${contractName}`;
     config.contract.address = deployments[contract.name];
     config.contract.compilerVersion = henesisArchive.solidityVersion;
     config.contract.path = `${henesisArchive.pathPrefix}/${config.contract.path}`;
@@ -104,14 +102,13 @@ async function main() {
     try {
       fs.writeFileSync(filepath, yaml.stringify(config), 'utf-8');
 
-      // eslint-disable-next-line no-await-in-loop
-      await henesis.deploy(name);
+      henesis.deploy(contractName);
     } catch (err) {
       console.error(err);
     } finally {
       fs.unlinkSync(filepath);
     }
-  }
+  });
 
   console.log(await henesis.status());
 }

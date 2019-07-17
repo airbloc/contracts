@@ -1,4 +1,3 @@
-/* eslint-disable guard-for-in */
 const fs = require('fs');
 
 const Accounts = artifacts.require('Accounts');
@@ -24,10 +23,9 @@ module.exports = (deployer, network) => {
     // contracts without any dependencies will go here:
     const baseContracts = [AppRegistry, ControllerRegistry, DataTypeRegistry];
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const baseContract of baseContracts) {
+    for (let i = 0; i < baseContracts.length; i += 1) {
       // eslint-disable-next-line no-await-in-loop
-      await deployer.deploy(baseContract);
+      await deployer.deploy(baseContracts[i]);
     }
 
     // accounts
@@ -66,14 +64,12 @@ module.exports = (deployer, network) => {
       ExchangeLib,
     };
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const contractName in deployments) {
-      const contract = deployments[contractName];
+    Object.entries(deployments).forEach((contractName, contract) => {
       deployments[contractName] = {
         address: contract.address,
         abi: contract.abi,
       };
-    }
+    });
 
     if (testNetwork.includes(network)) {
       deployments.SimpleToken = SimpleToken.address;

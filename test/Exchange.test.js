@@ -339,11 +339,13 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to settle order if order is outdated', async () => {
       // skipping blocks
-      for (let i = 0; i < 61; i += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        await time.advanceBlock();
-      }
+      const skipper = async (num) => {
+        for (let i = 0; i < num; i += 1) {
+          time.advanceBlock();
+        }
+      };
 
+      await skipper(61);
       await expectRevert(
         exchange.settle(offerId, { from: consumer }),
         'ExchangeLib: outdated order',
