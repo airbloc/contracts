@@ -32,27 +32,45 @@ const fs = require('fs');
 const PrivateKeyProvider = require("truffle-privatekey-provider");
 const privateKey = fs.readFileSync('../private.key').toString();
 
+const ethereum = ['ethereum:ropsten', 'ethereum:rinkeby'];
+const klaytn = ['klaytn:baobab', 'klaytn:cypres'];
+
 module.exports = {
-    getProviderOf(network) {
-        if (network === 'mainnet') return new PrivateKeyProvider(privateKey, 'https://mainnet.infura.io/v3/SOME_API_KEY');
-        else if (network === 'ropsten') return new PrivateKeyProvider(privateKey, 'https://ropsten.infura.io/v3/SOME_API_KEY');
-        return new PrivateKeyProvider(privateKey, 'MY_DEFAULT_ENDPOINT');
-    },
+  getEndpointOf(network) {
+    network = network.replace(/ethereum:|klaytn:/g, '');
+
+    if (ethereum.includes(network)) return `https://${network}.infura.io/v3/SOME_API_KEY`;
+    else if (klaytn.includes(network)) return `https://api.${network}.klaytn.net:8651`;
+    return '';
+  },
+  getProviderOf(network) {
+    const endpoint = getEndpointOf(network);
+
+    if (endpoint === '') return () => `${network} is not implemented!`;
+    if (ethereum.concat(klaytn).includes(network)) return new PrivateKeyProvider(privateKey, endpoint);
+    return new PrivateKeyProvider(privateKey, 'MY_DEFAULT_ENDPOINT');
+  },
 };
 ```
 
 #### Deploying
 
-To deploy contracts, you can use `npm run deploy <network_name>` command. The network name can be one of those:
+To deploy contracts, you can use `yarn migrate:<platform_name>:<network_name>` command. The network name can be one of those:
 
-* `mainnet`: Uses Ethereum Mainnet with your provider defined in `truffle-config.local.js`
-* `kovan`, `ropsten`, `rinkeby`: Uses Ethereum Testnet with your provider defined in `truffle-config.local.js`
-* `local`: Uses local network on http://localhost:8545 with default unlocked account
+* `local`
+  * `dev`: Uses local network on http://localhost:9545 executed by command `truffle dev` with default unlocked account
+  * `local`: Uses local network on http://localhost:8545 with default unlocked account
+* `ethereum`
+  * `mainnet`: Uses Ethereum Mainnet with your provider defined in `truffle-config.local.js`
+  * `ropsten`: Uses Ethereum Testnet with your provider defined in `truffle-config.local.js`
+* `klaytn`
+  * `cypress`: Uses Klaytn Mainnet with your provider defined in `truffle-config.local.js`
+  * `baobab`: Uses Klaytn Testnet with your provider defined in `truffle-config.local.js`
 
 For example, to deploy contract on ropsten, you can type:
 
 ```
-$ yarn deploy ropsten
+$ yarn migrate:ethereum:ropsten
 ```
 
 After deployment, `deployment.local.json` is generated. The generated JSON file contains all deployed contract address
@@ -97,15 +115,15 @@ To access to `deployment.json` (Contract Deployment Addresses), you can use `htt
 ```
 $ curl http://localhost:8500 # For Example
 {
-  "Accounts": "0xd95b1f49c581251f9b62cae463e34120acdddd76",
-  "AppRegistry": "0x093735b0603de9e655f876589c8577361b074e1b",
-  "SchemaRegistry": "0x7c8a3e4a4513514cf7d83921dbfb2700372c9294",
-  "CollectionRegistry": "0x558a7882df946fbfb631654db52b0a25fc6def8e",
-  "Exchange": "0x4e6385774f651a9b3317be8433c029cb5f58388f",
-  "SimpleContract": "0x9a084041d379cf551539a29f8f431d3936e28532",
-  "SparseMerkleTree": "0x49da8fd3c2fd575663b848488dadbe73f7452cd4",
-  "DataRegistry": "0x0e101b525652ce6aa43c1f9f71dc0c29b1cb1f37",
-  "ERC20Mintable": "0x009fb3ad2a28ea072ecc61c9176feab31cae6c68"
+  "Accounts": { "0xd95b1f49c581251f9b62cae463e34120acdddd76", <ABI> }
+  "AppRegistry": { "0x093735b0603de9e655f876589c8577361b074e1b", <ABI> }
+  "SchemaRegistry": { "0x7c8a3e4a4513514cf7d83921dbfb2700372c9294", <ABI> }
+  "CollectionRegistry": { "0x558a7882df946fbfb631654db52b0a25fc6def8e", <ABI> }
+  "Exchange": { "0x4e6385774f651a9b3317be8433c029cb5f58388f", <ABI> }
+  "SimpleContract": { "0x9a084041d379cf551539a29f8f431d3936e28532", <ABI> }
+  "SparseMerkleTree": { "0x49da8fd3c2fd575663b848488dadbe73f7452cd4", <ABI> }
+  "DataRegistry": { "0x0e101b525652ce6aa43c1f9f71dc0c29b1cb1f37", <ABI> }
+  "ERC20Mintable": { "0x009fb3ad2a28ea072ecc61c9176feab31cae6c68", <ABI> }
 }
 ```
 
