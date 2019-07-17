@@ -1,3 +1,4 @@
+/* eslint-disable guard-for-in */
 const fs = require('fs');
 
 const Accounts = artifacts.require('Accounts');
@@ -15,7 +16,7 @@ const SimpleToken = artifacts.require('SimpleToken');
 
 const DEPLOYMENT_OUTPUT_PATH = 'deployment.local.json';
 
-const testNetwork = ['ropsten', 'rinkeby', 'aspen', 'baobab'];
+const testNetwork = ['dev', 'local', 'ropsten', 'rinkeby', 'aspen', 'baobab'];
 const mainNetwork = ['mainnet', 'cypress'];
 
 module.exports = (deployer, network) => {
@@ -54,16 +55,25 @@ module.exports = (deployer, network) => {
     }
 
     const deployments = {
-      Accounts: Accounts.address,
-      AppRegistry: AppRegistry.address,
-      Consents: Consents.address,
-      ConsentsLib: ConsentsLib.address,
-      ControllerRegistry: ControllerRegistry.address,
-      DataTypeRegistry: DataTypeRegistry.address,
-      ERC20Escrow: ERC20Escrow.address,
-      Exchange: Exchange.address,
-      ExchangeLib: ExchangeLib.address,
+      Accounts,
+      AppRegistry,
+      Consents,
+      ConsentsLib,
+      ControllerRegistry,
+      DataTypeRegistry,
+      ERC20Escrow,
+      Exchange,
+      ExchangeLib,
     };
+
+    // eslint-disable-next-line no-restricted-syntax
+    for (const contractName in deployments) {
+      const contract = deployments[contractName];
+      deployments[contractName] = {
+        address: contract.address,
+        abi: contract.abi,
+      };
+    }
 
     if (testNetwork.includes(network)) {
       deployments.SimpleToken = SimpleToken.address;
