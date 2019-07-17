@@ -32,8 +32,9 @@ const fs = require('fs');
 const PrivateKeyProvider = require("truffle-privatekey-provider");
 const privateKey = fs.readFileSync('../private.key').toString();
 
-const ethereum = ['ethereum:ropsten', 'ethereum:rinkeby'];
-const klaytn = ['klaytn:baobab', 'klaytn:cypres'];
+const ethereum = ['ethereum:mainnet', 'ethereum:ropsten', 'ethereum:rinkeby'];
+const klaytn = ['klaytn:cypress', 'klaytn:baobab'];
+const networks = [...ethereum, ...klaytn];
 
 module.exports = {
   getEndpointOf(network) {
@@ -47,7 +48,7 @@ module.exports = {
     const endpoint = getEndpointOf(network);
 
     if (endpoint === '') return () => `${network} is not implemented!`;
-    if (ethereum.concat(klaytn).includes(network)) return new PrivateKeyProvider(privateKey, endpoint);
+    if (networks.includes(network)) return new PrivateKeyProvider(privateKey, endpoint);
     return new PrivateKeyProvider(privateKey, 'MY_DEFAULT_ENDPOINT');
   },
 };
