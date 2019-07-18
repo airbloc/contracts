@@ -55,12 +55,10 @@ module.exports = (deployer, network) => {
       Accounts,
       AppRegistry,
       Consents,
-      ConsentsLib,
       ControllerRegistry,
       DataTypeRegistry,
       ERC20Escrow,
       Exchange,
-      ExchangeLib,
     };
 
     if (testNetwork.includes(network)) {
