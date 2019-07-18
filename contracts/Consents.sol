@@ -74,7 +74,7 @@ contract Consents {
         bool allowed
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
-        require(accounts.isDelegateOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         if (consents.exists(userId, appName, uint(action), dataType)) {
             revert("Consents: controllers can't modify users' consent without password");
@@ -91,7 +91,7 @@ contract Consents {
         bytes memory passwordSignature
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
-        require(accounts.isDelegateOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         // changing an already given consent requires a password key
         bytes memory message = abi.encodePacked(uint8(action), userId, appName, dataType, allowed);
