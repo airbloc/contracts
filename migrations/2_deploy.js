@@ -21,12 +21,11 @@ const mainNetwork = ['mainnet', 'cypress'];
 module.exports = (deployer, network) => {
   deployer.then(async () => {
     // contracts without any dependencies will go here:
-    const baseContracts = [AppRegistry, ControllerRegistry, DataTypeRegistry];
+    // const baseContracts = [AppRegistry, ControllerRegistry, DataTypeRegistry];
 
-    for (let i = 0; i < baseContracts.length; i += 1) {
-      // eslint-disable-next-line no-await-in-loop
-      await deployer.deploy(baseContracts[i]);
-    }
+    await deployer.deploy(AppRegistry);
+    await deployer.deploy(ControllerRegistry);
+    await deployer.deploy(DataTypeRegistry);
 
     // accounts
     await deployer.deploy(Accounts, ControllerRegistry.address);
