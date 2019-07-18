@@ -63,16 +63,18 @@ module.exports = (deployer, network) => {
       ExchangeLib,
     };
 
-    Object.entries(deployments).forEach((contractName, contract) => {
+    if (testNetwork.includes(network)) {
+      deployments.SimpleToken = SimpleToken;
+    }
+
+    Object.keys(deployments).forEach((contractName) => {
+      const contract = deployments[contractName];
+
       deployments[contractName] = {
         address: contract.address,
         abi: contract.abi,
       };
     });
-
-    if (testNetwork.includes(network)) {
-      deployments.SimpleToken = SimpleToken.address;
-    }
 
     console.log('Writing deployments to deployment.local.json');
     fs.writeFileSync(DEPLOYMENT_OUTPUT_PATH, JSON.stringify(deployments, null, '  '));
