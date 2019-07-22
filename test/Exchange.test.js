@@ -339,10 +339,12 @@ contract('Exchange', async (accounts) => {
 
     it('should fail to settle order if order is outdated', async () => {
       // skipping blocks
-      const skipper = async (num) => {
+      const skipper = (num) => {
+        const promises = [];
         for (let i = 0; i < num; i += 1) {
-          time.advanceBlock();
+          promises.push(time.advanceBlock());
         }
+        return Promise.all(promises);
       };
 
       await skipper(61);
