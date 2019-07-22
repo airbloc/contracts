@@ -1,0 +1,18 @@
+version: v1
+name: airbloc-simple-token
+blockchain:
+  platform: ethereum
+  network: ropsten
+webhook:
+  url: localhost:3000
+  method: GET
+contract:
+  path: ./contracts/SimpleToken.sol
+  name: SimpleToken
+  address: "0x210CEd65dD198E8395DC5588301B1431d2c85B95"
+  compilerVersion: 0.5.10
+handlers:
+  simple-token-transfer:
+    event: Transfer(address,address,uint256)
+  simple-token-approval:
+    event: Approval(address,address,uint256)
