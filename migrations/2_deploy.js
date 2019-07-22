@@ -51,7 +51,7 @@ module.exports = (deployer, network) => {
       await deployer.deploy(SimpleToken);
     }
 
-    const deployments = {
+    const deployedContracts = {
       Accounts,
       AppRegistry,
       Consents,
@@ -62,8 +62,11 @@ module.exports = (deployer, network) => {
     };
 
     if (testNetwork.includes(network)) {
-      deployments.SimpleToken = SimpleToken;
+      deployedContracts.SimpleToken = SimpleToken;
     }
+
+
+    const deployments = {};
 
     Object.keys(deployments).forEach((contractName) => {
       const contract = deployments[contractName];
