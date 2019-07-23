@@ -68,12 +68,10 @@ module.exports = (deployer, network) => {
 
     const deployments = {};
 
-    Object.keys(deployments).forEach((contractName) => {
-      const contract = deployments[contractName];
-
-      deployments[contractName] = {
-        address: contract.address,
-        abi: contract.abi,
+    Object.entries(deployedContracts).forEach((contract) => {
+      deployments[contract[0]] = {
+        address: contract[1].address,
+        abi: contract[1].abi,
       };
     });
 
