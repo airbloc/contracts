@@ -47,7 +47,7 @@ contract Accounts {
         _;
     }
 
-    function create() external {
+    function create() external returns (bytes8) {
         require(
             addressToAccount[msg.sender] == bytes8(0),
             "Accounts: you can make only one account per one Ethereum Account");
@@ -58,11 +58,13 @@ contract Accounts {
 
         addressToAccount[msg.sender] = accountId;
         emit SignUp(msg.sender, accountId);
+        return accountId;
     }
 
     function createTemporary(bytes32 identityHash)
         public
         onlyDataController
+        returns (bytes8)
     {
         require(identityHashToAccount[identityHash] == bytes8(0), "Accounts: account already exists");
 
@@ -72,6 +74,7 @@ contract Accounts {
 
         identityHashToAccount[identityHash] = accountId;
         emit TemporaryCreated(msg.sender, identityHash, accountId);
+        return accountId;
     }
 
     function unlockTemporary(bytes32 identityPreimage, address newOwner, bytes memory passwordSignature)
