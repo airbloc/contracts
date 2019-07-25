@@ -1,11 +1,13 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
+import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
+
 /**
  * ControllerRegistry is a contract for managing data controllers.
  * In the initial version, it will be operated as a permissioned manner.
  */
-contract ControllerRegistry {
+contract ControllerRegistry is Ownable {
 
     event Registration(address indexed controller);
     event Unregistration(address indexed controller);
