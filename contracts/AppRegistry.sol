@@ -1,15 +1,13 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
-
 /**
  * AppRegistry is a contract for managing apps (Data Providers).
  *
  * In the future, in order to register application,
  * a data provider must stake ABL to this contract as a colletral.
  */
-contract AppRegistry is Ownable {
+contract AppRegistry {
 
     event Registration(bytes32 indexed hashedAppName, string appName);
     event Unregistration(bytes32 indexed hashedAppName, string appName);

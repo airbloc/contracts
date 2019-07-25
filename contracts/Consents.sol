@@ -5,7 +5,6 @@ import "./Accounts.sol";
 import "./AppRegistry.sol";
 import "./ConsentsLib.sol";
 import "./DataTypeRegistry.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title Consents is a contract managing users' consent for applications
