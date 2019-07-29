@@ -65,15 +65,21 @@ module.exports = (deployer, network) => {
       deployedContracts.SimpleToken = SimpleToken;
     }
 
-
     const deployments = {};
 
-    Object.entries(deployedContracts).forEach((contract) => {
+    const convertPromises = Object.entries(deployedContracts).map(async (contract) => {
+      const txHash = contract[1].transactionHash;
+      const tx = await web3.eth.getTransaction(txHash);
+
       deployments[contract[0]] = {
         address: contract[1].address,
+        tx_hash: txHash,
+        created_at: tx.blockNumber,
         abi: contract[1].abi,
       };
     });
+
+    await Promise.all(convertPromises);
 
     console.log('Writing deployments to deployment.local.json');
     fs.writeFileSync(DEPLOYMENT_OUTPUT_PATH, JSON.stringify(deployments, null, '  '));
