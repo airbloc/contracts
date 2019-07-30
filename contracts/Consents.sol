@@ -21,7 +21,7 @@ contract Consents {
     event Consented(
         ActionTypes indexed action,
         bytes8 indexed userId,
-        bytes32 indexed app,
+        address indexed appAddr,
         string appName,
         string dataType,
         bool allowed
@@ -112,12 +112,12 @@ contract Consents {
         require(apps.exists(appName), "Consents: app does not exist");
         require(dataTypes.exists(dataType), "Consents: data type does not exist");
 
-        ConsentsLib.Consent memory consent = ConsentsLib.Consent({
+        ConsentsLib.Consent memory consentInfo = ConsentsLib.Consent({
             allowed: allowed,
             at: block.number
         });
-        consents.update(userId, appName, uint(action), dataType, consent);
-        emit Consented(action, userId, apps.get(appName).hashedName, appName, dataType, allowed);
+        consents.update(userId, appName, uint(action), dataType, consentInfo);
+        emit Consented(action, userId, apps.get(appName).addr, appName, dataType, allowed);
     }
 
     function isAllowed(
@@ -126,8 +126,8 @@ contract Consents {
         ActionTypes action,
         string memory dataType
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
-        return consent.allowed;
+        ConsentsLib.Consent memory consentInfo = consents.get(userId, appName, uint(action), dataType);
+        return consentInfo.allowed;
     }
 
     function isAllowedAt(
@@ -137,7 +137,7 @@ contract Consents {
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consent = consents.getPastConsent(userId, appName, uint(action), dataType, blockNumber);
-        return consent.allowed;
+        ConsentsLib.Consent memory consentInfo = consents.getPastConsent(userId, appName, uint(action), dataType, blockNumber);
+        return consentInfo.allowed;
     }
 }
