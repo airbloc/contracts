@@ -9,20 +9,21 @@ pragma experimental ABIEncoderV2;
  */
 contract AppRegistry {
 
-    event Registration(bytes32 indexed hashedAppName, string appName);
-    event Unregistration(bytes32 indexed hashedAppName, string appName);
+    event Registration(address indexed appAddr, string appName);
+    event Unregistration(address indexed appAddr, string appName);
 
     event AppOwnerTransferred(
-        bytes32 indexed hashedAppName, string appName,
+        address indexed appAddr, string appName,
         address indexed oldOwner, address newOwner);
 
     struct App {
         string name;
         address owner;
-        bytes32 hashedName;
+        address addr;
     }
 
     mapping(string => App) apps;
+    mapping(address => string) appAddrToName;
 
     /**
      * @dev Creates a new application.
@@ -33,9 +34,10 @@ contract AppRegistry {
         App storage app = _get(appName);
         app.name = appName;
         app.owner = msg.sender;
-        app.hashedName = keccak256(abi.encodePacked(appName));
+        app.addr = address(bytes20(keccak256(abi.encodePacked(appName))));
+        appAddrToName[app.addr] = app.name;
 
-        emit Registration(app.hashedName, app.name);
+        emit Registration(app.addr, app.name);
     }
 
     /**
@@ -46,8 +48,9 @@ contract AppRegistry {
 
         App memory app = get(appName);
         delete apps[appName];
+        delete appAddrToName[app.addr];
 
-        emit Unregistration(app.hashedName, app.name);
+        emit Unregistration(app.addr, app.name);
     }
 
 
@@ -91,6 +94,6 @@ contract AppRegistry {
         address oldOwner = app.owner;
         app.owner = newOwner;
 
-        emit AppOwnerTransferred(app.hashedName, appName, oldOwner, newOwner);
+        emit AppOwnerTransferred(app.addr, appName, oldOwner, newOwner);
     }
 }
