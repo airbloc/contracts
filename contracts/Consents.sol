@@ -121,9 +121,9 @@ contract Consents {
     }
 
     function isAllowed(
-        ActionTypes action,
         bytes8 userId,
         string memory appName,
+        ActionTypes action,
         string memory dataType
     ) public view returns (bool) {
         ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
@@ -131,9 +131,9 @@ contract Consents {
     }
 
     function isAllowedAt(
-        ActionTypes action,
         bytes8 userId,
         string memory appName,
+        ActionTypes action,
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
