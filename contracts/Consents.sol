@@ -5,7 +5,6 @@ import "./Accounts.sol";
 import "./AppRegistry.sol";
 import "./ConsentsLib.sol";
 import "./DataTypeRegistry.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
 /**
  * @title Consents is a contract managing users' consent for applications
@@ -22,7 +21,7 @@ contract Consents {
     event Consented(
         ActionTypes indexed action,
         bytes8 indexed userId,
-        bytes32 indexed app,
+        address indexed appAddr,
         string appName,
         string dataType,
         bool allowed
@@ -74,7 +73,7 @@ contract Consents {
         bool allowed
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
-        require(accounts.isDelegateOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         if (consents.exists(userId, appName, uint(action), dataType)) {
             revert("Consents: controllers can't modify users' consent without password");
@@ -91,7 +90,7 @@ contract Consents {
         bytes memory passwordSignature
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
-        require(accounts.isDelegateOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         // changing an already given consent requires a password key
         bytes memory message = abi.encodePacked(uint8(action), userId, appName, dataType, allowed);
@@ -113,32 +112,32 @@ contract Consents {
         require(apps.exists(appName), "Consents: app does not exist");
         require(dataTypes.exists(dataType), "Consents: data type does not exist");
 
-        ConsentsLib.Consent memory consent = ConsentsLib.Consent({
+        ConsentsLib.Consent memory consentInfo = ConsentsLib.Consent({
             allowed: allowed,
             at: block.number
         });
-        consents.update(userId, appName, uint(action), dataType, consent);
-        emit Consented(action, userId, apps.get(appName).hashedName, appName, dataType, allowed);
+        consents.update(userId, appName, uint(action), dataType, consentInfo);
+        emit Consented(action, userId, apps.get(appName).addr, appName, dataType, allowed);
     }
 
     function isAllowed(
-        ActionTypes action,
         bytes8 userId,
         string memory appName,
+        ActionTypes action,
         string memory dataType
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consent = consents.get(userId, appName, uint(action), dataType);
-        return consent.allowed;
+        ConsentsLib.Consent memory consentInfo = consents.get(userId, appName, uint(action), dataType);
+        return consentInfo.allowed;
     }
 
     function isAllowedAt(
-        ActionTypes action,
         bytes8 userId,
         string memory appName,
+        ActionTypes action,
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consent = consents.getPastConsent(userId, appName, uint(action), dataType, blockNumber);
-        return consent.allowed;
+        ConsentsLib.Consent memory consentInfo = consents.getPastConsent(userId, appName, uint(action), dataType, blockNumber);
+        return consentInfo.allowed;
     }
 }

@@ -1,10 +1,8 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
-
-contract DataTypeRegistry is Ownable {
+contract DataTypeRegistry {
 
     event Registration(string name);
     event Unregistration(string name);

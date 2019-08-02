@@ -15,19 +15,17 @@ const SimpleToken = artifacts.require('SimpleToken');
 
 const DEPLOYMENT_OUTPUT_PATH = 'deployment.local.json';
 
-const testNetwork = ['ropsten', 'rinkeby', 'aspen', 'baobab'];
+const testNetwork = ['dev', 'local', 'ropsten', 'rinkeby', 'aspen', 'baobab'];
 const mainNetwork = ['mainnet', 'cypress'];
 
 module.exports = (deployer, network) => {
   deployer.then(async () => {
     // contracts without any dependencies will go here:
-    const baseContracts = [AppRegistry, ControllerRegistry, DataTypeRegistry];
+    // const baseContracts = [AppRegistry, ControllerRegistry, DataTypeRegistry];
 
-    // eslint-disable-next-line no-restricted-syntax
-    for (const baseContract of baseContracts) {
-      // eslint-disable-next-line no-await-in-loop
-      await deployer.deploy(baseContract);
-    }
+    await deployer.deploy(AppRegistry);
+    await deployer.deploy(ControllerRegistry);
+    await deployer.deploy(DataTypeRegistry);
 
     // accounts
     await deployer.deploy(Accounts, ControllerRegistry.address);
@@ -53,21 +51,35 @@ module.exports = (deployer, network) => {
       await deployer.deploy(SimpleToken);
     }
 
-    const deployments = {
-      Accounts: Accounts.address,
-      AppRegistry: AppRegistry.address,
-      Consents: Consents.address,
-      ConsentsLib: ConsentsLib.address,
-      ControllerRegistry: ControllerRegistry.address,
-      DataTypeRegistry: DataTypeRegistry.address,
-      ERC20Escrow: ERC20Escrow.address,
-      Exchange: Exchange.address,
-      ExchangeLib: ExchangeLib.address,
+    const deployedContracts = {
+      Accounts,
+      AppRegistry,
+      Consents,
+      ControllerRegistry,
+      DataTypeRegistry,
+      ERC20Escrow,
+      Exchange,
     };
 
     if (testNetwork.includes(network)) {
-      deployments.SimpleToken = SimpleToken.address;
+      deployedContracts.SimpleToken = SimpleToken;
     }
+
+    const deployments = {};
+
+    const convertPromises = Object.entries(deployedContracts).map(async ([contractName, contract]) => {
+      const txHash = contract.transactionHash;
+      const tx = await web3.eth.getTransaction(txHash);
+
+      deployments[contractName] = {
+        address: contract.address,
+        tx_hash: txHash,
+        created_at: tx.blockNumber,
+        abi: contract.abi,
+      };
+    });
+
+    await Promise.all(convertPromises);
 
     console.log('Writing deployments to deployment.local.json');
     fs.writeFileSync(DEPLOYMENT_OUTPUT_PATH, JSON.stringify(deployments, null, '  '));

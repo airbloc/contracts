@@ -3,11 +3,10 @@ pragma experimental ABIEncoderV2;
 
 import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
-import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 import "./ControllerRegistry.sol";
 
 
-contract Accounts is Ownable {
+contract Accounts {
     using SafeMath for uint256;
     using ECDSA for bytes32;
 
@@ -25,7 +24,7 @@ contract Accounts is Ownable {
         address owner;
         AccountStatus status;
 
-        address delegate;
+        address controller;
         address passwordProof;
     }
 
@@ -48,7 +47,7 @@ contract Accounts is Ownable {
         _;
     }
 
-    function create() external {
+    function create() external returns (bytes8) {
         require(
             addressToAccount[msg.sender] == bytes8(0),
             "Accounts: you can make only one account per one Ethereum Account");
@@ -59,20 +58,23 @@ contract Accounts is Ownable {
 
         addressToAccount[msg.sender] = accountId;
         emit SignUp(msg.sender, accountId);
+        return accountId;
     }
 
     function createTemporary(bytes32 identityHash)
         public
         onlyDataController
+        returns (bytes8)
     {
         require(identityHashToAccount[identityHash] == bytes8(0), "Accounts: account already exists");
 
         bytes8 accountId = generateId(identityHash, msg.sender);
-        accounts[accountId].delegate = msg.sender;
+        accounts[accountId].controller = msg.sender;
         accounts[accountId].status = AccountStatus.TEMPORARY;
 
         identityHashToAccount[identityHash] = accountId;
         emit TemporaryCreated(msg.sender, identityHash, accountId);
+        return accountId;
     }
 
     function unlockTemporary(bytes32 identityPreimage, address newOwner, bytes memory passwordSignature)
@@ -87,7 +89,7 @@ contract Accounts is Ownable {
         Account storage account = accounts[accountId];
 
         require(
-            msg.sender == account.delegate,
+            msg.sender == account.controller,
             "Accounts: account must be unlocked through the designated data controller"
         );
         require(
@@ -104,13 +106,14 @@ contract Accounts is Ownable {
         emit Unlocked(identityHash, accountId, newOwner);
     }
 
-    function setDelegate(address delegate) external {
-        // the delegate and the proxy cannot modify delegate.
-        // a delegate can be set only through the account owner's direct transaction.
+    function setController(address controller) external {
+        // the controller and the proxy cannot modify controller.
+        // a controller can be set only through the account owner's direct transaction.
+        require(dataControllers.exists(controller), "Accounts: given address is not a data controller");
         require(addressToAccount[msg.sender] != bytes8(0), "Accounts: account does not exist");
 
         Account storage account = accounts[addressToAccount[msg.sender]];
-        account.delegate = delegate;
+        account.controller = controller;
     }
 
     function setPassword(bytes8 accountId, bytes memory message, bytes memory passwordSignature) internal {
@@ -151,8 +154,8 @@ contract Accounts is Ownable {
         return accounts[accountId].status == AccountStatus.TEMPORARY;
     }
 
-    function isDelegateOf(address sender, bytes8 accountId) public view returns (bool) {
-        return accounts[accountId].delegate == sender;
+    function isControllerOf(address sender, bytes8 accountId) public view returns (bool) {
+        return accounts[accountId].controller == sender;
     }
 
     function generateId(bytes32 uniqueData, address creator) internal view returns (bytes8) {
