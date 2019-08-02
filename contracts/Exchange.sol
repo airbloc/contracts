@@ -179,8 +179,8 @@ contract Exchange is ReentrancyGuard {
      * @param offerId offer's id you want to get
      * @return owners of from, to apps
      */
-     function getOfferMembers(bytes8 offerId) public view returns (address, address) {
+    function getOfferMembers(bytes8 offerId) public view returns (address, address) {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
         return (apps.get(offer.provider).owner, offer.consumer);
-     }
+    }
 }
