@@ -67,15 +67,15 @@ module.exports = (deployer, network) => {
 
     const deployments = {};
 
-    const convertPromises = Object.entries(deployedContracts).map(async (contract) => {
-      const txHash = contract[1].transactionHash;
+    const convertPromises = Object.entries(deployedContracts).map(async ([contractName, contract]) => {
+      const txHash = contract.transactionHash;
       const tx = await web3.eth.getTransaction(txHash);
 
-      deployments[contract[0]] = {
-        address: contract[1].address,
+      deployments[contractName] = {
+        address: contract.address,
         tx_hash: txHash,
         created_at: tx.blockNumber,
-        abi: contract[1].abi,
+        abi: contract.abi,
       };
     });
 
