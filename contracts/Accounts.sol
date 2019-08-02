@@ -13,7 +13,6 @@ contract Accounts {
     event SignUp(address indexed owner, bytes8 accountId);
     event TemporaryCreated(address indexed proxy, bytes32 indexed identityHash, bytes8 accountId);
     event Unlocked(bytes32 indexed identityHash, bytes8 indexed accountId, address newOwner);
-    event ControllerChanged(address indexed prevController, address indexed newController, bytes8 accountId);
 
     enum AccountStatus {
         NONE,
@@ -114,10 +113,7 @@ contract Accounts {
         require(addressToAccount[msg.sender] != bytes8(0), "Accounts: account does not exist");
 
         Account storage account = accounts[addressToAccount[msg.sender]];
-
-        address prevController = account.controller;
         account.controller = controller;
-        emit ControllerChanged(prevController, controller, addressToAccount[msg.sender]);
     }
 
     function setPassword(bytes8 accountId, bytes memory message, bytes memory passwordSignature) internal {
