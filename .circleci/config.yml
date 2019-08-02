@@ -18,6 +18,6 @@ jobs:
           command: |
             yarn lint
       - run:
-          name: Run Test with Coverage
+          name: Run Test
           command: |
-            yarn coverage
+            [ -z "$CIRCLE_PR_NUMBER" ] && yarn coverage || yarn test
