@@ -18,10 +18,6 @@ jobs:
           command: |
             yarn lint
       - run:
-          name: Run Test
-          command: |
-            yarn test
-      - run:
           name: Run Test with Coverage
           command: |
             yarn coverage
