@@ -55,20 +55,20 @@ contract Consents {
     }
 
     function consent(
-        ActionTypes action,
         string memory appName,
+        ActionTypes action,
         string memory dataType,
         bool allowed
     ) public {
         require(apps.exists(appName), "Consents: app does not exist");
         bytes8 userId = accounts.getAccountId(msg.sender);
-        _updateConsent(action, userId, appName, dataType, allowed);
+        _updateConsent(userId, appName, action, dataType, allowed);
     }
 
     function consentByController(
-        ActionTypes action,
         bytes8 userId,
         string memory appName,
+        ActionTypes action,
         string memory dataType,
         bool allowed
     ) public onlyDataController {
@@ -78,13 +78,13 @@ contract Consents {
         if (consents.exists(userId, appName, uint(action), dataType)) {
             revert("Consents: controllers can't modify users' consent without password");
         }
-        _updateConsent(action, userId, appName, dataType, allowed);
+        _updateConsent(userId, appName, action, dataType, allowed);
     }
 
     function modifyConsentByController(
-        ActionTypes action,
         bytes8 userId,
         string memory appName,
+        ActionTypes action,
         string memory dataType,
         bool allowed,
         bytes memory passwordSignature
@@ -93,18 +93,18 @@ contract Consents {
         require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         // changing an already given consent requires a password key
-        bytes memory message = abi.encodePacked(uint8(action), userId, appName, dataType, allowed);
+        bytes memory message = abi.encodePacked(userId, appName, uint8(action), dataType, allowed);
         require(
             userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
             "Consents: password mismatch"
         );
-        _updateConsent(action, userId, appName, dataType, allowed);
+        _updateConsent(userId, appName, action, dataType, allowed);
     }
 
     function _updateConsent(
-        ActionTypes action,
         bytes8 userId,
         string memory appName,
+        ActionTypes action,
         string memory dataType,
         bool allowed
     ) internal {

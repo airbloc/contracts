@@ -139,28 +139,28 @@ contract('Accounts', async (ethAccounts) => {
     });
   });
 
-  describe('#setDelegate()', () => {
+  describe('#setController()', () => {
     it('should done correctly', async () => {
       await accounts.create({ from: user });
-      await accounts.setDelegate(controller, { from: user });
+      await accounts.setController(controller, { from: user });
     });
   });
 
-  describe('#isDelegateOf()', () => {
+  describe('#isControllerOf()', () => {
     let accountId;
     beforeEach(async () => {
       const { logs } = await accounts.create({ from: user });
       ({ args: { accountId } } = expectEvent.inLogs(logs, 'SignUp', { owner: user }));
 
-      await accounts.setDelegate(controller, { from: user });
+      await accounts.setController(controller, { from: user });
     });
 
     it('should return true when the delegate is calling', async () => {
-      await expect(accounts.isDelegateOf(controller, accountId)).to.eventually.be.true;
+      await expect(accounts.isControllerOf(controller, accountId)).to.eventually.be.true;
     });
 
     it('should return false if caller is not the delegate', async () => {
-      await expect(accounts.isDelegateOf(stranger, accountId)).to.eventually.be.false;
+      await expect(accounts.isControllerOf(stranger, accountId)).to.eventually.be.false;
     });
   });
 

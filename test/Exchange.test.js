@@ -353,11 +353,6 @@ contract('Exchange', async (accounts) => {
         'ExchangeLib: outdated order',
       );
     });
-
-    // TODO: make bad escrow contract
-    // it('should fail to settle order if unable to call escrow method', async () => {});
-    // it('should fail to settle order if escrow method not contains offerId param', async () => {});
-    // it('should fail to settle order if escrow method trying reentrancy attack', async () => {});
   });
 
   describe('rejecting order', async () => {

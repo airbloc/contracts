@@ -15,6 +15,7 @@
   "scripts": {
     "compile": "truffle compile",
     "console": "truffle console --network",
+    "coverage": "yarn test-with-coverage && cat ./coverage/lcov.info | coveralls",
     "dev": "truffle develop",
     "flatten": "truffle-flattener",
     "lint": "yarn run lint:js && yarn run lint:sol",
