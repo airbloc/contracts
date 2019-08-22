@@ -81,6 +81,7 @@ contract Consents {
     ) public {
         require(apps.exists(appName), "Consents: app does not exist");
         require(consentData.length < 64, "Consents: input length exceeds");
+
         bytes8 userId = accounts.getAccountId(msg.sender);
         for (uint index = 0; index < consentData.length; index++) {
             _updateConsent(
@@ -126,6 +127,7 @@ contract Consents {
         ConsentData[] memory consentData
     ) public {
         require(apps.exists(appName), "Consents: app does not exist");
+        require(consentData.length < 64, "Consents: input length exceeds");
         require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         for (uint index = 0; index < consentData.length; index++) {
@@ -160,7 +162,8 @@ contract Consents {
 
         // changing an already given consent requires a password key
         bytes memory message = abi.encodePacked(
-            userId, appName,
+            userId,
+            appName,
             uint8(consentData.action),
             consentData.dataType,
             consentData.allowed
@@ -177,6 +180,40 @@ contract Consents {
             consentData.dataType,
             consentData.allowed
         );
+    }
+
+    function modifyConsentManyByController(
+        bytes8 userId,
+        string memory appName,
+        ConsentData[] memory consentData,
+        bytes memory passwordSignature
+    ) public onlyDataController {
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(consentData.length < 64, "Consents: input length exceeds");
+        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+
+        for (uint index = 0; index < consentData.length; index++) {
+            // changing an already given consent requires a password key
+            bytes memory message = abi.encodePacked(
+                userId,
+                appName,
+                uint8(consentData[index].action),
+                consentData[index].dataType,
+                consentData[index].allowed
+            );
+            require(
+                userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
+                "Consents: password mismatch"
+            );
+
+            _updateConsent(
+                userId,
+                appName,
+                consentData[index].action,
+                consentData[index].dataType,
+                consentData[index].allowed
+            );
+        }
     }
 
     function _updateConsent(
