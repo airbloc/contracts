@@ -31,14 +31,18 @@ contract('Consents', async (ethAccounts) => {
 
   before(async () => {
     apps = await AppRegistry.new();
-    controllers = await ControllerRegistry.new();
     dataTypes = await DataTypeRegistry.new();
-    accounts = await Accounts.new(controllers.address);
 
     await apps.register(APP_NAME, { from: app });
-    await controllers.register(controller, { from: contractOwner });
     await dataTypes.register(DATA_TYPE_GPS, SCHEMA_HASH, { from: app });
     await dataTypes.register(DATA_TYPE_EMAIL, SCHEMA_HASH, { from: app });
+  });
+
+  beforeEach(async () => {
+    controllers = await ControllerRegistry.new();
+    await controllers.register(controller, { from: contractOwner });
+
+    accounts = await Accounts.new(controllers.address);
 
     // create an Airbloc account with ID and password,
     // and register the data controller as a delegate of it.
@@ -48,9 +52,7 @@ contract('Consents', async (ethAccounts) => {
 
     const signUpEvent = getFirstEvent(result);
     userId = signUpEvent.accountId;
-  });
 
-  beforeEach(async () => {
     // should create new contract for each test
     consents = await Consents.new(
       accounts.address,
@@ -446,7 +448,7 @@ contract('Consents', async (ethAccounts) => {
           userId,
           APP_NAME,
           consentData,
-          { from: user },
+          { from: controller },
         ),
         'Consents: input length exceeds',
       );
@@ -505,7 +507,7 @@ contract('Consents', async (ethAccounts) => {
             APP_NAME,
             [{
               action: ACTION_COLLECTION,
-              dataType: DATA_TYPE_EMAIL,
+              dataType: DATA_TYPE_GPS,
               allowed: true,
             }],
             { from: controller },
