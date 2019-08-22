@@ -125,7 +125,7 @@ contract Consents {
         bytes8 userId,
         string memory appName,
         ConsentData[] memory consentData
-    ) public {
+    ) public onlyDataController{
         require(apps.exists(appName), "Consents: app does not exist");
         require(consentData.length < 64, "Consents: input length exceeds");
         require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
