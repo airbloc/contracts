@@ -61,30 +61,44 @@ contract('Consents', async (ethAccounts) => {
   describe('#consent()', () => {
     it('should fail if the app does not exist', async () => {
       await expectRevert(
-        consents.consent('WRONG_APP_NAME', ACTION_COLLECTION, DATA_TYPE, true, { from: user }),
+        consents.consent('WRONG_APP_NAME', {
+          action: ACTION_COLLECTION,
+          dataType: DATA_TYPE,
+          allowed: true,
+        }, { from: user }),
         'Consents: app does not exist',
       );
     });
 
     it('should fail when the user is unregistered', async () => {
       await expectRevert(
-        consents.consent(APP_NAME, ACTION_COLLECTION, DATA_TYPE, true, { from: stranger }),
+        consents.consent(APP_NAME, {
+          action: ACTION_COLLECTION,
+          dataType: DATA_TYPE,
+          allowed: true,
+        }, { from: stranger }),
         'Accounts: unknown address',
       );
     });
 
     it('should fail when the data type is not registered', async () => {
       await expectRevert(
-        consents.consent(APP_NAME, ACTION_COLLECTION, 'WRONG_DATA_TYPE', true, { from: user }),
+        consents.consent(APP_NAME, {
+          action: ACTION_COLLECTION,
+          dataType: 'WRONG_DATA_TYPE',
+          allowed: true,
+        }, { from: user }),
         'Consents: data type does not exist',
       );
     });
 
     context('when first time', async () => {
       it('should be done correctly', async () => {
-        const { logs } = await consents.consent(APP_NAME, ACTION_COLLECTION, DATA_TYPE, true, {
-          from: user,
-        });
+        const { logs } = await consents.consent(APP_NAME, {
+          action: ACTION_COLLECTION,
+          dataType: DATA_TYPE,
+          allowed: true,
+        }, { from: user });
         expectEvent.inLogs(logs, 'Consented', {
           action: new BN(ACTION_COLLECTION),
           appName: APP_NAME,
@@ -97,11 +111,19 @@ contract('Consents', async (ethAccounts) => {
 
     context('when modifying a consent', async () => {
       it('should modify correctly', async () => {
-        await consents.consent(APP_NAME, ACTION_COLLECTION, DATA_TYPE, true, { from: user });
+        await consents.consent(APP_NAME, {
+          action: ACTION_COLLECTION,
+          dataType: DATA_TYPE,
+          allowed: true,
+        }, { from: user });
         await expect(consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE)).to.be
           .eventually.be.true;
 
-        await consents.consent(APP_NAME, ACTION_COLLECTION, DATA_TYPE, false, { from: user });
+        await consents.consent(APP_NAME, {
+          action: ACTION_COLLECTION,
+          dataType: DATA_TYPE,
+          allowed: false,
+        }, { from: user });
         await expect(consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE)).to.be
           .eventually.be.false;
       });
@@ -111,9 +133,16 @@ contract('Consents', async (ethAccounts) => {
   describe('#consentByController()', () => {
     it('should fail when it called by others (e.g. apps)', async () => {
       await expectRevert(
-        consents.consentByController(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE, true, {
-          from: app,
-        }),
+        consents.consentByController(
+          userId,
+          APP_NAME,
+          {
+            action: ACTION_COLLECTION,
+            dataType: DATA_TYPE,
+            allowed: true,
+          },
+          { from: app },
+        ),
         'Consents: caller is not a data controller',
       );
     });
@@ -123,9 +152,11 @@ contract('Consents', async (ethAccounts) => {
         consents.consentByController(
           userId,
           'UNKNOWN_APP_NAME',
-          ACTION_COLLECTION,
-          DATA_TYPE,
-          true,
+          {
+            action: ACTION_COLLECTION,
+            dataType: DATA_TYPE,
+            allowed: true,
+          },
           { from: controller },
         ),
         'Consents: app does not exist',
@@ -140,9 +171,11 @@ contract('Consents', async (ethAccounts) => {
         consents.consentByController(
           unregisteredUserId,
           APP_NAME,
-          ACTION_COLLECTION,
-          DATA_TYPE,
-          true,
+          {
+            action: ACTION_COLLECTION,
+            dataType: DATA_TYPE,
+            allowed: true,
+          },
           { from: controller },
         ),
         'Consents: sender must be delegate of this user',
@@ -154,9 +187,11 @@ contract('Consents', async (ethAccounts) => {
         consents.consentByController(
           userId,
           APP_NAME,
-          ACTION_COLLECTION,
-          'UNKNOWN_DATA_TYPE',
-          true,
+          {
+            action: ACTION_COLLECTION,
+            dataType: 'UNKNOWN_DATA_TYPE',
+            allowed: true,
+          },
           { from: controller },
         ),
         'Consents: data type',
@@ -168,9 +203,11 @@ contract('Consents', async (ethAccounts) => {
         const { logs } = await consents.consentByController(
           userId,
           APP_NAME,
-          ACTION_COLLECTION,
-          DATA_TYPE,
-          true,
+          {
+            action: ACTION_COLLECTION,
+            dataType: DATA_TYPE,
+            allowed: true,
+          },
           { from: controller },
         );
         expectEvent.inLogs(logs, 'Consented', {
@@ -188,18 +225,22 @@ contract('Consents', async (ethAccounts) => {
         await consents.consentByController(
           userId,
           APP_NAME,
-          ACTION_COLLECTION,
-          DATA_TYPE,
-          true,
+          {
+            action: ACTION_COLLECTION,
+            dataType: DATA_TYPE,
+            allowed: true,
+          },
           { from: controller },
         );
         await expectRevert(
           consents.consentByController(
             userId,
             APP_NAME,
-            ACTION_COLLECTION,
-            DATA_TYPE,
-            false,
+            {
+              action: ACTION_COLLECTION,
+              dataType: DATA_TYPE,
+              allowed: true,
+            },
             { from: controller },
           ),
           "Consents: controllers can't modify users' consent without password",
@@ -232,7 +273,7 @@ contract('Consents', async (ethAccounts) => {
       ];
       const passwordSig = createPasswordSignature(typedParams, password);
       return consents.modifyConsentByController(
-        accountId, appName, action, dataType, allowed, passwordSig, options,
+        accountId, appName, { action, dataType, allowed }, passwordSig, options,
       );
     }
 
@@ -252,9 +293,11 @@ contract('Consents', async (ethAccounts) => {
         await consents.consentByController(
           userId,
           APP_NAME,
-          ACTION_COLLECTION,
-          DATA_TYPE,
-          true,
+          {
+            action: ACTION_COLLECTION,
+            dataType: DATA_TYPE,
+            allowed: true,
+          },
           { from: controller },
         );
       });
@@ -323,7 +366,15 @@ contract('Consents', async (ethAccounts) => {
 
   describe('#isAllowed()', () => {
     it('should return whether user is consented at the current moment', async () => {
-      await consents.consent(APP_NAME, ACTION_COLLECTION, DATA_TYPE, true, { from: user });
+      await consents.consent(
+        APP_NAME,
+        {
+          action: ACTION_COLLECTION,
+          dataType: DATA_TYPE,
+          allowed: true,
+        },
+        { from: user },
+      );
       await expect(consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE)).to.be
         .eventually.be.true;
     });
@@ -331,8 +382,24 @@ contract('Consents', async (ethAccounts) => {
 
   describe('#isAllowedAt()', () => {
     it('should return whether user is consented at the past', async () => {
-      await consents.consent(APP_NAME, ACTION_COLLECTION, DATA_TYPE, true, { from: user });
-      await consents.consent(APP_NAME, ACTION_COLLECTION, DATA_TYPE, false, { from: user });
+      await consents.consent(
+        APP_NAME,
+        {
+          action: ACTION_COLLECTION,
+          dataType: DATA_TYPE,
+          allowed: true,
+        },
+        { from: user },
+      );
+      await consents.consent(
+        APP_NAME,
+        {
+          action: ACTION_COLLECTION,
+          dataType: DATA_TYPE,
+          allowed: false,
+        },
+        { from: user },
+      );
 
       const past = (await web3.eth.getBlockNumber()) - 1;
       await expect(consents.isAllowedAt(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE, past))
