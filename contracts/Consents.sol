@@ -57,7 +57,11 @@ contract Consents {
     struct ConsentData {
         ActionTypes action;
         string dataType;
-        bool allowed;
+        uint8 allowed;
+    }
+
+    function getAllowed(ConsentData memory consentData) internal pure returns (bool) {
+        return consentData.allowed > 0;
     }
 
     function consent(
@@ -69,9 +73,7 @@ contract Consents {
         _updateConsent(
             userId,
             appName,
-            consentData.action,
-            consentData.dataType,
-            consentData.allowed
+            consentData
         );
     }
 
@@ -87,9 +89,7 @@ contract Consents {
             _updateConsent(
                 userId,
                 appName,
-                consentData[index].action,
-                consentData[index].dataType,
-                consentData[index].allowed
+                consentData[index]
             );
         }
     }
@@ -115,9 +115,7 @@ contract Consents {
         _updateConsent(
             userId,
             appName,
-            consentData.action,
-            consentData.dataType,
-            consentData.allowed
+            consentData
         );
     }
 
@@ -144,9 +142,7 @@ contract Consents {
             _updateConsent(
                 userId,
                 appName,
-                consentData[index].action,
-                consentData[index].dataType,
-                consentData[index].allowed
+                consentData[index]
             );
         }
     }
@@ -166,7 +162,7 @@ contract Consents {
             appName,
             uint8(consentData.action),
             consentData.dataType,
-            consentData.allowed
+            getAllowed(consentData)
         );
         require(
             userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
@@ -176,9 +172,7 @@ contract Consents {
         _updateConsent(
             userId,
             appName,
-            consentData.action,
-            consentData.dataType,
-            consentData.allowed
+            consentData
         );
     }
 
@@ -199,7 +193,7 @@ contract Consents {
                 appName,
                 uint8(consentData[index].action),
                 consentData[index].dataType,
-                consentData[index].allowed
+                getAllowed(consentData[index])
             );
             require(
                 userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
@@ -209,9 +203,7 @@ contract Consents {
             _updateConsent(
                 userId,
                 appName,
-                consentData[index].action,
-                consentData[index].dataType,
-                consentData[index].allowed
+                consentData[index]
             );
         }
     }
@@ -219,20 +211,20 @@ contract Consents {
     function _updateConsent(
         bytes8 userId,
         string memory appName,
-        ActionTypes action,
-        string memory dataType,
-        bool allowed
+        ConsentData memory consentData
     ) internal {
         require(accounts.exists(userId), "Consents: user does not exist");
         require(apps.exists(appName), "Consents: app does not exist");
-        require(dataTypes.exists(dataType), "Consents: data type does not exist");
+        require(dataTypes.exists(consentData.dataType), "Consents: data type does not exist");
+
+        bool allowed = getAllowed(consentData);
 
         ConsentsLib.Consent memory consentInfo = ConsentsLib.Consent({
             allowed: allowed,
             at: block.number
         });
-        consents.update(userId, appName, uint(action), dataType, consentInfo);
-        emit Consented(action, userId, apps.get(appName).addr, appName, dataType, allowed);
+        consents.update(userId, appName, uint(consentData.action), consentData.dataType, consentInfo);
+        emit Consented(consentData.action, userId, apps.get(appName).addr, appName, consentData.dataType, allowed);
     }
 
     function isAllowed(
