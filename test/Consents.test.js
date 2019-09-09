@@ -68,7 +68,7 @@ contract('Consents', async (ethAccounts) => {
         consents.consent('WRONG_APP_NAME', {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         }, { from: user }),
         'Consents: app does not exist',
       );
@@ -79,7 +79,7 @@ contract('Consents', async (ethAccounts) => {
         consents.consent(APP_NAME, {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         }, { from: stranger }),
         'Accounts: unknown address',
       );
@@ -90,7 +90,7 @@ contract('Consents', async (ethAccounts) => {
         consents.consent(APP_NAME, {
           action: ACTION_COLLECTION,
           dataType: 'WRONG_DATA_TYPE',
-          allowed: true,
+          allow: true,
         }, { from: user }),
         'Consents: data type does not exist',
       );
@@ -101,7 +101,7 @@ contract('Consents', async (ethAccounts) => {
         const { logs } = await consents.consent(APP_NAME, {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         }, { from: user });
         expectEvent.inLogs(logs, 'Consented', {
           action: new BN(ACTION_COLLECTION),
@@ -118,7 +118,7 @@ contract('Consents', async (ethAccounts) => {
         await consents.consent(APP_NAME, {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         }, { from: user });
         await expect(consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_GPS)).to.be
           .eventually.be.true;
@@ -126,7 +126,7 @@ contract('Consents', async (ethAccounts) => {
         await consents.consent(APP_NAME, {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: false,
+          allow: false,
         }, { from: user });
         await expect(consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_GPS)).to.be
           .eventually.be.false;
@@ -140,7 +140,7 @@ contract('Consents', async (ethAccounts) => {
         consents.consentMany('WRONG_APP_NAME', [{
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         }], { from: user }),
         'Consents: app does not exist',
       );
@@ -151,7 +151,7 @@ contract('Consents', async (ethAccounts) => {
         consents.consentMany(APP_NAME, [{
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         }], { from: stranger }),
         'Accounts: unknown address',
       );
@@ -162,7 +162,7 @@ contract('Consents', async (ethAccounts) => {
         consents.consentMany(APP_NAME, [{
           action: ACTION_COLLECTION,
           dataType: 'WRONG_DATA_TYPE',
-          allowed: true,
+          allow: true,
         }], { from: user }),
         'Consents: data type does not exist',
       );
@@ -174,7 +174,7 @@ contract('Consents', async (ethAccounts) => {
         consentData.push({
           action: ACTION_COLLECTION,
           dataType: 'WRONG_DATA_TYPE',
-          allowed: true,
+          allow: true,
         });
       }
 
@@ -189,11 +189,11 @@ contract('Consents', async (ethAccounts) => {
         const { logs } = await consents.consentMany(APP_NAME, [{
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         }, {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_EMAIL,
-          allowed: false,
+          allow: false,
         }], { from: user });
 
         expectEvent.inLogs(logs, 'Consented', {
@@ -218,11 +218,11 @@ contract('Consents', async (ethAccounts) => {
         await consents.consentMany(APP_NAME, [{
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         }, {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_EMAIL,
-          allowed: false,
+          allow: false,
         }], { from: user });
         await expect(consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_GPS)).to.be
           .eventually.be.true;
@@ -232,11 +232,11 @@ contract('Consents', async (ethAccounts) => {
         await consents.consentMany(APP_NAME, [{
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: false,
+          allow: false,
         }, {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_EMAIL,
-          allowed: true,
+          allow: true,
         }], { from: user });
         await expect(consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_GPS)).to.be
           .eventually.be.false;
@@ -255,7 +255,7 @@ contract('Consents', async (ethAccounts) => {
           {
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           },
           { from: app },
         ),
@@ -271,7 +271,7 @@ contract('Consents', async (ethAccounts) => {
           {
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           },
           { from: controller },
         ),
@@ -290,7 +290,7 @@ contract('Consents', async (ethAccounts) => {
           {
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           },
           { from: controller },
         ),
@@ -306,7 +306,7 @@ contract('Consents', async (ethAccounts) => {
           {
             action: ACTION_COLLECTION,
             dataType: 'UNKNOWN_DATA_TYPE',
-            allowed: true,
+            allow: true,
           },
           { from: controller },
         ),
@@ -322,7 +322,7 @@ contract('Consents', async (ethAccounts) => {
           {
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           },
           { from: controller },
         );
@@ -344,7 +344,7 @@ contract('Consents', async (ethAccounts) => {
           {
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           },
           { from: controller },
         );
@@ -355,7 +355,7 @@ contract('Consents', async (ethAccounts) => {
             {
               action: ACTION_COLLECTION,
               dataType: DATA_TYPE_GPS,
-              allowed: true,
+              allow: true,
             },
             { from: controller },
           ),
@@ -374,7 +374,7 @@ contract('Consents', async (ethAccounts) => {
           [{
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           }],
           { from: app },
         ),
@@ -390,7 +390,7 @@ contract('Consents', async (ethAccounts) => {
           [{
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           }],
           { from: controller },
         ),
@@ -409,7 +409,7 @@ contract('Consents', async (ethAccounts) => {
           [{
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           }],
           { from: controller },
         ),
@@ -425,7 +425,7 @@ contract('Consents', async (ethAccounts) => {
           [{
             action: ACTION_COLLECTION,
             dataType: 'UNKNOWN_DATA_TYPE',
-            allowed: true,
+            allow: true,
           }],
           { from: controller },
         ),
@@ -439,7 +439,7 @@ contract('Consents', async (ethAccounts) => {
         consentData.push({
           action: ACTION_COLLECTION,
           dataType: 'WRONG_DATA_TYPE',
-          allowed: true,
+          allow: true,
         });
       }
 
@@ -462,11 +462,11 @@ contract('Consents', async (ethAccounts) => {
           [{
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           }, {
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_EMAIL,
-            allowed: false,
+            allow: false,
           }],
           { from: controller },
         );
@@ -496,7 +496,7 @@ contract('Consents', async (ethAccounts) => {
           [{
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           }],
           { from: controller },
         );
@@ -508,7 +508,7 @@ contract('Consents', async (ethAccounts) => {
             [{
               action: ACTION_COLLECTION,
               dataType: DATA_TYPE_GPS,
-              allowed: true,
+              allow: true,
             }],
             { from: controller },
           ),
@@ -528,7 +528,7 @@ contract('Consents', async (ethAccounts) => {
       accountId,
       appName,
       dataType,
-      allowed,
+      allow,
       options = { from: controller },
       password = TEST_USER_PASSWORD,
     ) {
@@ -538,11 +538,11 @@ contract('Consents', async (ethAccounts) => {
         { type: 'string', value: appName },
         { type: 'uint8', value: action },
         { type: 'string', value: dataType },
-        { type: 'bool', value: allowed },
+        { type: 'bool', value: allow },
       ];
       const passwordSig = createPasswordSignature(typedParams, password);
       return consents.modifyConsentByController(
-        accountId, appName, { action, dataType, allowed }, passwordSig, options,
+        accountId, appName, { action, dataType, allow }, passwordSig, options,
       );
     }
 
@@ -565,7 +565,7 @@ contract('Consents', async (ethAccounts) => {
           {
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           },
           { from: controller },
         );
@@ -643,7 +643,7 @@ contract('Consents', async (ethAccounts) => {
       accountId,
       appName,
       dataType,
-      allowed,
+      allow,
       options = { from: controller },
       password = TEST_USER_PASSWORD,
     ) {
@@ -653,11 +653,11 @@ contract('Consents', async (ethAccounts) => {
         { type: 'string', value: appName },
         { type: 'uint8', value: action },
         { type: 'string', value: dataType },
-        { type: 'bool', value: allowed },
+        { type: 'bool', value: allow },
       ];
       const passwordSig = createPasswordSignature(typedParams, password);
       return consents.modifyConsentManyByController(
-        accountId, appName, [{ action, dataType, allowed }], passwordSig, options,
+        accountId, appName, [{ action, dataType, allow }], passwordSig, options,
       );
     }
 
@@ -680,7 +680,7 @@ contract('Consents', async (ethAccounts) => {
           {
             action: ACTION_COLLECTION,
             dataType: DATA_TYPE_GPS,
-            allowed: true,
+            allow: true,
           },
           { from: controller },
         );
@@ -755,7 +755,7 @@ contract('Consents', async (ethAccounts) => {
         {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         },
         { from: user },
       );
@@ -771,7 +771,7 @@ contract('Consents', async (ethAccounts) => {
         {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: true,
+          allow: true,
         },
         { from: user },
       );
@@ -780,7 +780,7 @@ contract('Consents', async (ethAccounts) => {
         {
           action: ACTION_COLLECTION,
           dataType: DATA_TYPE_GPS,
-          allowed: false,
+          allow: false,
         },
         { from: user },
       );
