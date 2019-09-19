@@ -20,4 +20,4 @@ jobs:
       - run:
           name: Run Test
           command: |
-            [ -z "$CIRCLE_PR_NUMBER" ] && yarn coverage || yarn test
+            [ -z "$CIRCLE_PR_NUMBER" ] && yarn coverage || yarn test:dev

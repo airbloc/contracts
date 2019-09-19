@@ -5,6 +5,7 @@
 truffle-config.local.js
 deploy.js
 deployment.local.json
+deployment.test.json
 
 ## Intellij
 .idea

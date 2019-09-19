@@ -46,18 +46,18 @@ const config = {
       port: 9545,
       network_id: '*',
     },
-    // baobab: {
-    //   provider: getProviderOf('klaytn:baobab'),
-    //   network_id: '1001', // Baobab network id
-    //   gas: 20000000, // transaction gas limit
-    //   gasPrice: null, // gasPrice of Aspen is 25 Gpeb
-    // },
-    // cypress: {
-    //   provider: getProviderOf('klaytn:cypress'),
-    //   network_id: '*', // unknown
-    //   gas: 20000000,
-    //   gasPrice: null,
-    // },
+    baobab: {
+      provider: getProviderOf('klaytn:baobab'),
+      network_id: '1001',
+      gas: '8500000',
+      gasPrice: null,
+    },
+    cypress: {
+      provider: getProviderOf('klaytn:cypress'),
+      network_id: '8217', // unknown
+      gas: '8500000',
+      gasPrice: null,
+    },
   },
   solc: {
     optimizer: {

@@ -54,70 +54,179 @@ contract Consents {
         _;
     }
 
+    struct ConsentData {
+        ActionTypes action;
+        string dataType;
+        bool allow;
+    }
+
     function consent(
         string memory appName,
-        ActionTypes action,
-        string memory dataType,
-        bool allowed
+        ConsentData memory consentData
     ) public {
         require(apps.exists(appName), "Consents: app does not exist");
         bytes8 userId = accounts.getAccountId(msg.sender);
-        _updateConsent(userId, appName, action, dataType, allowed);
+        _updateConsent(
+            userId,
+            appName,
+            consentData
+        );
+    }
+
+    function consentMany(
+        string memory appName,
+        ConsentData[] memory consentData
+    ) public {
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(consentData.length < 64, "Consents: input length exceeds");
+
+        bytes8 userId = accounts.getAccountId(msg.sender);
+        for (uint index = 0; index < consentData.length; index++) {
+            _updateConsent(
+                userId,
+                appName,
+                consentData[index]
+            );
+        }
     }
 
     function consentByController(
         bytes8 userId,
         string memory appName,
-        ActionTypes action,
-        string memory dataType,
-        bool allowed
+        ConsentData memory consentData
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
         require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
-        if (consents.exists(userId, appName, uint(action), dataType)) {
+        bool consentExists = consents.exists(
+            userId,
+            appName,
+            uint(consentData.action),
+            consentData.dataType
+        );
+        if (consentExists) {
             revert("Consents: controllers can't modify users' consent without password");
         }
-        _updateConsent(userId, appName, action, dataType, allowed);
+
+        _updateConsent(
+            userId,
+            appName,
+            consentData
+        );
+    }
+
+    function consentManyByController(
+        bytes8 userId,
+        string memory appName,
+        ConsentData[] memory consentData
+    ) public onlyDataController{
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(consentData.length < 64, "Consents: input length exceeds");
+        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+
+        for (uint index = 0; index < consentData.length; index++) {
+            bool consentExists = consents.exists(
+                userId,
+                appName,
+                uint(consentData[index].action),
+                consentData[index].dataType
+            );
+            if (consentExists) {
+                revert("Consents: controllers can't modify users' consent without password");
+            }
+
+            _updateConsent(
+                userId,
+                appName,
+                consentData[index]
+            );
+        }
     }
 
     function modifyConsentByController(
         bytes8 userId,
         string memory appName,
-        ActionTypes action,
-        string memory dataType,
-        bool allowed,
+        ConsentData memory consentData,
         bytes memory passwordSignature
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
         require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         // changing an already given consent requires a password key
-        bytes memory message = abi.encodePacked(userId, appName, uint8(action), dataType, allowed);
+        bytes memory message = abi.encodePacked(
+            userId,
+            appName,
+            uint8(consentData.action),
+            consentData.dataType,
+            consentData.allow
+        );
         require(
             userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
             "Consents: password mismatch"
         );
-        _updateConsent(userId, appName, action, dataType, allowed);
+
+        _updateConsent(
+            userId,
+            appName,
+            consentData
+        );
+    }
+
+    function modifyConsentManyByController(
+        bytes8 userId,
+        string memory appName,
+        ConsentData[] memory consentData,
+        bytes memory passwordSignature
+    ) public onlyDataController {
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(consentData.length < 64, "Consents: input length exceeds");
+        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+
+        for (uint index = 0; index < consentData.length; index++) {
+            // changing an already given consent requires a password key
+            bytes memory message = abi.encodePacked(
+                userId,
+                appName,
+                uint8(consentData[index].action),
+                consentData[index].dataType,
+                consentData[index].allow
+            );
+            require(
+                userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
+                "Consents: password mismatch"
+            );
+
+            _updateConsent(
+                userId,
+                appName,
+                consentData[index]
+            );
+        }
     }
 
     function _updateConsent(
         bytes8 userId,
         string memory appName,
-        ActionTypes action,
-        string memory dataType,
-        bool allowed
+        ConsentData memory consentData
     ) internal {
         require(accounts.exists(userId), "Consents: user does not exist");
         require(apps.exists(appName), "Consents: app does not exist");
-        require(dataTypes.exists(dataType), "Consents: data type does not exist");
+        require(dataTypes.exists(consentData.dataType), "Consents: data type does not exist");
 
         ConsentsLib.Consent memory consentInfo = ConsentsLib.Consent({
-            allowed: allowed,
+            allowed: consentData.allow,
             at: block.number
         });
-        consents.update(userId, appName, uint(action), dataType, consentInfo);
-        emit Consented(action, userId, apps.get(appName).addr, appName, dataType, allowed);
+        consents.update(userId, appName, uint(consentData.action), consentData.dataType, consentInfo);
+
+        emit Consented(
+            consentData.action,
+            userId,
+            apps.get(appName).addr,
+            appName,
+            consentData.dataType,
+            consentData.allow
+        );
     }
 
     function isAllowed(

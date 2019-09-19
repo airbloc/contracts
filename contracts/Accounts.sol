@@ -134,10 +134,18 @@ contract Accounts {
         return accounts[accountId];
     }
 
+    function getAccountByIdentityHash(bytes32 identityHash) public view returns (Account memory) {
+        return getAccount(identityHashToAccount[identityHash]);
+    }
+
     function getAccountId(address sender) public view returns (bytes8) {
         bytes8 accountId = addressToAccount[sender];
         require(accounts[accountId].status != AccountStatus.NONE, "Accounts: unknown address");
         return accountId;
+    }
+
+    function getAccountIdByIdentityHash(bytes32 identityHash) public view returns (bytes8) {
+        return identityHashToAccount[identityHash];
     }
 
     function getAccountIdFromSignature(bytes32 messageHash, bytes memory signature) public view returns (bytes8) {
