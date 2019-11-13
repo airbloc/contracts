@@ -106,7 +106,7 @@ contract RBAC {
                 return role;
             }
         }
-        revert('RBAC: role not found');
+        revert("RBAC: role not found");
     }
 
     /**
