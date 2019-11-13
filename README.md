@@ -1,5 +1,8 @@
 Airbloc Contracts
 =================
+[![CircleCI](https://circleci.com/gh/airbloc/contracts/tree/master.svg?style=shield)](https://circleci.com/gh/airbloc/contracts/tree/master)
+[![Coverage Status](https://coveralls.io/repos/github/airbloc/contracts/badge.svg?branch=master)](https://coveralls.io/github/airbloc/contracts?branch=master)
+
 `airbloc/contract` contains on-chain backend contract codes
 written in [Solidity](https://solidity.readthedocs.io) v0.5.0.
 

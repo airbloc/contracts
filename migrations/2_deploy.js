@@ -13,9 +13,10 @@ const ExchangeLib = artifacts.require('ExchangeLib');
 // for test
 const SimpleToken = artifacts.require('SimpleToken');
 
-const DEPLOYMENT_OUTPUT_PATH = 'deployment.local.json';
+const DEPLOYMENT_OUTPUT_PREFIX = 'deployment';
 
-const testNetwork = ['dev', 'local', 'ropsten', 'rinkeby', 'aspen', 'baobab'];
+const localNetwork = ['dev', 'local'];
+const testNetwork = ['ropsten', 'rinkeby', 'aspen', 'baobab'];
 const mainNetwork = ['mainnet', 'cypress'];
 
 module.exports = (deployer, network) => {
@@ -47,7 +48,7 @@ module.exports = (deployer, network) => {
     // escrow
     await deployer.deploy(ERC20Escrow, Exchange.address);
 
-    if (testNetwork.includes(network)) {
+    if (testNetwork.includes(network) || localNetwork.includes(network)) {
       await deployer.deploy(SimpleToken);
     }
 
@@ -61,7 +62,7 @@ module.exports = (deployer, network) => {
       Exchange,
     };
 
-    if (testNetwork.includes(network)) {
+    if (testNetwork.includes(network) || localNetwork.includes(network)) {
       deployedContracts.SimpleToken = SimpleToken;
     }
 
@@ -81,7 +82,17 @@ module.exports = (deployer, network) => {
 
     await Promise.all(convertPromises);
 
-    console.log('Writing deployments to deployment.local.json');
-    fs.writeFileSync(DEPLOYMENT_OUTPUT_PATH, JSON.stringify(deployments, null, '  '));
+    if (localNetwork.includes(network)) {
+      console.log('Writing deployments to deployment.local.json');
+      fs.writeFileSync(`${DEPLOYMENT_OUTPUT_PREFIX}.local.json`, JSON.stringify(deployments, null, '  '));
+    }
+    if (testNetwork.includes(network)) {
+      console.log('Writing deployments to deployment.test.json');
+      fs.writeFileSync(`${DEPLOYMENT_OUTPUT_PREFIX}.test.json`, JSON.stringify(deployments, null, '  '));
+    }
+    if (mainNetwork.includes(network)) {
+      console.log('Writing deployments to deployment.json');
+      fs.writeFileSync(`${DEPLOYMENT_OUTPUT_PREFIX}.json`, JSON.stringify(deployments, null, '  '));
+    }
   });
 };
