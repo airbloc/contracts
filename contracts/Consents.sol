@@ -13,8 +13,6 @@ import "./DataTypeRegistry.sol";
 contract Consents {
     using ConsentsLib for ConsentsLib.Consents;
     
-    string public constant ACTION_CONSENT_MODIFY = "consent:modify";
-    
     enum ActionTypes {
         Collection,
         Exchange
