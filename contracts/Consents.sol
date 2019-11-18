@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./Accounts.sol";
+import "./Users.sol";
 import "./AppRegistry.sol";
 import "./ConsentsLib.sol";
 import "./DataTypeRegistry.sol";
@@ -12,7 +12,9 @@ import "./DataTypeRegistry.sol";
  */
 contract Consents {
     using ConsentsLib for ConsentsLib.Consents;
-
+    
+    string public constant ACTION_CONSENT_MODIFY = "consent:modify";
+    
     enum ActionTypes {
         Collection,
         Exchange
@@ -30,20 +32,20 @@ contract Consents {
     // consents
     ConsentsLib.Consents private consents;
 
-    Accounts private accounts;
+    Users private users;
     AppRegistry private apps;
     ControllerRegistry private dataControllers;
     DataTypeRegistry private dataTypes;
 
     constructor(
-        Accounts accountReg,
+        Users userReg,
         AppRegistry appReg,
         ControllerRegistry controllerReg,
         DataTypeRegistry dataTypeReg
     )
         public
     {
-        accounts = accountReg;
+        users = userReg;
         apps = appReg;
         dataControllers = controllerReg;
         dataTypes = dataTypeReg;
@@ -61,11 +63,15 @@ contract Consents {
     }
 
     function consent(
+        bytes8 userId,
         string memory appName,
         ConsentData memory consentData
     ) public {
         require(apps.exists(appName), "Consents: app does not exist");
-        bytes8 userId = accounts.getAccountId(msg.sender);
+        
+//        bool isOwner = (userId == users.getUserId(msg.sender));
+//        bool isAuthorized = ();
+        
         _updateConsent(
             userId,
             appName,
@@ -80,7 +86,7 @@ contract Consents {
         require(apps.exists(appName), "Consents: app does not exist");
         require(consentData.length < 64, "Consents: input length exceeds");
 
-        bytes8 userId = accounts.getAccountId(msg.sender);
+        bytes8 userId = users.getUserId(msg.sender);
         for (uint index = 0; index < consentData.length; index++) {
             _updateConsent(
                 userId,
@@ -96,7 +102,7 @@ contract Consents {
         ConsentData memory consentData
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
-        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+        require(users.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         bool consentExists = consents.exists(
             userId,
@@ -122,7 +128,7 @@ contract Consents {
     ) public onlyDataController{
         require(apps.exists(appName), "Consents: app does not exist");
         require(consentData.length < 64, "Consents: input length exceeds");
-        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+        require(users.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         for (uint index = 0; index < consentData.length; index++) {
             bool consentExists = consents.exists(
@@ -150,7 +156,7 @@ contract Consents {
         bytes memory passwordSignature
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
-        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+        require(users.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         // changing an already given consent requires a password key
         bytes memory message = abi.encodePacked(
@@ -161,7 +167,7 @@ contract Consents {
             consentData.allow
         );
         require(
-            userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
+            userId == users.getUserIdFromSignature(keccak256(message), passwordSignature),
             "Consents: password mismatch"
         );
 
@@ -180,7 +186,7 @@ contract Consents {
     ) public onlyDataController {
         require(apps.exists(appName), "Consents: app does not exist");
         require(consentData.length < 64, "Consents: input length exceeds");
-        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
+        require(users.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
 
         for (uint index = 0; index < consentData.length; index++) {
             // changing an already given consent requires a password key
@@ -192,7 +198,7 @@ contract Consents {
                 consentData[index].allow
             );
             require(
-                userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
+                userId == users.getUserIdFromSignature(keccak256(message), passwordSignature),
                 "Consents: password mismatch"
             );
 
@@ -209,7 +215,7 @@ contract Consents {
         string memory appName,
         ConsentData memory consentData
     ) internal {
-        require(accounts.exists(userId), "Consents: user does not exist");
+        require(users.exists(userId), "Consents: user does not exist");
         require(apps.exists(appName), "Consents: app does not exist");
         require(dataTypes.exists(consentData.dataType), "Consents: data type does not exist");
 
