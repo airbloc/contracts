@@ -10,10 +10,15 @@ import "../utils/StringUtils.sol";
 contract RBAC {
     using StringUtils for string;
 
+    // Events related with Roles
     event RoleCreation(bytes8 indexed resourceId, string roleName);
     event RoleRemoval(bytes8 indexed resourceId, string roleName);
     event RoleBound(bytes8 indexed resourceId, address indexed subject, string roleName);
     event RoleUnbound(bytes8 indexed resourceId, address indexed subject, string roleName);
+    
+    // Events related with Actions
+    event ActionGranted(bytes8 indexed resourceId, string roleName, string actionName);
+    event ActionRevoked(bytes8 indexed resourceId, string roleName, string actionName);
 
     struct Role {
         string name;
@@ -87,6 +92,8 @@ contract RBAC {
 
         Role storage role = _getRole(resourceId, roleName);
         role.actions[action] = true;
+        
+        emit ActionGranted(resourceId, roleName, action);
     }
 
     /**
@@ -97,6 +104,8 @@ contract RBAC {
 
         Role storage role = _getRole(resourceId, roleName);
         delete(role.actions[action]);
+        
+        emit ActionRevoked(resourceId, roleName, action);
     }
 
     function _getRole(bytes8 resourceId, string memory roleName) internal view returns (Role storage) {
