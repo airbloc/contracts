@@ -1,43 +1,52 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
+import "./rbac/RBAC.sol";
+
+
 /**
  * AppRegistry is a contract for managing apps (Data Providers).
  *
  * In the future, in order to register application,
  * a data provider must stake ABL to this contract as a colletral.
  */
-contract AppRegistry {
+contract AppRegistry is RBAC {
 
-    event Registration(address indexed appAddr, string appName);
-    event Unregistration(address indexed appAddr, string appName);
+    event Registration(bytes8 indexed appId, string appName);
+    event Unregistration(bytes8 indexed appId, string appName);
 
     event AppOwnerTransferred(
-        address indexed appAddr, string appName,
+        bytes8 indexed appId, string appName,
         address indexed oldOwner, address newOwner);
 
     struct App {
         string name;
         address owner;
-        address addr;
     }
 
-    mapping(string => App) apps;
-    mapping(address => string) appAddrToName;
+    mapping(bytes8 => App) private apps;
+    mapping(string => bytes8) private nameToApp;
 
+    function isResourceOwner(bytes8 appId, address account) internal view returns (bool) {
+        return apps[appId].owner == account || address(this) == account;
+    }
+    
     /**
      * @dev Creates a new application.
      */
-    function register(string memory appName) public {
+    function register(string memory appName) public returns (bytes8) {
         require(!exists(appName), "AppRegistry: app name already exist");
 
+        bytes8 appId = generateId(appName);
+        
         App storage app = _get(appName);
         app.name = appName;
         app.owner = msg.sender;
-        app.addr = address(bytes20(keccak256(abi.encodePacked(appName))));
-        appAddrToName[app.addr] = app.name;
 
-        emit Registration(app.addr, app.name);
+        nameToApp[appName] = appId;
+        
+        emit Registration(appId, appName);
+        return appId;
     }
 
     /**
@@ -46,13 +55,19 @@ contract AppRegistry {
     function unregister(string memory appName) public {
         require(isOwner(appName, msg.sender), "AppRegistry: unauthorized");
 
-        App memory app = get(appName);
-        delete apps[appName];
-        delete appAddrToName[app.addr];
+        bytes8 appId = getId(appName);
+        delete apps[appId];
+        delete nameToApp[appName];
 
-        emit Unregistration(app.addr, app.name);
+        emit Unregistration(appId, appName);
     }
-
+    
+    /**
+     * @dev generates appId.
+     */
+    function generateId(string memory appName) internal view returns (bytes8) {
+        return bytes8(keccak256(abi.encodePacked(appName)));
+    }
 
     /**
      * @dev Returns an application object.
@@ -62,12 +77,19 @@ contract AppRegistry {
         require(exists(appName), "AppRegistry: app does not exist");
         return _get(appName);
     }
+    
+    /**
+     * @dev Returns an application id.
+     */
+    function getId(string memory appName) public view returns (bytes8) {
+        return nameToApp[appName];
+    }
 
     /**
      * @return An storage-reference of application object even if it does not exist.
      */
     function _get(string memory appName) internal view returns (App storage) {
-        return apps[appName];
+        return apps[getId(appName)];
     }
 
     /**
@@ -94,6 +116,6 @@ contract AppRegistry {
         address oldOwner = app.owner;
         app.owner = newOwner;
 
-        emit AppOwnerTransferred(app.addr, appName, oldOwner, newOwner);
+        emit AppOwnerTransferred(getId(appName), appName, oldOwner, newOwner);
     }
 }

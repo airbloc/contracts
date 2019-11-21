@@ -21,7 +21,7 @@ contract Consents {
     event Consented(
         ActionTypes indexed action,
         bytes8 indexed userId,
-        address indexed appAddr,
+        bytes8 indexed appId,
         string appName,
         string dataType,
         bool allowed
@@ -130,7 +130,7 @@ contract Consents {
         emit Consented(
             consentData.action,
             userId,
-            apps.get(appName).addr,
+            apps.getId(appName),
             appName,
             consentData.dataType,
             consentData.allow
