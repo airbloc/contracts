@@ -46,7 +46,7 @@ contract Users is RBAC {
     }
 
     modifier onlyDataController() {
-        require(dataControllers.exists(msg.sender), "Users: caller is not a data controller");
+        require(dataControllers.isController(msg.sender), "Users: caller is not a data controller");
         _;
     }
     
@@ -157,7 +157,7 @@ contract Users is RBAC {
         
         // the controller and the proxy cannot modify controller.
         // a controller can be set only through the user owner's direct transaction.
-        require(dataControllers.exists(newController), "Users: given address is not a data controller");
+        require(dataControllers.isController(newController), "Users: given address is not a data controller");
         require(userId != bytes8(0), "Users: user does not exist");
         
         User storage user = users[userId];

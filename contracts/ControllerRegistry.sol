@@ -12,43 +12,34 @@ contract ControllerRegistry is Ownable {
     event Registration(address indexed controller);
     event Unregistration(address indexed controller);
 
-    struct DataController {
-        address controller;
-        uint256 usersCount;
-    }
-
-    mapping(address => DataController) private controllers;
+    mapping(address => bool) private controllers;
 
     /**
-     * @dev Creates a new application.
+     * @dev Register given address in controller registry
      */
     function register(address controllerAddr) public onlyOwner {
-        require(!exists(controllerAddr), "ControllerRegistry: already registered");
+        require(!isController(controllerAddr), "ControllerRegistry: already registered");
 
-        DataController storage controller = controllers[controllerAddr];
-        controller.controller = controllerAddr;
-        controller.usersCount = 0;
+        controllers[controllerAddr] = true;
 
         emit Registration(controllerAddr);
     }
 
     /**
-     * @dev Returns an application object.
-     * Reverts if the given name does not exist.
+     * @dev Unregister given address in controller registry
      */
-    function get(address controller) public view returns (DataController memory) {
-        require(exists(controller), "ControllerRegistry: controller does not exist");
-        return _get(controller);
+    function unregister(address controllerAddr) public onlyOwner {
+        require(isController(controllerAddr), "ControllerRegistry: already unregistered");
+        
+        delete controllers[controllerAddr];
+        
+        emit Unregistration(controllerAddr);
     }
 
     /**
-     * @return true if given app name exists.
+     * @return true if given address is controller.
      */
-    function exists(address controller) public view returns (bool) {
-        return _get(controller).controller != address(0x0);
-    }
-
-    function _get(address controller) internal view returns (DataController storage) {
+    function isController(address controller) public view returns (bool) {
         return controllers[controller];
     }
 }

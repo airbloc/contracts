@@ -50,7 +50,7 @@ contract Consents {
     }
 
     modifier onlyDataController() {
-        require(dataControllers.exists(msg.sender), "Consents: caller is not a data controller");
+        require(dataControllers.isController(msg.sender), "Consents: caller is not a data controller");
         _;
     }
 
