@@ -28,23 +28,23 @@ contract AppRegistry is RBAC {
     mapping(string => bytes8) private nameToApp;
 
     function isResourceOwner(bytes8 appId, address account) internal view returns (bool) {
-        return apps[appId].owner == account || address(this) == account;
+        return apps[appId].owner == account;
     }
-    
+
     /**
      * @dev Creates a new application.
      */
     function register(string memory appName) public returns (bytes8) {
-        require(!exists(appName), "AppRegistry: app name already exist");
+        require(!exists(appName), "AppRegistry: app correspond to this name already registered");
 
         bytes8 appId = generateId(appName);
-        
+
         App storage app = _get(appName);
         app.name = appName;
         app.owner = msg.sender;
 
         nameToApp[appName] = appId;
-        
+
         emit Registration(appId, appName);
         return appId;
     }
@@ -61,11 +61,11 @@ contract AppRegistry is RBAC {
 
         emit Unregistration(appId, appName);
     }
-    
+
     /**
      * @dev generates appId.
      */
-    function generateId(string memory appName) internal view returns (bytes8) {
+    function generateId(string memory appName) internal pure returns (bytes8) {
         return bytes8(keccak256(abi.encodePacked(appName)));
     }
 
@@ -77,7 +77,7 @@ contract AppRegistry is RBAC {
         require(exists(appName), "AppRegistry: app does not exist");
         return _get(appName);
     }
-    
+
     /**
      * @dev Returns an application id.
      */
