@@ -10,12 +10,12 @@ import "./rbac/RBAC.sol";
 contract Users is RBAC {
     using SafeMath for uint256;
     using ECDSA for bytes32;
-    
+
     string constant public ROLE_DATA_CONTROLLER = "dataController";
     string constant public ACTION_CONSENT_CREATE = "consent:create";
     string constant public ACTION_CONSENT_MODIFY = "consent:modify";
     string constant public ACTION_USER_TRANSFER_OWNERSHIP = "user:transferOwnership";
-    
+
     event SignUp(address indexed owner, bytes8 userId);
     event TemporaryCreated(address indexed proxy, bytes32 indexed identityHash, bytes8 userId);
     event Unlocked(bytes32 indexed identityHash, bytes8 indexed userId, address newOwner);
@@ -34,7 +34,7 @@ contract Users is RBAC {
 
     mapping (bytes8 => User) public users;
     mapping (address => bytes8) private addressToUser;
-    
+
     mapping (bytes32 => bytes8) public identityHashToUser;
 
     uint256 public numberOfUsers;
@@ -49,32 +49,32 @@ contract Users is RBAC {
         require(dataControllers.isController(msg.sender), "Users: caller is not a data controller");
         _;
     }
-    
+
     function isResourceOwner(bytes8 userId, address account) internal view returns (bool) {
-        return userId == addressToUser[account] || address(this) == account;
+        return userId == addressToUser[account];
     }
-    
+
     function createInitialRole(bytes8 userId) internal {
-        createRole(userId, ROLE_DATA_CONTROLLER);
-        grantAction(userId, ROLE_DATA_CONTROLLER, ACTION_CONSENT_CREATE);
+        _createRole(userId, ROLE_DATA_CONTROLLER);
+        _grantAction(userId, ROLE_DATA_CONTROLLER, ACTION_CONSENT_CREATE);
         // TODO: Add more actions for role "dataController"
         // TODO: Add more roles for resource "userId"
     }
 
     function create() external returns (bytes8) {
         require(
-            addressToUser[msg.sender] == bytes8(0),
+            addressToUser[msg.sender] == bytes8(0x0),
             "Users: you can make only one user per one Klaytn Account");
 
         // generate userId & insert information to User struct
-        bytes8 userId = generateId(bytes32(0), msg.sender);
+        bytes8 userId = generateId(bytes32(0x0), msg.sender);
         users[userId].owner = msg.sender;
         users[userId].status = UserStatus.CREATED;
-        
+        addressToUser[msg.sender] = userId;
+
         // create initial role for given userId
         createInitialRole(userId);
 
-        addressToUser[msg.sender] = userId;
         emit SignUp(msg.sender, userId);
         return userId;
     }
@@ -85,19 +85,19 @@ contract Users is RBAC {
         returns (bytes8)
     {
         require(
-            identityHashToUser[identityHash] == bytes8(0), 
+            identityHashToUser[identityHash] == bytes8(0),
             "Users: user already exists");
 
         // generate userId & insert information to User struct
         bytes8 userId = generateId(identityHash, msg.sender);
         users[userId].controller = msg.sender;
         users[userId].status = UserStatus.TEMPORARY;
-        
+        identityHashToUser[identityHash] = userId;
+
         // create initial role for given userId
         createInitialRole(userId);
-        bindRole(userId, msg.sender, ROLE_DATA_CONTROLLER);
+        _bindRole(userId, msg.sender, ROLE_DATA_CONTROLLER);
 
-        identityHashToUser[identityHash] = userId;
         emit TemporaryCreated(msg.sender, identityHash, userId);
         return userId;
     }
@@ -119,15 +119,14 @@ contract Users is RBAC {
         require(
             addressToUser[newOwner] == bytes8(0),
             "Users: you can make only one user per one Klaytn Account");
-        user.owner = newOwner;
-        addressToUser[newOwner] = userId;
 
-        bytes memory message = abi.encodePacked(identityPreimage, newOwner);
+        user.owner = newOwner;
         user.status = UserStatus.CREATED;
+        addressToUser[newOwner] = userId;
 
         emit Unlocked(identityHash, userId, newOwner);
     }
-    
+
 //    function addController(address controller) external {
 //        bytes8 userId = addressToUser[msg.sender];
 //
@@ -136,7 +135,7 @@ contract Users is RBAC {
 //        require(dataControllers.exists(controller), "Users: given address is not a data controller");
 //        require(userId != bytes8(0x0), "Users: user does not exist");
 //        require(!isAuthorized(userId, controller, ROLE_DATA_CONTROLLER), "Users: given address is already authorized");
-//        
+//
 //        bindRole(userId, controller, ROLE_DATA_CONTROLLER);
 //    }
 //
@@ -148,30 +147,31 @@ contract Users is RBAC {
 //        require(dataControllers.exists(controller), "Users: given address is not a data controller");
 //        require(userId != bytes8(0x0), "Users: user does not exist");
 //        require(isAuthorized(userId, controller, ROLE_DATA_CONTROLLER), "Users: given address is already unauthorized");
-//        
+//
 //        unbindRole(userId, controller, ROLE_DATA_CONTROLLER);
 //    }
-    
+
     function setController(address newController) external {
         bytes8 userId = addressToUser[msg.sender];
-        
+
         // the controller and the proxy cannot modify controller.
         // a controller can be set only through the user owner's direct transaction.
         require(dataControllers.isController(newController), "Users: given address is not a data controller");
         require(userId != bytes8(0), "Users: user does not exist");
-        
+
         User storage user = users[userId];
+        require(user.controller != newController, "Users: given address is already a controller of user");
         if (user.controller != address(0x0)) {
-            unbindRole(userId, user.controller, ROLE_DATA_CONTROLLER);
+            _unbindRole(userId, user.controller, ROLE_DATA_CONTROLLER);
         }
-        bindRole(userId, newController, ROLE_DATA_CONTROLLER);
+        _bindRole(userId, newController, ROLE_DATA_CONTROLLER);
         user.controller = newController;
     }
 
     function getUser(bytes8 userId) public view returns (User memory) {
         require(exists(userId), "Users: user does not exist");
         return users[userId];
-}
+    }
 
     function getUserByIdentityHash(bytes32 identityHash) public view returns (User memory) {
         return getUser(identityHashToUser[identityHash]);
@@ -192,7 +192,7 @@ contract Users is RBAC {
     }
 
     function isControllerOf(address sender, bytes8 userId) public view returns (bool) {
-        return isAuthorized(userId, sender, ROLE_DATA_CONTROLLER);
+        return getUser(userId).controller == sender;
     }
 
     function generateId(bytes32 uniqueData, address creator) internal view returns (bytes8) {
