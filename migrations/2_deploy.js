@@ -1,6 +1,6 @@
 const fs = require('fs');
 
-const Accounts = artifacts.require('Accounts');
+const Users = artifacts.require('Users');
 const AppRegistry = artifacts.require('AppRegistry');
 const Consents = artifacts.require('Consents');
 const ConsentsLib = artifacts.require('ConsentsLib');
@@ -9,6 +9,7 @@ const DataTypeRegistry = artifacts.require('DataTypeRegistry');
 const ERC20Escrow = artifacts.require('ERC20Escrow');
 const Exchange = artifacts.require('Exchange');
 const ExchangeLib = artifacts.require('ExchangeLib');
+const StringUtils = artifacts.require('StringUtils');
 
 // for test
 const SimpleToken = artifacts.require('SimpleToken');
@@ -24,19 +25,25 @@ module.exports = (deployer, network) => {
     // contracts without any dependencies will go here:
     // const baseContracts = [AppRegistry, ControllerRegistry, DataTypeRegistry];
 
+    await deployer.deploy(StringUtils);
+
+    await deployer.link(StringUtils, AppRegistry);
     await deployer.deploy(AppRegistry);
+
     await deployer.deploy(ControllerRegistry);
     await deployer.deploy(DataTypeRegistry);
 
-    // accounts
-    await deployer.deploy(Accounts, ControllerRegistry.address);
+    // users
+    await deployer.link(StringUtils, Users);
+    await deployer.deploy(Users, ControllerRegistry.address);
+
 
     // consents
     await deployer.deploy(ConsentsLib);
     await deployer.link(ConsentsLib, Consents);
     await deployer.deploy(
       Consents,
-      Accounts.address, AppRegistry.address,
+      Users.address, AppRegistry.address,
       ControllerRegistry.address, DataTypeRegistry.address,
     );
 
@@ -53,7 +60,7 @@ module.exports = (deployer, network) => {
     }
 
     const deployedContracts = {
-      Accounts,
+      Users,
       AppRegistry,
       Consents,
       ControllerRegistry,
