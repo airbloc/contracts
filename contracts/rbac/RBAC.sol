@@ -4,7 +4,7 @@ pragma experimental ABIEncoderV2;
 import "../utils/StringUtils.sol";
 
 /**
- * @dev RBAC is an abstract contract for implementing 
+ * @dev RBAC is an abstract contract for implementing
  * role-based access control for resources in Airbloc.
  */
 contract RBAC {
@@ -15,7 +15,7 @@ contract RBAC {
     event RoleRemoval(bytes8 indexed resourceId, string roleName);
     event RoleBound(bytes8 indexed resourceId, address indexed subject, string roleName);
     event RoleUnbound(bytes8 indexed resourceId, address indexed subject, string roleName);
-    
+
     // Events related with Actions
     event ActionGranted(bytes8 indexed resourceId, string roleName, string actionName);
     event ActionRevoked(bytes8 indexed resourceId, string roleName, string actionName);
@@ -60,10 +60,10 @@ contract RBAC {
     }
 
     /**
-     * @dev Creates an empty role to the resource with no actions.
+     * @dev Creates an initial roles to the resource with no actions without permission.
+     * This method can be called only in this/inherited contracts.
      */
-    function createRole(bytes8 resourceId, string memory roleName) public {
-        require(isAuthorized(resourceId, msg.sender, "role:manage"), "RBAC: unauthorized");
+    function _createRole(bytes8 resourceId, string memory roleName) internal {
         require(bytes(roleName).length > 0, "RBAC: invalid role name");
 
         Role memory role = Role({ name: roleName });
@@ -85,6 +85,14 @@ contract RBAC {
     }
 
     /**
+     * @dev Creates an empty role to the resource with no actions.
+     */
+    function createRole(bytes8 resourceId, string memory roleName) public {
+        require(isAuthorized(resourceId, msg.sender, "role:manage"), "RBAC: unauthorized");
+        _createRole(resourceId, roleName);
+    }
+
+    /**
      * @dev Grant given action to the role of the resource.
      */
     function grantAction(bytes8 resourceId, string memory roleName, string memory action) public {
@@ -92,7 +100,7 @@ contract RBAC {
 
         Role storage role = _getRole(resourceId, roleName);
         role.actions[action] = true;
-        
+
         emit ActionGranted(resourceId, roleName, action);
     }
 
@@ -104,7 +112,7 @@ contract RBAC {
 
         Role storage role = _getRole(resourceId, roleName);
         delete(role.actions[action]);
-        
+
         emit ActionRevoked(resourceId, roleName, action);
     }
 
