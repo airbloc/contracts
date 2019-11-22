@@ -60,7 +60,7 @@ contract RBAC {
     }
 
     /**
-     * @dev Creates an initial roles to the resource with no actions without permission.
+     * @dev Creates an empty role to the resource with no actions without permission.
      * This method can be called only in this/inherited contracts.
      */
     function _createRole(bytes8 resourceId, string memory roleName) internal {
@@ -93,11 +93,10 @@ contract RBAC {
     }
 
     /**
-     * @dev Grant given action to the role of the resource.
+     * @dev Grant given action to the role of the resource without permission.
+     * This method can be called only in this/inherited contracts.
      */
-    function grantAction(bytes8 resourceId, string memory roleName, string memory action) public {
-        require(isAuthorized(resourceId, msg.sender, "role:manage"), "RBAC: unauthorized");
-
+    function _grantAction(bytes8 resourceId, string memory roleName, string memory action) internal {
         Role storage role = _getRole(resourceId, roleName);
         role.actions[action] = true;
 
@@ -105,18 +104,33 @@ contract RBAC {
     }
 
     /**
-     * @dev Revoke given action to the role of the resource.
+     * @dev Grant given action to the role of the resource.
      */
-    function revokeAction(bytes8 resourceId, string memory roleName, string memory action) public {
+    function grantAction(bytes8 resourceId, string memory roleName, string memory action) public {
         require(isAuthorized(resourceId, msg.sender, "role:manage"), "RBAC: unauthorized");
+        _grantAction(resourceId, roleName, action);
+    }
 
+    /**
+     * @dev Revoke given acton to the role of the resource without permission.
+     * This method can be called only in this/inherited contracts.
+     */
+    function _revokeAction(bytes8 resourceId, string memory roleName, string memory action) internal {
         Role storage role = _getRole(resourceId, roleName);
         delete(role.actions[action]);
 
         emit ActionRevoked(resourceId, roleName, action);
     }
 
-    function _getRole(bytes8 resourceId, string memory roleName) internal view returns (Role storage) {
+    /**
+     * @dev Revoke given action to the role of the resource.
+     */
+    function revokeAction(bytes8 resourceId, string memory roleName, string memory action) public {
+        require(isAuthorized(resourceId, msg.sender, "role:manage"), "RBAC: unauthorized");
+        _revokeAction(resourceId, roleName, action);
+    }
+
+    function _getRole(bytes8 resourceId, string memory roleName) private view returns (Role storage) {
         for (uint i = 0; i < roles[resourceId].length; i++) {
             Role storage role = roles[resourceId][i];
             if (role.name.equals(roleName)) {
@@ -127,10 +141,10 @@ contract RBAC {
     }
 
     /**
-     * @dev Bind a role to given account.
+     * @dev Bind a role to given account without permission.
+     * This method can be called only in this/inherited contracts.
      */
-    function bindRole(bytes8 resourceId, address subject, string memory roleName) public {
-        require(isAuthorized(resourceId, msg.sender, "role:manage"), "RBAC: unauthorized");
+    function _bindRole(bytes8 resourceId, address subject, string memory roleName) internal {
         Role storage role = _getRole(resourceId, roleName);
 
         string[] storage boundRoleNames = roleBinding[resourceId][subject];
@@ -152,10 +166,18 @@ contract RBAC {
     }
 
     /**
-     * @dev Unbind a role to given account.
+     * @dev Bind a role to given account.
      */
-    function unbindRole(bytes8 resourceId, address subject, string memory roleName) public {
+    function bindRole(bytes8 resourceId, address subject, string memory roleName) public {
         require(isAuthorized(resourceId, msg.sender, "role:manage"), "RBAC: unauthorized");
+        _bindRole(resourceId, subject, roleName);
+    }
+
+    /**
+     * @dev Unbind a role to given account without permission.
+     * This method can be called only in this/inherited contracts.
+     */
+    function _unbindRole(bytes8 resourceId, address subject, string memory roleName) internal {
         Role storage role = _getRole(resourceId, roleName);
 
         string[] storage boundRoleNames = roleBinding[resourceId][subject];
@@ -173,6 +195,14 @@ contract RBAC {
             revert("RBAC: role was not bound");
         }
         emit RoleUnbound(resourceId, subject, roleName);
+    }
+
+    /**
+     * @dev Unbind a role to given account.
+     */
+    function unbindRole(bytes8 resourceId, address subject, string memory roleName) public {
+        require(isAuthorized(resourceId, msg.sender, "role:manage"), "RBAC: unauthorized");
+        _unbindRole(resourceId, subject, roleName);
     }
 
     /**
