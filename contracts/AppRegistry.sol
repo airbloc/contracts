@@ -38,12 +38,11 @@ contract AppRegistry is RBAC {
         require(!exists(appName), "AppRegistry: app correspond to this name already registered");
 
         bytes8 appId = generateId(appName);
+        nameToApp[appName] = appId;
 
         App storage app = _get(appName);
         app.name = appName;
         app.owner = msg.sender;
-
-        nameToApp[appName] = appId;
 
         emit Registration(appId, appName);
         return appId;
