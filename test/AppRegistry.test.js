@@ -20,7 +20,7 @@ contract('AppRegistry', async (accounts) => {
       const { args: { appId } } = expectEvent.inLogs(logs, 'Registration', { appName: TEST_APP_NAME });
 
       const fetchedAppId = await apps.getId(TEST_APP_NAME);
-      expect(fetchedAppId).to.be.equal(appId);
+      expect(`${fetchedAppId.padEnd(66, '0')}`).to.be.equal(appId);
 
       const app = await apps.get(TEST_APP_NAME, { from: owner });
       expect(app.name).to.be.equal(TEST_APP_NAME);
@@ -99,7 +99,7 @@ contract('AppRegistry', async (accounts) => {
 
     it('should fail when app does not exist', async () => {
       await expectRevert(
-        apps.register(TEST_APP_NAME, { from: owner }),
+        apps.get(TEST_APP_NAME, { from: owner }),
         'AppRegistry: app does not exist',
       );
     });
@@ -111,7 +111,7 @@ contract('AppRegistry', async (accounts) => {
       const { args: { appId } } = expectEvent.inLogs(logs, 'Registration', { appName: TEST_APP_NAME });
 
       const fetchedAppId = await apps.getId(TEST_APP_NAME);
-      expect(fetchedAppId).to.be.equal(appId);
+      expect(`${fetchedAppId.padEnd(66, '0')}`).to.be.equal(appId);
     });
   });
 
