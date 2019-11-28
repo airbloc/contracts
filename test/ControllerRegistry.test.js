@@ -4,7 +4,7 @@ const { expect } = require('./test-utils');
 const ControllerRegistry = artifacts.require('ControllerRegistry');
 
 contract('ControllerRegistry', async (accounts) => {
-  const [contractOwner, controllerAddr, stranger] = accounts;
+  const [contractOwner, controller, stranger] = accounts;
   let controllers;
 
   beforeEach(async () => {
@@ -13,48 +13,62 @@ contract('ControllerRegistry', async (accounts) => {
 
   describe('#register()', () => {
     it('should done correctly', async () => {
-      const { logs } = await controllers.register(controllerAddr, { from: contractOwner });
-      expectEvent.inLogs(logs, 'Registration', { controller: controllerAddr });
+      const { logs } = await controllers.register(controller, { from: contractOwner });
+      expectEvent.inLogs(logs, 'Registration', { controller });
     });
 
     it('should fail when it called by non-owners', async () => {
       await expectRevert(
-        controllers.register(controllerAddr, { from: stranger }),
+        controllers.register(controller, { from: stranger }),
         'Ownable: caller is not the owner',
       );
     });
 
     it('should fail when controller already registered', async () => {
-      await controllers.register(controllerAddr);
+      await controllers.register(controller);
       await expectRevert(
-        controllers.register(controllerAddr),
+        controllers.register(controller),
         'ControllerRegistry: already registered',
       );
     });
   });
 
-  describe('#get()', () => {
-    it('should return registered controller data', async () => {
-      await controllers.register(controllerAddr);
-
-      const dataController = await controllers.get(controllerAddr);
-      expect(dataController.controller).to.equal(controllerAddr);
+  describe('#unregister', () => {
+    beforeEach(async () => {
+      await controllers.register(controller, { from: contractOwner });
     });
 
-    it('should fail if unknown address is given', async () => {
+    it('should done correctly', async () => {
+      const { logs } = await controllers.unregister(controller, { from: contractOwner });
+      expectEvent.inLogs(logs, 'Unregistration', { controller });
+    });
+
+    it('should fail when it called by non-owners', async () => {
       await expectRevert(
-        controllers.get(stranger),
-        'ControllerRegistry: controller does not exist',
+        controllers.unregister(controller, { from: stranger }),
+        'Ownable: caller is not the owner',
+      );
+    });
+
+    it('should fail when controller already unregistered', async () => {
+      await controllers.unregister(controller, { from: contractOwner });
+      await expectRevert(
+        controllers.unregister(controller, { from: contractOwner }),
+        'ControllerRegistry: already unregistered',
       );
     });
   });
 
-  describe('#exists()', () => {
-    it('should able to check existance', async () => {
-      await controllers.register(controllerAddr);
+  describe('#isController', () => {
+    it('should return true when given address is registered', async () => {
+      await controllers.register(controller, { from: contractOwner });
+      const isController = await controllers.isController(controller);
+      expect(isController).to.be.true;
+    });
 
-      await expect(controllers.exists(controllerAddr)).to.eventually.be.true;
-      await expect(controllers.exists(stranger)).to.eventually.be.false;
+    it('should return false when given address is unregistered', async () => {
+      const isController = await controllers.isController(controller);
+      expect(isController).to.be.false;
     });
   });
 });
