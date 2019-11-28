@@ -46,14 +46,11 @@ contract('Consents', async (ethAccounts) => {
 
     // create an Airbloc account with ID and password,
     // and register the data controller as a delegate of it.
-    const result = await accounts.createTemporary(TEST_USER_ID_HASH, { from: controller });
-    const passwordSig = createPasswordSignature([TEST_USER_ID, user], TEST_USER_PASSWORD);
-    await accounts.unlockTemporary(TEST_USER_ID, user, passwordSig, { from: controller });
+    const { logs } = await accounts.create({ from: user });
+    ({ args: { userId } } = expectEvent.inLogs(logs, 'SignUp', { owner: user }));
+    // await accounts.setController(controller);
 
-    const signUpEvent = getFirstEvent(result);
-    userId = signUpEvent.accountId;
-
-    // should create new contract for each test
+    // // should create new contract for each test
     consents = await Consents.new(
       accounts.address,
       apps.address,
