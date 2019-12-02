@@ -61,6 +61,9 @@ contract Users is RBAC {
         // TODO: Add more roles for resource "userId"
     }
 
+    /**
+     * @return unique id of created user
+     */
     function create() external returns (bytes8) {
         require(
             addressToUser[msg.sender] == bytes8(0x0),
@@ -79,6 +82,11 @@ contract Users is RBAC {
         return userId;
     }
 
+    /**
+     * @dev IdentityHash can be used these situations - getter methods, unlocking user
+     * @param identityHash hashed identity information of user
+     * @return unique id of created temporary user
+     */
     function createTemporary(bytes32 identityHash)
         public
         onlyDataController
@@ -92,7 +100,7 @@ contract Users is RBAC {
         bytes8 userId = generateId(identityHash, msg.sender);
         users[userId].controller = msg.sender;
         users[userId].status = UserStatus.TEMPORARY;
-        identityHashToUser[identityHash] = userId;
+
 
         // create initial role for given userId
         createInitialRole(userId);
@@ -102,6 +110,11 @@ contract Users is RBAC {
         return userId;
     }
 
+    /**
+     * @dev unlocks means transfer ownership from data controller to origin account
+     * @param identityPreimage previous hash value of registered identityHash
+     * @param newOwner owner account of original user
+     */
     function unlockTemporary(bytes32 identityPreimage, address newOwner)
         public
         onlyDataController
@@ -151,6 +164,10 @@ contract Users is RBAC {
 //        unbindRole(userId, controller, ROLE_DATA_CONTROLLER);
 //    }
 
+    /**
+     * @dev change user's controller to newController
+     * @param newController controller's address which user want to change
+     */
     function setController(address newController) external {
         bytes8 userId = addressToUser[msg.sender];
 
@@ -168,39 +185,89 @@ contract Users is RBAC {
         user.controller = newController;
     }
 
-    function getUser(bytes8 userId) public view returns (User memory) {
-        require(exists(userId), "Users: user does not exist");
-        return users[userId];
-    }
-
-    function getUserByIdentityHash(bytes32 identityHash) public view returns (User memory) {
-        return getUser(identityHashToUser[identityHash]);
-    }
-
-    function getUserId(address sender) public view returns (bytes8) {
-        bytes8 userId = addressToUser[sender];
-        require(users[userId].status != UserStatus.NONE, "Users: unknown address");
-        return userId;
-    }
-
-    function getUserIdByIdentityHash(bytes32 identityHash) public view returns (bytes8) {
-        return identityHashToUser[identityHash];
-    }
-
-    function isTemporary(bytes8 userId) public view returns (bool) {
-        return users[userId].status == UserStatus.TEMPORARY;
-    }
-
-    function isControllerOf(address sender, bytes8 userId) public view returns (bool) {
-        return getUser(userId).controller == sender;
-    }
-
+    /**
+     * @param uniqueData salt parameter for generating hash
+     * @param creator creator of id
+     * @return unique id of user
+     */
     function generateId(bytes32 uniqueData, address creator) internal view returns (bytes8) {
         bytes memory seed = abi.encodePacked(creator, block.number, uniqueData);
         return bytes8(keccak256(seed));
     }
 
+    /**
+     * @param userId id of user
+     * @return storage struct of user
+     */
+    function _get(bytes8 userId) internal view returns (User storage) {
+        return users[userId];
+    }
+
+    /**
+     * @dev Reverts when user does not exist
+     * @param userId id of user
+     * @return read-only(memory) struct of User correspond with given id
+     */
+    function get(bytes8 userId) public view returns (User memory) {
+        require(exists(userId), "Users: user does not exist");
+        return _get(userId);
+    }
+
+    /**
+     * @dev Reverts when user does not exist
+     * @param identityHash identityHash of user
+     * @return memory struct of User correspond with given identityHash
+     */
+    function getByIdentityHash(bytes32 identityHash) public view returns (User memory) {
+        return get(identityHashToUser[identityHash]);
+    }
+
+    /**
+     * @dev Reverts when user does not exist & invalid userId
+     * @param owner address of user's owner
+     * @return 8-length byte id that matches with given address and its owner
+     */
+    function getId(address owner) public view returns (bytes8) {
+        bytes8 userId = addressToUser[owner];
+        require(userId != bytes8(0x0), "Users: unknown owner address");
+        return userId;
+    }
+
+    /**
+     * @dev Reverts when user does not exist & invalid identityHash
+     * @param identityHash identityHash of user
+     * @return 8-length byte id that matches with given identityHash
+     */
+    function getIdByIdentityHash(bytes32 identityHash) public view returns (bytes8) {
+        bytes8 userId = identityHashToUser[identityHash];
+        require(userId != bytes8(0x0), "Users: unknown identity hash");
+        return userId;
+    }
+
+    /**
+     * @dev Reverts when user does not exist
+     * @param userId id of user
+     * @return given user's status is temporary or not
+     */
+    function isTemporary(bytes8 userId) public view returns (bool) {
+        return get(userId).status == UserStatus.TEMPORARY;
+    }
+
+    /**
+     * @dev Reverts when user does not exist
+     * @param controller data controller's address of user
+     * @param userId id of user
+     * @return given user's controller is given controller or not
+     */
+    function isControllerOf(address controller, bytes8 userId) public view returns (bool) {
+        return get(userId).controller == controller;
+    }
+
+    /**
+     * @param userId id of user
+     * @return existance of user correpond with given userId.
+     */
     function exists(bytes8 userId) public view returns (bool) {
-        return users[userId].status != UserStatus.NONE;
+        return _get(userId).status != UserStatus.NONE;
     }
 }
