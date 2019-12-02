@@ -12,7 +12,7 @@ import "./DataTypeRegistry.sol";
  */
 contract Consents {
     using ConsentsLib for ConsentsLib.Consents;
-    
+
     enum ActionTypes {
         Collection,
         Exchange
@@ -60,16 +60,26 @@ contract Consents {
         bool allow;
     }
 
-    function consent(
+    /**
+     * @dev checks authority of msg.sender
+     * There are two actions related with this contract
+     * - consent:create
+     * - consent:modify
+     * If app does exist, this method checks sender has authority about consent:modify
+     * If app does not exist, this method checks sender has authority about consent:create
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param authConsentCreate sender's authority about consent:create
+     * @param authConsentModify sender's authority about consent:modify
+     * @param consentData consent data for search existing consent information
+     */
+    function _checkAuthority(
         bytes8 userId,
         string memory appName,
+        bool authConsentCreate,
+        bool authConsentModify,
         ConsentData memory consentData
-    ) public {
-        require(apps.exists(appName), "Consents: app does not exist");
-        require(
-            users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE()),
-            "Consents: sender must be authorized before create consent");
-
+    ) internal view {
         bool consentExists = consents.exists(
             userId,
             appName,
@@ -77,41 +87,17 @@ contract Consents {
             consentData.dataType
         );
         if (consentExists) {
-            require(
-                users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY()),
-                "Consents: sender must be authorized before modify consent");
-        }
-        
-        _updateConsent(userId, appName, consentData);
-    }
-
-    function consentMany(
-        bytes8 userId,
-        string memory appName,
-        ConsentData[] memory consentData
-    ) public {
-        bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
-        bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
-        
-        require(apps.exists(appName), "Consents: app does not exist");
-        require(consentData.length < 64, "Consents: input length exceeds");
-        require(authConsentCreate, "Consents: sender must be authorized before create consent");
-
-        for (uint index = 0; index < consentData.length; index++) {
-            if (!authConsentModify) {
-                bool consentExists = consents.exists(
-                    userId,
-                    appName,
-                    uint(consentData[index].action),
-                    consentData[index].dataType
-                );
-                require(!consentExists, "Consents: sender must be authorized before modify consent");
-            }
-
-            _updateConsent(userId, appName, consentData[index]);
+            require(authConsentModify, "Consents: sender must be authorized before modify consent");
+        } else {
+            require(authConsentCreate, "Consents: sender must be authorized before create consent");
         }
     }
 
+    /**
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param consentData consent data for update consent information
+     */
     function _updateConsent(
         bytes8 userId,
         string memory appName,
@@ -137,6 +123,91 @@ contract Consents {
         );
     }
 
+    /**
+     * @dev upsert consent information
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param consentData new consent data to update
+     */
+    function consent(
+        bytes8 userId,
+        string memory appName,
+        ConsentData memory consentData
+    ) public {
+        bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
+        bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
+
+        _checkAuthority(
+            userId,
+            appName,
+            authConsentCreate,
+            authConsentModify,
+            consentData
+        );
+        _updateConsent(userId, appName, consentData);
+    }
+
+    /**
+     * @dev this method is wrapper method of consent(bytes8, string memory, ConsentData memory)
+     * It finds userId from msg.sender and use as parameter of wrapped method
+     * @param appName name of app registered in AppRegistry
+     * @param consentData new consent data to update
+     */
+    function consent(
+        string memory appName,
+        ConsentData memory consentData
+    ) public {
+        consent(users.getId(msg.sender), appName, consentData);
+    }
+
+    /**
+     * @dev upsert many consent information at once
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param consentData new consent data list to update
+     */
+    function consentMany(
+        bytes8 userId,
+        string memory appName,
+        ConsentData[] memory consentData
+    ) public {
+        require(consentData.length < 64, "Consents: input length exceeds");
+
+        bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
+        bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
+
+        for (uint index = 0; index < consentData.length; index++) {
+            _checkAuthority(
+                userId,
+                appName,
+                authConsentCreate,
+                authConsentModify,
+                consentData[index]
+            );
+            _updateConsent(userId, appName, consentData[index]);
+        }
+    }
+
+    /**
+     * @dev this method is wrapper method of consentMany(bytes8, string memory, ConsentData[] memory)
+     * It finds userId from msg.sender and use as parameter of wrapped method
+     * @param appName name of app registered in AppRegistry
+     * @param consentData new consent data list to update
+     */
+    function consentMany(
+        string memory appName,
+        ConsentData[] memory consentData
+    ) public {
+        consentMany(users.getId(msg.sender), appName, consentData);
+    }
+
+    /**
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param action action type in ActionTypes
+     * @param dataType data type registered in DataTypeRegsitry
+     * @return current allowance of given consent information
+     */
     function isAllowed(
         bytes8 userId,
         string memory appName,
@@ -147,6 +218,14 @@ contract Consents {
         return consentInfo.allowed;
     }
 
+    /**
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param action action type in ActionTypes
+     * @param dataType data type registered in DataTypeRegsitry
+     * @param blockNumber blockNumber
+     * @return allowance of given consent information at specific block number
+     */
     function isAllowedAt(
         bytes8 userId,
         string memory appName,
