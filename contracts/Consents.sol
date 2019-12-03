@@ -27,6 +27,8 @@ contract Consents {
         bool allowed
     );
 
+    uint256 constant public CONSENT_DATA_MAX_LENGTH = 128;
+
     // consents
     ConsentsLib.Consents private consents;
 
@@ -103,8 +105,6 @@ contract Consents {
         string memory appName,
         ConsentData memory consentData
     ) internal {
-        require(users.exists(userId), "Consents: user does not exist");
-        require(apps.exists(appName), "Consents: app does not exist");
         require(dataTypes.exists(consentData.dataType), "Consents: data type does not exist");
 
         ConsentsLib.Consent memory consentInfo = ConsentsLib.Consent({
@@ -134,6 +134,9 @@ contract Consents {
         string memory appName,
         ConsentData memory consentData
     ) public {
+        require(users.exists(userId), "Consents: user does not exist");
+        require(apps.exists(appName), "Consents: app does not exist");
+
         bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
         bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
 
@@ -171,7 +174,9 @@ contract Consents {
         string memory appName,
         ConsentData[] memory consentData
     ) public {
-        require(consentData.length < 64, "Consents: input length exceeds");
+        require(users.exists(userId), "Consents: user does not exist");
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(consentData.length < CONSENT_DATA_MAX_LENGTH, "Consents: input length exceeds");
 
         bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
         bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
