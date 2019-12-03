@@ -8,7 +8,7 @@ written in [Solidity](https://solidity.readthedocs.io) v0.5.0.
 
 ### Prerequisites
 
- - Node 8.10 or higher
+ - Node 8.3.0 or higher
  - Yarn
 
 ### Build
