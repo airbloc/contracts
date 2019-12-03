@@ -12,6 +12,7 @@ contract Users is RBAC {
     using ECDSA for bytes32;
 
     string constant public ROLE_DATA_CONTROLLER = "dataController";
+    string constant public ROLE_TEMP_DATA_CONTROLLER = "temporaryDataController";
     string constant public ACTION_CONSENT_CREATE = "consent:create";
     string constant public ACTION_CONSENT_MODIFY = "consent:modify";
     string constant public ACTION_USER_TRANSFER_OWNERSHIP = "user:transferOwnership";
@@ -54,11 +55,17 @@ contract Users is RBAC {
         return userId == addressToUser[account];
     }
 
+    /**
+     * @dev createInitialRole creates initial roles for user and grant actions to them
+     * @param userId unique id of created user
+     */
     function createInitialRole(bytes8 userId) internal {
         _createRole(userId, ROLE_DATA_CONTROLLER);
         _grantAction(userId, ROLE_DATA_CONTROLLER, ACTION_CONSENT_CREATE);
-        // TODO: Add more actions for role "dataController"
-        // TODO: Add more roles for resource "userId"
+        _grantAction(userId, ROLE_DATA_CONTROLLER, ACTION_CONSENT_MODIFY);
+
+        _createRole(userId, ROLE_TEMP_DATA_CONTROLLER);
+        _grantAction(userId, ROLE_TEMP_DATA_CONTROLLER, ACTION_CONSENT_CREATE);
     }
 
     /**
@@ -93,18 +100,18 @@ contract Users is RBAC {
         returns (bytes8)
     {
         require(
-            identityHashToUser[identityHash] == bytes8(0),
+            identityHashToUser[identityHash] == bytes8(0x0),
             "Users: user already exists");
 
         // generate userId & insert information to User struct
         bytes8 userId = generateId(identityHash, msg.sender);
         users[userId].controller = msg.sender;
         users[userId].status = UserStatus.TEMPORARY;
-
+        identityHashToUser[identityHash] = userId;
 
         // create initial role for given userId
         createInitialRole(userId);
-        _bindRole(userId, msg.sender, ROLE_DATA_CONTROLLER);
+        _bindRole(userId, msg.sender, ROLE_TEMP_DATA_CONTROLLER);
 
         emit TemporaryCreated(msg.sender, identityHash, userId);
         return userId;
@@ -136,6 +143,9 @@ contract Users is RBAC {
         user.owner = newOwner;
         user.status = UserStatus.CREATED;
         addressToUser[newOwner] = userId;
+
+        // unbind temporary controller role
+        _unbindRole(userId, msg.sender, ROLE_TEMP_DATA_CONTROLLER);
 
         emit Unlocked(identityHash, userId, newOwner);
     }
@@ -219,7 +229,7 @@ contract Users is RBAC {
      * @return memory struct of User correspond with given identityHash
      */
     function getByIdentityHash(bytes32 identityHash) public view returns (User memory) {
-        return get(identityHashToUser[identityHash]);
+        return get(getIdByIdentityHash(identityHash));
     }
 
     /**
@@ -250,7 +260,7 @@ contract Users is RBAC {
      * @return given user's status is temporary or not
      */
     function isTemporary(bytes8 userId) public view returns (bool) {
-        return get(userId).status == UserStatus.TEMPORARY;
+        return _get(userId).status == UserStatus.TEMPORARY;
     }
 
     /**
