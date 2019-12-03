@@ -1,4 +1,4 @@
-const { BN, expectEvent, expectRevert } = require('openzeppelin-test-helpers');
+const { expectEvent, expectRevert } = require('openzeppelin-test-helpers');
 const { expect } = require('./test-utils');
 
 const Consents = artifacts.require('Consents');
@@ -6,6 +6,9 @@ const Users = artifacts.require('Users');
 const AppRegistry = artifacts.require('AppRegistry');
 const DataTypeRegistry = artifacts.require('DataTypeRegistry');
 const ControllerRegistry = artifacts.require('ControllerRegistry');
+
+// signature
+const CONSENT_DATA_SIG = '(uint8,string,bool)';
 
 // test data
 const APP_NAME = 'test-app';
@@ -20,7 +23,8 @@ const TEST_USER_ID_HASH = web3.utils.keccak256(TEST_USER_ID);
 const ACTION_COLLECTION = 0;
 
 contract('Consents', async (ethAccounts) => {
-  const [contractOwner, user, tempUser, app, controller, stranger] = ethAccounts;
+  const [contractOwner, user, app, controller, stranger] = ethAccounts;
+  let appId;
   let userId;
   let tempUserId;
   let apps;
@@ -33,7 +37,10 @@ contract('Consents', async (ethAccounts) => {
     apps = await AppRegistry.new();
     dataTypes = await DataTypeRegistry.new();
 
-    await apps.register(APP_NAME, { from: app });
+    const { logs } = await apps.register(APP_NAME, { from: app });
+    ({ args: { appId } } = expectEvent.inLogs(logs, 'Registration', { appName: APP_NAME }));
+    appId = `${appId.padEnd(66, '0')}`;
+
     await dataTypes.register(DATA_TYPE_GPS, SCHEMA_HASH, { from: app });
     await dataTypes.register(DATA_TYPE_EMAIL, SCHEMA_HASH, { from: app });
   });
@@ -48,10 +55,11 @@ contract('Consents', async (ethAccounts) => {
     // and register the data controller as a delegate of it.
     let { logs } = await users.create({ from: user });
     ({ args: { userId } } = expectEvent.inLogs(logs, 'SignUp', { owner: user }));
-    await users.setController(controller, { from: user });
+    userId = `${userId.padEnd(66, '0')}`;
 
     ({ logs } = await users.createTemporary(TEST_USER_ID_HASH, { from: controller }));
     ({ args: { userId: tempUserId } } = expectEvent.inLogs(logs, 'TemporaryCreated', { proxy: controller, identityHash: TEST_USER_ID_HASH }));
+    tempUserId = `${tempUserId.padEnd(66, '0')}`;
 
     // should create new contract for each test
     consents = await Consents.new(
@@ -62,327 +70,419 @@ contract('Consents', async (ethAccounts) => {
     );
   });
 
-  describe('#consent(bytes8,string,ConsentData)', () => {
+  describe(`#consent(bytes8,string,${CONSENT_DATA_SIG})`, () => {
+    const consentData = {
+      action: ACTION_COLLECTION,
+      dataType: DATA_TYPE_GPS,
+      allow: true,
+    };
+
+    let consent;
+
+    beforeEach(async () => {
+      consent = consents.methods[`consent(bytes8,string,${CONSENT_DATA_SIG})`];
+    });
+
     context('called directly (owner)', () => {
-      it('should create consent correctly', async () => {});
-      it('should modify consent correctly', async () => {});
+      it('should create consent correctly', async () => {
+        const { logs } = await consent(
+          userId,
+          APP_NAME,
+          consentData,
+          { from: user },
+        );
+        expectEvent.inLogs(logs, 'Consented', {
+          userId,
+          appId,
+          appName: APP_NAME,
+          dataType: DATA_TYPE_GPS,
+          allowed: true,
+        });
+      });
+      it('should modify consent correctly', async () => {
+        await consent(userId, APP_NAME, consentData, { from: user });
+        const { logs } = await consent(
+          userId,
+          APP_NAME,
+          { ...consentData, allow: false },
+          { from: user },
+        );
+        expectEvent.inLogs(logs, 'Consented', {
+          userId,
+          appId,
+          appName: APP_NAME,
+          dataType: DATA_TYPE_GPS,
+          allowed: false,
+        });
+      });
     });
     context('called indirectly (controller)', () => {
       context('create consent', () => {
-        it('should done correctly', async () => {});
-        it('should fail when not authorized', async () => {});
+        it('should done correctly with controller', async () => {
+          await users.setController(controller, { from: user });
+          const { logs } = await consent(
+            userId,
+            APP_NAME,
+            consentData,
+            { from: controller },
+          );
+          expectEvent.inLogs(logs, 'Consented', {
+            userId,
+            appId,
+            appName: APP_NAME,
+            dataType: DATA_TYPE_GPS,
+            allowed: true,
+          });
+        });
+        it('should done correctly with temporary controller', async () => {
+          const { logs } = await consent(
+            tempUserId,
+            APP_NAME,
+            consentData,
+            { from: controller },
+          );
+          expectEvent.inLogs(logs, 'Consented', {
+            userId: tempUserId,
+            appId,
+            appName: APP_NAME,
+            dataType: DATA_TYPE_GPS,
+            allowed: true,
+          });
+        });
+        it('should fail when not authorized', async () => {
+          await expectRevert(
+            consent(userId, APP_NAME, consentData, { from: stranger }),
+            'Consents: sender must be authorized before create consent',
+          );
+        });
       });
       context('modify consent', () => {
-        it('should done correctly', async () => {});
-        it('should fail when not authorized', async () => {});
+        it('should done correctly with controller', async () => {
+          await users.setController(controller, { from: user });
+          await consent(userId, APP_NAME, consentData, { from: controller });
+
+          const { logs } = await consent(
+            userId,
+            APP_NAME,
+            { ...consentData, allow: false },
+            { from: controller },
+          );
+          expectEvent.inLogs(logs, 'Consented', {
+            userId,
+            appId,
+            appName: APP_NAME,
+            dataType: DATA_TYPE_GPS,
+            allowed: false,
+          });
+        });
+        it('should fail when temporary controller tries to modify consent', async () => {
+          await consent(tempUserId, APP_NAME, consentData, { from: controller });
+          await expectRevert(
+            consent(tempUserId, APP_NAME, { ...consentData, allow: false }, { from: controller }),
+            'Consents: sender must be authorized before modify consent',
+          );
+        });
+        it('should fail when not authorized', async () => {
+          await consent(tempUserId, APP_NAME, consentData, { from: controller });
+          await expectRevert(
+            consent(tempUserId, APP_NAME, consentData, { from: stranger }),
+            'Consents: sender must be authorized before modify consent',
+          );
+        });
       });
     });
-    it('should fail when app does not exist', async () => {});
-    it('should fail when user does not exist', async () => {});
-    it('should fail when data type does not exist', async () => {});
+    it('should fail when app does not exist', async () => {
+      await expectRevert(
+        consent(userId, 'fake-app', consentData, { from: user }),
+        'Consents: app does not exist',
+      );
+    });
+    it('should fail when user does not exist', async () => {
+      await expectRevert(
+        consent('0xdeadbeefdeadbeef', APP_NAME, consentData, { from: user }),
+        'Consents: user does not exist',
+      );
+    });
+    it('should fail when data type does not exist', async () => {
+      await expectRevert(
+        consent(userId, APP_NAME, { ...consentData, dataType: 'fake-data-type' }, { from: user }),
+        'Consents: data type does not exist',
+      );
+    });
   });
 
-  describe('#consent(string,ConsentData)', () => {
+  describe(`#consent(string,${CONSENT_DATA_SIG})`, () => {
+    const consentData = {
+      action: ACTION_COLLECTION,
+      dataType: DATA_TYPE_GPS,
+      allow: true,
+    };
+
+    let consent;
+
+    beforeEach(async () => {
+      consent = consents.methods[`consent(string,${CONSENT_DATA_SIG})`];
+    });
+
     it('should done correctly', async () => {
-      // check userId
+      const { logs } = await consent(APP_NAME, consentData, { from: user });
+      expectEvent.inLogs(logs, 'Consented', {
+        userId,
+        appId,
+        appName: APP_NAME,
+        dataType: DATA_TYPE_GPS,
+        allowed: true,
+      });
     });
   });
 
   describe('#consentMany(bytes8,string,ConsentData[])', () => {
+    const consentDataEmail = {
+      action: ACTION_COLLECTION,
+      dataType: DATA_TYPE_EMAIL,
+      allow: true,
+    };
+    const consentDataGps = {
+      action: ACTION_COLLECTION,
+      dataType: DATA_TYPE_GPS,
+      allow: true,
+    };
+
+    let consent;
+    let consentMany;
+
+    beforeEach(async () => {
+      consent = consents.methods[`consent(bytes8,string,${CONSENT_DATA_SIG})`];
+      consentMany = consents.methods[`consentMany(bytes8,string,${CONSENT_DATA_SIG}[])`];
+    });
+
     context('called directly (owner)', () => {
-      it('should create consent correctly', async () => {});
-      it('should modify consent correctly', async () => {});
-      it('should create/modify consent correctly', async () => {});
+      it('should create consent correctly', async () => {
+        const { logs } = await consentMany(userId, APP_NAME, [consentDataEmail], { from: user });
+        expectEvent.inLogs(logs, 'Consented', {
+          userId,
+          appId,
+          appName: APP_NAME,
+          dataType: DATA_TYPE_EMAIL,
+          allowed: true,
+        });
+      });
+      it('should modify consent correctly', async () => {
+        await consent(userId, APP_NAME, consentDataGps, { from: user });
+        const { logs } = await consentMany(
+          userId,
+          APP_NAME,
+          [{ ...consentDataGps, allow: false }],
+          { from: user },
+        );
+        expectEvent.inLogs(logs, 'Consented', {
+          userId,
+          appId,
+          appName: APP_NAME,
+          dataType: DATA_TYPE_GPS,
+          allowed: false,
+        });
+      });
+      it('should process multiple consent data correctly', async () => {
+        await consent(userId, APP_NAME, consentDataGps, { from: user });
+        const { logs } = await consentMany(
+          userId,
+          APP_NAME,
+          [consentDataEmail, { ...consentDataGps, allow: false }],
+          { from: user },
+        );
+        expectEvent.inLogs(logs, 'Consented', {
+          userId,
+          appId,
+          appName: APP_NAME,
+          dataType: DATA_TYPE_EMAIL,
+          allowed: true,
+        });
+        expectEvent.inLogs(logs, 'Consented', {
+          userId,
+          appId,
+          appName: APP_NAME,
+          dataType: DATA_TYPE_GPS,
+          allowed: false,
+        });
+      });
     });
     context('called indirectly (controller)', () => {
       context('create consent', () => {
-
+        it('should done correctly with controller', async () => {
+          await users.setController(controller, { from: user });
+          const { logs } = await consentMany(
+            userId,
+            APP_NAME,
+            [consentDataEmail],
+            { from: controller },
+          );
+          expectEvent.inLogs(logs, 'Consented', {
+            userId,
+            appId,
+            appName: APP_NAME,
+            dataType: DATA_TYPE_EMAIL,
+            allowed: true,
+          });
+        });
+        it('should done correctly with temporary controller', async () => {
+          const { logs } = await consentMany(
+            tempUserId,
+            APP_NAME,
+            [consentDataEmail],
+            { from: controller },
+          );
+          expectEvent.inLogs(logs, 'Consented', {
+            userId: tempUserId,
+            appId,
+            appName: APP_NAME,
+            dataType: DATA_TYPE_EMAIL,
+            allowed: true,
+          });
+        });
+        it('should fail when not authorized', async () => {
+          await expectRevert(
+            consentMany(userId, APP_NAME, [consentDataEmail], { from: stranger }),
+            'Consents: sender must be authorized before create consent',
+          );
+        });
       });
       context('modify consent', () => {
+        it('should done correctly with controller', async () => {
+          await users.setController(controller, { from: user });
+          await consent(userId, APP_NAME, consentDataGps, { from: controller });
 
+          const { logs } = await consentMany(
+            userId,
+            APP_NAME,
+            [{ ...consentDataGps, allow: false }],
+            { from: controller },
+          );
+          expectEvent.inLogs(logs, 'Consented', {
+            userId,
+            appId,
+            appName: APP_NAME,
+            dataType: DATA_TYPE_GPS,
+            allowed: false,
+          });
+        });
+        it('should fail when temporary controller tries modify consent', async () => {
+          await consent(tempUserId, APP_NAME, consentDataGps, { from: controller });
+          await expectRevert(
+            consentMany(
+              tempUserId,
+              APP_NAME,
+              [{ ...consentDataGps, allow: false }],
+              { from: controller },
+            ),
+            'Consents: sender must be authorized before modify consent',
+          );
+        });
+        it('should fail when not authorized', async () => {
+          await consent(tempUserId, APP_NAME, consentDataGps, { from: controller });
+          await expectRevert(
+            consentMany(
+              tempUserId,
+              APP_NAME,
+              [{ ...consentDataGps, allow: false }],
+              { from: stranger },
+            ),
+            'Consents: sender must be authorized before modify consent',
+          );
+        });
       });
-      context('create/modify consent', () => {
-
+      it('should process multiple consent data correctly', async () => {
+        await users.setController(controller, { from: user });
+        await consent(userId, APP_NAME, consentDataGps, { from: controller });
+        const { logs } = await consentMany(
+          userId,
+          APP_NAME,
+          [consentDataEmail, { ...consentDataGps, allow: false }],
+          { from: controller },
+        );
+        expectEvent.inLogs(logs, 'Consented', {
+          userId,
+          appId,
+          appName: APP_NAME,
+          dataType: DATA_TYPE_EMAIL,
+          allowed: true,
+        });
+        expectEvent.inLogs(logs, 'Consented', {
+          userId,
+          appId,
+          appName: APP_NAME,
+          dataType: DATA_TYPE_GPS,
+          allowed: false,
+        });
       });
     });
+    it('should fail consent data list length exceeded', async () => {
+      const consentDataMaxLength = await consents.CONSENT_DATA_MAX_LENGTH();
+      const consentData = [];
 
-    it('should fail when app does not exist', async () => {});
-    it('should fail when user does not exist', async () => {});
-    it('should fail when data type does not exist', async () => {});
+      for (let i = 0; i < consentDataMaxLength + 1; i += 1) {
+        consentData.push(consentDataEmail);
+      }
+
+      await expectRevert(
+        consentMany(userId, APP_NAME, consentData, { from: user }),
+        'Consents: input length exceeds',
+      );
+    });
+    it('should fail when app does not exist', async () => {
+      await expectRevert(
+        consentMany(userId, 'fake-app', [consentDataEmail, consentDataGps], { from: user }),
+        'Consents: app does not exist',
+      );
+    });
+    it('should fail when user does not exist', async () => {
+      await expectRevert(
+        consentMany('0xdeadbeefdeadbeef', APP_NAME, [consentDataEmail, consentDataGps], { from: user }),
+        'Consents: user does not exist',
+      );
+    });
+    it('should fail when data type does not exist', async () => {
+      await expectRevert(
+        consentMany(userId, APP_NAME, [{ ...consentDataEmail, dataType: 'fake-data-type' }, consentDataGps], { from: user }),
+        'Consents: data type does not exist',
+      );
+    });
   });
 
   describe('#consentMany(string,ConsentData[])', () => {
+    const consentData = {
+      action: ACTION_COLLECTION,
+      dataType: DATA_TYPE_EMAIL,
+      allow: true,
+    };
+
+    let consentMany;
+
+    beforeEach(async () => {
+      consentMany = consents.methods[`consentMany(string,${CONSENT_DATA_SIG}[])`];
+    });
+
     it('should done correctly', async () => {
-      // check userId
+      const { logs } = await consentMany(APP_NAME, [consentData], { from: user });
+      expectEvent.inLogs(logs, 'Consented', {
+        userId,
+        appId,
+        appName: APP_NAME,
+        dataType: DATA_TYPE_EMAIL,
+        allowed: true,
+      });
     });
   });
 
-  // describe('#consent()', () => {
-  //   it('should fail if the app does not exist', async () => {
-  //     await expectRevert(
-  //       consents.consent(
-  //         userId,
-  //         'WRONG_APP_NAME',
-  //         {
-  //           action: ACTION_COLLECTION,
-  //           dataType: DATA_TYPE_GPS,
-  //           allow: true,
-  //         },
-  //         { from: user },
-  //       ),
-  //       'Consents: app does not exist',
-  //     );
-  //   });
-
-  //   it('should fail when the user is unregistered', async () => {
-  //     await expectRevert(
-  //       consents.consent(
-  //         '0xdeadbeefdeadbeef',
-  //         APP_NAME,
-  //         {
-  //           action: ACTION_COLLECTION,
-  //           dataType: DATA_TYPE_GPS,
-  //           alow: true,
-  //         },
-  //         { from: stranger },
-  //       ),
-  //       'Consents: user does not exist',
-  //     );
-  //   });
-
-  //   it('should fail when the data type is not registered', async () => {
-  //     await expectRevert(
-  //       consents.consent(
-  //         userId,
-  //         APP_NAME,
-  //         {
-  //           action: ACTION_COLLECTION,
-  //           dataType: 'WRONG_DATA_TYPE',
-  //           allow: true,
-  //         },
-  //         { from: user },
-  //       ),
-  //       'Consents: data type does not exist',
-  //     );
-  //   });
-
-  //   context('when first time', async () => {
-  //     it('should be done correctly', async () => {
-  //       const { logs } = await consents.consent(
-  //         userId,
-  //         APP_NAME,
-  //         {
-  //           action: ACTION_COLLECTION,
-  //           dataType: DATA_TYPE_GPS,
-  //           allow: true,
-  //         },
-  //         { from: user },
-  //       );
-  //       expectEvent.inLogs(logs, 'Consented', {
-  //         action: new BN(ACTION_COLLECTION),
-  //         appName: APP_NAME,
-  //         dataType: DATA_TYPE_GPS,
-  //         userId: `${userId.padEnd(66, '0')}`,
-  //         allowed: true,
-  //       });
-  //     });
-
-  //     context('when modifying a consent', async () => {
-  //       it('should modify correctly', async () => {
-  //         let isAllowed;
-
-  //         await consents.consent(
-  //           userId,
-  //           APP_NAME,
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_GPS,
-  //             allow: true,
-  //           },
-  //           { from: user },
-  //         );
-  //         isAllowed = await consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_GPS);
-  //         expect(isAllowed).to.be.true;
-
-  //         await consents.consent(
-  //           userId,
-  //           APP_NAME,
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_GPS,
-  //             allow: false,
-  //           },
-  //           { from: user },
-  //         );
-  //         isAllowed = await consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_GPS);
-  //         expect(isAllowed).to.be.true;
-  //       });
-  //     });
-  //   });
-  // });
-
-  // describe('#consentMany()', () => {
-  //   it('should fail if the app does not exist', async () => {
-  //     await expectRevert(
-  //       consents.consentMany(
-  //         userId,
-  //         'WRONG_APP_NAME',
-  //         [
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_GPS,
-  //             allow: true,
-  //           },
-  //         ],
-  //         { from: user },
-  //       ),
-  //       'Consents: app does not exist',
-  //     );
-  //   });
-
-  //   it('should fail when the user is unregistered', async () => {
-  //     await expectRevert(
-  //       consents.consentMany(
-  //         userId,
-  //         APP_NAME,
-  //         [
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_GPS,
-  //             allow: true,
-  //           },
-  //         ],
-  //         { from: stranger },
-  //       ),
-  //       'Users: unknown address',
-  //     );
-  //   });
-
-  //   it('should fail when the data type is not registered', async () => {
-  //     await expectRevert(
-  //       consents.consentMany(
-  //         userId,
-  //         APP_NAME,
-  //         [
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: 'WRONG_DATA_TYPE',
-  //             allow: true,
-  //           },
-  //         ],
-  //         { from: user },
-  //       ),
-  //       'Consents: data type does not exist',
-  //     );
-  //   });
-
-  //   it('should fail when consent data length exceeded', async () => {
-  //     const consentData = [];
-  //     for (let i = 0; i < 65; i += 1) {
-  //       consentData.push({
-  //         action: ACTION_COLLECTION,
-  //         dataType: 'WRONG_DATA_TYPE',
-  //         allow: true,
-  //       });
-  //     }
-
-  //     await expectRevert(
-  //       consents.consentMany(userId, APP_NAME, consentData, { from: user }),
-  //       'Consents: input length exceeds',
-  //     );
-  //   });
-
-  //   context('when first time', async () => {
-  //     it('should be done correctly', async () => {
-  //       const { logs } = await consents.consentMany(
-  //         userId,
-  //         APP_NAME,
-  //         [
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_GPS,
-  //             allow: true,
-  //           },
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_EMAIL,
-  //             allow: false,
-  //           },
-  //         ],
-  //         { from: user },
-  //       );
-
-  //       expectEvent.inLogs(logs, 'Consented', {
-  //         action: new BN(ACTION_COLLECTION),
-  //         appName: APP_NAME,
-  //         dataType: DATA_TYPE_GPS,
-  //         userId: `${userId.padEnd(66, '0')}`,
-  //         allowed: true,
-  //       });
-  //       expectEvent.inLogs(logs, 'Consented', {
-  //         action: new BN(ACTION_COLLECTION),
-  //         appName: APP_NAME,
-  //         dataType: DATA_TYPE_EMAIL,
-  //         userId: `${userId.padEnd(66, '0')}`,
-  //         allowed: false,
-  //       });
-  //     });
-  //   });
-
-  //   context('when modifying a consent', async () => {
-  //     it('should modify correctly', async () => {
-  //       let isAllowed;
-
-  //       await consents.consentMany(
-  //         userId,
-  //         APP_NAME,
-  //         [
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_GPS,
-  //             allow: true,
-  //           },
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_EMAIL,
-  //             allow: false,
-  //           },
-  //         ],
-  //         { from: user },
-  //       );
-  //       isAllowed = await consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_GPS);
-  //       expect(isAllowed).to.be.eventually.be.true;
-  //       isAllowed = await consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_EMAIL);
-  //       expect(isAllowed).to.be.eventually.be.false;
-
-  //       await consents.consentMany(
-  //         userId,
-  //         APP_NAME,
-  //         [
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_GPS,
-  //             allow: false,
-  //           },
-  //           {
-  //             action: ACTION_COLLECTION,
-  //             dataType: DATA_TYPE_EMAIL,
-  //             allow: true,
-  //           },
-  //         ],
-  //         { from: user },
-  //       );
-  //       isAllowed = await consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_GPS);
-  //       expect(isAllowed).to.be.eventually.be.false;
-  //       isAllowed = await consents.isAllowed(userId, APP_NAME, ACTION_COLLECTION, DATA_TYPE_EMAIL);
-  //       expect(isAllowed).to.be.eventually.be.true;
-  //     });
-  //   });
-  // });
-
   describe('#isAllowed()', () => {
+    let consent;
+
+    beforeEach(async () => {
+      consent = consents.methods[`consent(bytes8,string,${CONSENT_DATA_SIG})`];
+    });
+
     it('should return whether user is consented at the current moment', async () => {
-      await consents.consent(
+      await consent(
         userId,
         APP_NAME,
         {
@@ -398,8 +498,14 @@ contract('Consents', async (ethAccounts) => {
   });
 
   describe('#isAllowedAt()', () => {
+    let consent;
+
+    beforeEach(async () => {
+      consent = consents.methods[`consent(bytes8,string,${CONSENT_DATA_SIG})`];
+    });
+
     it('should return whether user is consented at the past', async () => {
-      await consents.consent(
+      await consent(
         userId,
         APP_NAME,
         {
@@ -409,7 +515,7 @@ contract('Consents', async (ethAccounts) => {
         },
         { from: user },
       );
-      await consents.consent(
+      await consent(
         userId,
         APP_NAME,
         {
