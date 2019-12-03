@@ -13,12 +13,6 @@ const IDENTITY_HASH = web3.utils.keccak256(IDENTITY_PREIMAGE);
 const USER_STATUS_TEMPORARY = 1;
 const USER_STATUS_CREATED = 2;
 
-// public constants
-const USER_ROLE_DATA_CONTROLLER = 'dataController';
-const USER_ACTION_CONSENT_CREATE = 'consent:create';
-// const USER_ACTION_CONSENT_MODIFY = 'consent:modify';
-// const USER_ACTION_USER_TRANSFER_OWNERSHIP = 'user:transferOwnership';
-
 contract('Users', async (ethAccounts) => {
   const [contractOwner, owner, controller, otherController, stranger] = ethAccounts;
   let users;
@@ -45,12 +39,26 @@ contract('Users', async (ethAccounts) => {
       const { args: { userId } } = expectEvent.inLogs(logs, 'SignUp', { owner });
       expectEvent.inLogs(logs, 'RoleCreation', {
         resourceId: `${userId.padEnd(66, '0')}`,
-        roleName: USER_ROLE_DATA_CONTROLLER,
+        roleName: await users.ROLE_DATA_CONTROLLER(),
       });
       expectEvent.inLogs(logs, 'ActionGranted', {
         resourceId: `${userId.padEnd(66, '0')}`,
-        roleName: USER_ROLE_DATA_CONTROLLER,
-        actionName: USER_ACTION_CONSENT_CREATE,
+        roleName: await users.ROLE_DATA_CONTROLLER(),
+        actionName: await users.ACTION_CONSENT_CREATE(),
+      });
+      expectEvent.inLogs(logs, 'ActionGranted', {
+        resourceId: `${userId.padEnd(66, '0')}`,
+        roleName: await users.ROLE_DATA_CONTROLLER(),
+        actionName: await users.ACTION_CONSENT_MODIFY(),
+      });
+      expectEvent.inLogs(logs, 'RoleCreation', {
+        resourceId: `${userId.padEnd(66, '0')}`,
+        roleName: await users.ROLE_TEMP_DATA_CONTROLLER(),
+      });
+      expectEvent.inLogs(logs, 'ActionGranted', {
+        resourceId: `${userId.padEnd(66, '0')}`,
+        roleName: await users.ROLE_TEMP_DATA_CONTROLLER(),
+        actionName: await users.ACTION_CONSENT_CREATE(),
       });
     });
 
@@ -74,12 +82,12 @@ contract('Users', async (ethAccounts) => {
       const { args: { userId } } = expectEvent.inLogs(logs, 'TemporaryCreated', { proxy: controller });
       expectEvent.inLogs(logs, 'RoleCreation', {
         resourceId: `${userId.padEnd(66, '0')}`,
-        roleName: USER_ROLE_DATA_CONTROLLER,
+        roleName: await users.ROLE_TEMP_DATA_CONTROLLER(),
       });
       expectEvent.inLogs(logs, 'ActionGranted', {
         resourceId: `${userId.padEnd(66, '0')}`,
-        roleName: USER_ROLE_DATA_CONTROLLER,
-        actionName: USER_ACTION_CONSENT_CREATE,
+        roleName: await users.ROLE_TEMP_DATA_CONTROLLER(),
+        actionName: await users.ACTION_CONSENT_CREATE(),
       });
     });
 
@@ -89,7 +97,7 @@ contract('Users', async (ethAccounts) => {
       expectEvent.inLogs(logs, 'RoleBound', {
         resourceId: `${userId.padEnd(66, '0')}`,
         subject: controller,
-        roleName: USER_ROLE_DATA_CONTROLLER,
+        roleName: await users.ROLE_TEMP_DATA_CONTROLLER(),
       });
     });
 
@@ -97,7 +105,7 @@ contract('Users', async (ethAccounts) => {
       const { logs } = await users.createTemporary(IDENTITY_HASH, { from: controller });
       const { args: { userId } } = expectEvent.inLogs(logs, 'TemporaryCreated', { proxy: controller });
 
-      const user = await users.getUser(userId);
+      const user = await users.get(userId);
       expect(user.status).to.be.equal(String(USER_STATUS_TEMPORARY));
     });
 
@@ -129,8 +137,13 @@ contract('Users', async (ethAccounts) => {
         from: controller,
       });
       expectEvent.inLogs(logs, 'Unlocked', { userId: `${userId.padEnd(66, '0')}` });
+      expectEvent.inLogs(logs, 'RoleUnbound', {
+        resourceId: `${userId.padEnd(66, '0')}`,
+        subject: controller,
+        roleName: await users.ROLE_TEMP_DATA_CONTROLLER(),
+      });
 
-      const account = await users.getUser(userId);
+      const account = await users.get(userId);
       expect(account.status).to.be.equal(String(USER_STATUS_CREATED));
       expect(account.owner).to.be.equal(owner);
     });
@@ -180,7 +193,7 @@ contract('Users', async (ethAccounts) => {
       expectEvent.inLogs(logs, 'RoleBound', {
         resourceId: `${userId.padEnd(66, '0')}`,
         subject: controller,
-        roleName: USER_ROLE_DATA_CONTROLLER,
+        roleName: await users.ROLE_DATA_CONTROLLER(),
       });
     });
 
@@ -191,12 +204,12 @@ contract('Users', async (ethAccounts) => {
       expectEvent.inLogs(logs, 'RoleUnbound', {
         resourceId: `${userId.padEnd(66, '0')}`,
         subject: controller,
-        roleName: USER_ROLE_DATA_CONTROLLER,
+        roleName: await users.ROLE_DATA_CONTROLLER(),
       });
       expectEvent.inLogs(logs, 'RoleBound', {
         resourceId: `${userId.padEnd(66, '0')}`,
         subject: otherController,
-        roleName: USER_ROLE_DATA_CONTROLLER,
+        roleName: await users.ROLE_DATA_CONTROLLER(),
       });
     });
 
@@ -262,31 +275,63 @@ contract('Users', async (ethAccounts) => {
     });
   });
 
-  describe('#getUser()', () => {
+  describe('#get()', () => {
     it('should return correct data', async () => {
       const { logs } = await users.create({ from: owner });
       const { args: { userId } } = expectEvent.inLogs(logs, 'SignUp', { owner });
 
-      const user = await users.getUser(userId);
+      const user = await users.get(userId);
       expect(user.owner).to.be.equal(owner);
       expect(user.status).to.be.equal(String(USER_STATUS_CREATED));
     });
 
     it('should fail if unknown ID is given', async () => {
       const unknownId = '0xdeadbeefcafebabe';
-      await expectRevert(users.getUser(unknownId), 'Users: user does not exist');
+      await expectRevert(users.get(unknownId), 'Users: user does not exist');
     });
   });
 
-  describe('#getUserId()', () => {
+  describe('#getByIdentityHash', () => {
+    it('should return correct data', async () => {
+      await users.createTemporary(IDENTITY_HASH, { from: controller });
+
+      const user = await users.getByIdentityHash(IDENTITY_HASH);
+      expect(user.controller).to.be.equal(controller);
+      expect(user.status).to.be.equal(String(USER_STATUS_TEMPORARY));
+    });
+
+    it('should fail if unknown identity hash is given', async () => {
+      await expectRevert(
+        users.getByIdentityHash(IDENTITY_HASH),
+        'Users: unknown identity hash',
+      );
+    });
+  });
+
+  describe('#getId()', () => {
     it('should return correct ID', async () => {
       const { logs } = await users.create({ from: owner });
       const { args: { userId } } = expectEvent.inLogs(logs, 'SignUp', { owner });
-      await expect(users.getUserId(owner)).to.eventually.be.equal(userId);
+      await expect(users.getId(owner)).to.eventually.be.equal(userId);
     });
 
     it('should fail if unknown address is given', async () => {
-      await expectRevert(users.getUserId(stranger), 'Users: unknown address');
+      await expectRevert(users.getId(stranger), 'Users: unknown owner address');
+    });
+  });
+
+  describe('#getIdByIdentityHash', () => {
+    it('should return correct ID', async () => {
+      const { logs } = await users.createTemporary(IDENTITY_HASH, { from: controller });
+      const { args: { userId } } = expectEvent.inLogs(logs, 'TemporaryCreated', { proxy: controller });
+      await expect(users.getIdByIdentityHash(IDENTITY_HASH)).to.eventually.be.equal(userId);
+    });
+
+    it('should fail if unknown identity hash is given', async () => {
+      await expectRevert(
+        users.getIdByIdentityHash(IDENTITY_HASH),
+        'Users: unknown identity hash',
+      );
     });
   });
 });
