@@ -1,7 +1,7 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
-import "./Accounts.sol";
+import "./Users.sol";
 import "./AppRegistry.sol";
 import "./ConsentsLib.sol";
 import "./DataTypeRegistry.sol";
@@ -21,36 +21,38 @@ contract Consents {
     event Consented(
         ActionTypes indexed action,
         bytes8 indexed userId,
-        address indexed appAddr,
+        bytes8 indexed appId,
         string appName,
         string dataType,
         bool allowed
     );
 
+    uint256 constant public CONSENT_DATA_MAX_LENGTH = 128;
+
     // consents
     ConsentsLib.Consents private consents;
 
-    Accounts private accounts;
+    Users private users;
     AppRegistry private apps;
     ControllerRegistry private dataControllers;
     DataTypeRegistry private dataTypes;
 
     constructor(
-        Accounts accountReg,
+        Users userReg,
         AppRegistry appReg,
         ControllerRegistry controllerReg,
         DataTypeRegistry dataTypeReg
     )
         public
     {
-        accounts = accountReg;
+        users = userReg;
         apps = appReg;
         dataControllers = controllerReg;
         dataTypes = dataTypeReg;
     }
 
     modifier onlyDataController() {
-        require(dataControllers.exists(msg.sender), "Consents: caller is not a data controller");
+        require(dataControllers.isController(msg.sender), "Consents: caller is not a data controller");
         _;
     }
 
@@ -60,44 +62,26 @@ contract Consents {
         bool allow;
     }
 
-    function consent(
-        string memory appName,
-        ConsentData memory consentData
-    ) public {
-        require(apps.exists(appName), "Consents: app does not exist");
-        bytes8 userId = accounts.getAccountId(msg.sender);
-        _updateConsent(
-            userId,
-            appName,
-            consentData
-        );
-    }
-
-    function consentMany(
-        string memory appName,
-        ConsentData[] memory consentData
-    ) public {
-        require(apps.exists(appName), "Consents: app does not exist");
-        require(consentData.length < 64, "Consents: input length exceeds");
-
-        bytes8 userId = accounts.getAccountId(msg.sender);
-        for (uint index = 0; index < consentData.length; index++) {
-            _updateConsent(
-                userId,
-                appName,
-                consentData[index]
-            );
-        }
-    }
-
-    function consentByController(
+    /**
+     * @dev checks authority of msg.sender
+     * There are two actions related with this contract
+     * - consent:create
+     * - consent:modify
+     * If app does exist, this method checks sender has authority about consent:modify
+     * If app does not exist, this method checks sender has authority about consent:create
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param authConsentCreate sender's authority about consent:create
+     * @param authConsentModify sender's authority about consent:modify
+     * @param consentData consent data for search existing consent information
+     */
+    function _checkAuthority(
         bytes8 userId,
         string memory appName,
+        bool authConsentCreate,
+        bool authConsentModify,
         ConsentData memory consentData
-    ) public onlyDataController {
-        require(apps.exists(appName), "Consents: app does not exist");
-        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
-
+    ) internal view {
         bool consentExists = consents.exists(
             userId,
             appName,
@@ -105,112 +89,22 @@ contract Consents {
             consentData.dataType
         );
         if (consentExists) {
-            revert("Consents: controllers can't modify users' consent without password");
-        }
-
-        _updateConsent(
-            userId,
-            appName,
-            consentData
-        );
-    }
-
-    function consentManyByController(
-        bytes8 userId,
-        string memory appName,
-        ConsentData[] memory consentData
-    ) public onlyDataController{
-        require(apps.exists(appName), "Consents: app does not exist");
-        require(consentData.length < 64, "Consents: input length exceeds");
-        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
-
-        for (uint index = 0; index < consentData.length; index++) {
-            bool consentExists = consents.exists(
-                userId,
-                appName,
-                uint(consentData[index].action),
-                consentData[index].dataType
-            );
-            if (consentExists) {
-                revert("Consents: controllers can't modify users' consent without password");
-            }
-
-            _updateConsent(
-                userId,
-                appName,
-                consentData[index]
-            );
+            require(authConsentModify, "Consents: sender must be authorized before modify consent");
+        } else {
+            require(authConsentCreate, "Consents: sender must be authorized before create consent");
         }
     }
 
-    function modifyConsentByController(
-        bytes8 userId,
-        string memory appName,
-        ConsentData memory consentData,
-        bytes memory passwordSignature
-    ) public onlyDataController {
-        require(apps.exists(appName), "Consents: app does not exist");
-        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
-
-        // changing an already given consent requires a password key
-        bytes memory message = abi.encodePacked(
-            userId,
-            appName,
-            uint8(consentData.action),
-            consentData.dataType,
-            consentData.allow
-        );
-        require(
-            userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
-            "Consents: password mismatch"
-        );
-
-        _updateConsent(
-            userId,
-            appName,
-            consentData
-        );
-    }
-
-    function modifyConsentManyByController(
-        bytes8 userId,
-        string memory appName,
-        ConsentData[] memory consentData,
-        bytes memory passwordSignature
-    ) public onlyDataController {
-        require(apps.exists(appName), "Consents: app does not exist");
-        require(consentData.length < 64, "Consents: input length exceeds");
-        require(accounts.isControllerOf(msg.sender, userId), "Consents: sender must be delegate of this user");
-
-        for (uint index = 0; index < consentData.length; index++) {
-            // changing an already given consent requires a password key
-            bytes memory message = abi.encodePacked(
-                userId,
-                appName,
-                uint8(consentData[index].action),
-                consentData[index].dataType,
-                consentData[index].allow
-            );
-            require(
-                userId == accounts.getAccountIdFromSignature(keccak256(message), passwordSignature),
-                "Consents: password mismatch"
-            );
-
-            _updateConsent(
-                userId,
-                appName,
-                consentData[index]
-            );
-        }
-    }
-
+    /**
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param consentData consent data for update consent information
+     */
     function _updateConsent(
         bytes8 userId,
         string memory appName,
         ConsentData memory consentData
     ) internal {
-        require(accounts.exists(userId), "Consents: user does not exist");
-        require(apps.exists(appName), "Consents: app does not exist");
         require(dataTypes.exists(consentData.dataType), "Consents: data type does not exist");
 
         ConsentsLib.Consent memory consentInfo = ConsentsLib.Consent({
@@ -222,13 +116,103 @@ contract Consents {
         emit Consented(
             consentData.action,
             userId,
-            apps.get(appName).addr,
+            apps.getId(appName),
             appName,
             consentData.dataType,
             consentData.allow
         );
     }
 
+    /**
+     * @dev upsert consent information
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param consentData new consent data to update
+     */
+    function consent(
+        bytes8 userId,
+        string memory appName,
+        ConsentData memory consentData
+    ) public {
+        require(users.exists(userId), "Consents: user does not exist");
+        require(apps.exists(appName), "Consents: app does not exist");
+
+        bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
+        bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
+
+        _checkAuthority(
+            userId,
+            appName,
+            authConsentCreate,
+            authConsentModify,
+            consentData
+        );
+        _updateConsent(userId, appName, consentData);
+    }
+
+    /**
+     * @dev this method is wrapper method of consent(bytes8, string memory, ConsentData memory)
+     * It finds userId from msg.sender and use as parameter of wrapped method
+     * @param appName name of app registered in AppRegistry
+     * @param consentData new consent data to update
+     */
+    function consent(
+        string memory appName,
+        ConsentData memory consentData
+    ) public {
+        consent(users.getId(msg.sender), appName, consentData);
+    }
+
+    /**
+     * @dev upsert many consent information at once
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param consentData new consent data list to update
+     */
+    function consentMany(
+        bytes8 userId,
+        string memory appName,
+        ConsentData[] memory consentData
+    ) public {
+        require(users.exists(userId), "Consents: user does not exist");
+        require(apps.exists(appName), "Consents: app does not exist");
+        require(consentData.length < CONSENT_DATA_MAX_LENGTH, "Consents: input length exceeds");
+
+        bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
+        bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
+
+        for (uint index = 0; index < consentData.length; index++) {
+            _checkAuthority(
+                userId,
+                appName,
+                authConsentCreate,
+                authConsentModify,
+                consentData[index]
+            );
+            _updateConsent(userId, appName, consentData[index]);
+        }
+    }
+
+    /**
+     * @dev this method is wrapper method of consentMany(bytes8, string memory, ConsentData[] memory)
+     * It finds userId from msg.sender and use as parameter of wrapped method
+     * @param appName name of app registered in AppRegistry
+     * @param consentData new consent data list to update
+     */
+    function consentMany(
+        string memory appName,
+        ConsentData[] memory consentData
+    ) public {
+        consentMany(users.getId(msg.sender), appName, consentData);
+    }
+
+    /**
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param action action type in ActionTypes
+     * @param dataType data type registered in DataTypeRegsitry
+     * @return current allowance of given consent information
+     */
     function isAllowed(
         bytes8 userId,
         string memory appName,
@@ -239,6 +223,14 @@ contract Consents {
         return consentInfo.allowed;
     }
 
+    /**
+     * @param userId id of user
+     * @param appName name of app registered in AppRegistry
+     * @param action action type in ActionTypes
+     * @param dataType data type registered in DataTypeRegsitry
+     * @param blockNumber blockNumber
+     * @return allowance of given consent information at specific block number
+     */
     function isAllowedAt(
         bytes8 userId,
         string memory appName,

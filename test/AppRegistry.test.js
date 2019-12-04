@@ -3,85 +3,144 @@ const { expect } = require('./test-utils');
 
 const AppRegistry = artifacts.require('AppRegistry');
 
+const TEST_APP_NAME = 'test-app';
+
 contract('AppRegistry', async (accounts) => {
-  const appName = 'test-app';
-  const [me, stranger] = accounts;
+  let apps;
 
-  it('should register', async () => {
-    const apps = await AppRegistry.new();
+  const [owner, stranger] = accounts;
 
-    const { logs } = await apps.register(appName);
-    expectEvent.inLogs(logs, 'Registration', { appName });
+  beforeEach(async () => {
+    apps = await AppRegistry.new();
   });
 
-  it('should fail to register if the name duplicates', async () => {
-    const apps = await AppRegistry.new();
-    await apps.register(appName);
+  describe('#register', () => {
+    it('should done correctly', async () => {
+      const { logs } = await apps.register(TEST_APP_NAME, { from: owner });
+      const { args: { appId } } = expectEvent.inLogs(logs, 'Registration', { appName: TEST_APP_NAME });
 
-    await expectRevert(
-      apps.register(appName),
-      'AppRegistry: app name already exist',
-    );
+      const fetchedAppId = await apps.getId(TEST_APP_NAME);
+      expect(`${fetchedAppId.padEnd(66, '0')}`).to.be.equal(appId);
+
+      const app = await apps.get(TEST_APP_NAME, { from: owner });
+      expect(app.name).to.be.equal(TEST_APP_NAME);
+      expect(app.owner).to.be.equal(owner);
+    });
+
+    it('should fail when register with same name twice', async () => {
+      await apps.register(TEST_APP_NAME, { from: owner });
+      await expectRevert(
+        apps.register(TEST_APP_NAME, { from: owner }),
+        'AppRegistry: app correspond to this name already registered',
+      );
+    });
   });
 
-  it('should able to get registered app data', async () => {
-    const apps = await AppRegistry.new();
-    await apps.register(appName);
+  describe('#unregister', () => {
+    beforeEach(async () => {
+      await apps.register(TEST_APP_NAME, { from: owner });
+    });
 
-    const app = await apps.get(appName);
-    expect(app.name).to.equal(appName);
-    expect(app.owner).to.equal(me);
+    it('should done correctly', async () => {
+      const { logs } = await apps.unregister(TEST_APP_NAME, { from: owner });
+      expectEvent.inLogs(logs, 'Unregistration', { appName: TEST_APP_NAME });
+
+      await expectRevert(
+        apps.get(TEST_APP_NAME, { from: owner }),
+        'AppRegistry: app does not exist',
+      );
+    });
+
+    it('should fail when unauthorized address tries to unregister', async () => {
+      await expectRevert(
+        apps.unregister(TEST_APP_NAME, { from: stranger }),
+        'AppRegistry: unauthorized',
+      );
+    });
+
+    it('should fail when trying to unregister app which does not exist', async () => {
+      await apps.unregister(TEST_APP_NAME, { from: owner });
+      await expectRevert(
+        apps.unregister(TEST_APP_NAME, { from: owner }),
+        'AppRegistry: app does not exist',
+      );
+    });
   });
 
-  it('should fail to get if it is not registered', async () => {
-    const apps = await AppRegistry.new();
-    await expectRevert(apps.get(appName), 'AppRegistry: app does not exist');
+  describe('#transferAppOwner', () => {
+    beforeEach(async () => {
+      await apps.register(TEST_APP_NAME, { from: owner });
+    });
+
+    it('should done correctly', async () => {
+      const { logs } = await apps.transferAppOwner(TEST_APP_NAME, stranger, { from: owner });
+      expectEvent.inLogs(logs, 'AppOwnerTransferred', {
+        appName: TEST_APP_NAME,
+        oldOwner: owner,
+        newOwner: stranger,
+      });
+    });
+
+    it('should fail when sender is not owner of the app', async () => {
+      await expectRevert(
+        apps.transferAppOwner(TEST_APP_NAME, stranger, { from: stranger }),
+        'AppRegistry: only owner can transfer ownership',
+      );
+    });
   });
 
-  it('should able to check existance', async () => {
-    const apps = await AppRegistry.new();
-    await apps.register(appName);
+  describe('#get', async () => {
+    it('should return app correctly', async () => {
+      await apps.register(TEST_APP_NAME, { from: owner });
+      const app = await apps.get(TEST_APP_NAME);
+      expect(app.name).to.be.equal(TEST_APP_NAME);
+      expect(app.owner).to.be.equal(owner);
+    });
 
-    await expect(apps.exists(appName)).to.eventually.be.true;
-    await expect(apps.exists('wrong-test-app')).to.eventually.be.false;
+    it('should fail when app does not exist', async () => {
+      await expectRevert(
+        apps.get(TEST_APP_NAME, { from: owner }),
+        'AppRegistry: app does not exist',
+      );
+    });
   });
 
-  it('should able to transfer ownership', async () => {
-    const apps = await AppRegistry.new();
-    await apps.register(appName);
+  describe('#getId', async () => {
+    it('should return app id correctly', async () => {
+      const { logs } = await apps.register(TEST_APP_NAME, { from: owner });
+      const { args: { appId } } = expectEvent.inLogs(logs, 'Registration', { appName: TEST_APP_NAME });
 
-    const { logs } = await apps.transferAppOwner(appName, stranger);
-    expectEvent.inLogs(logs, 'AppOwnerTransferred', { newOwner: stranger });
-
-    const app = await apps.get(appName);
-    expect(app.owner).to.equal(stranger);
+      const fetchedAppId = await apps.getId(TEST_APP_NAME);
+      expect(`${fetchedAppId.padEnd(66, '0')}`).to.be.equal(appId);
+    });
   });
 
-  it('should fail to transfer ownership if it is not by the owner', async () => {
-    const apps = await AppRegistry.new();
-    await apps.register(appName);
+  describe('#exists', async () => {
+    it('should returnn true when app does exist', async () => {
+      await apps.register(TEST_APP_NAME, { from: owner });
+      const existance = await apps.exists(TEST_APP_NAME);
+      expect(existance).to.be.true;
+    });
 
-    await expectRevert(
-      apps.transferAppOwner(appName, stranger, { from: stranger }),
-      'AppRegistry: only owner can transfer ownership',
-    );
+    it('shuold return false when app does not exist', async () => {
+      const existance = await apps.exists(TEST_APP_NAME);
+      expect(existance).to.be.false;
+    });
   });
 
-  it('should unregister', async () => {
-    const apps = await AppRegistry.new();
-    await apps.register(appName);
+  describe('#isOwner', async () => {
+    beforeEach(async () => {
+      await apps.register(TEST_APP_NAME, { from: owner });
+    });
 
-    const { logs } = await apps.unregister(appName);
-    expectEvent.inLogs(logs, 'Unregistration', { appName });
-  });
+    it('should return true when given owner is actual owner of app', async () => {
+      const isOwner = await apps.isOwner(TEST_APP_NAME, owner);
+      expect(isOwner).to.be.true;
+    });
 
-  it('should fail to unregister if it is not by the owner', async () => {
-    const apps = await AppRegistry.new();
-    await apps.register(appName);
-
-    await expectRevert(
-      apps.unregister(appName, { from: stranger }),
-      'AppRegistry: unauthorized',
-    );
+    it('should return false when given owner is not owner of app', async () => {
+      const isOwner = await apps.isOwner(TEST_APP_NAME, stranger);
+      expect(isOwner).to.be.false;
+    });
   });
 });
