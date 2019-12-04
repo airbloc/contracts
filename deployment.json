@@ -1,206 +1,8 @@
 {
-  "AppRegistry": {
-    "address": "0x719c7110898438a78d7f74Ce6Cc90DD69Fa320a0",
-    "tx_hash": "0x428fc7085318656f9f56bc2deadaf6b1065726e55cabfd9662c432dce3b092b3",
-    "created_at": 8534130,
-    "abi": [
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "appAddr",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "appName",
-            "type": "string"
-          }
-        ],
-        "name": "Registration",
-        "type": "event",
-        "signature": "0x0d8d636375a5c89a44d886dc1bd7257c82dbf9d475396c77cdbf443158ecf4e8"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "appAddr",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "appName",
-            "type": "string"
-          }
-        ],
-        "name": "Unregistration",
-        "type": "event",
-        "signature": "0x03adf6d1cf18f8d8f64f7dbe8bde608e0d3fbca9079aa3cb3498715ef807bde9"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "appAddr",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "indexed": true,
-            "name": "oldOwner",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "AppOwnerTransferred",
-        "type": "event",
-        "signature": "0xbf3f214e451e16a835d0833b12209f2928a822c65ee68cce51eb31338747e3df"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "appName",
-            "type": "string"
-          }
-        ],
-        "name": "register",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xf2c298be"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "appName",
-            "type": "string"
-          }
-        ],
-        "name": "unregister",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x6598a1ae"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "appName",
-            "type": "string"
-          }
-        ],
-        "name": "get",
-        "outputs": [
-          {
-            "components": [
-              {
-                "name": "name",
-                "type": "string"
-              },
-              {
-                "name": "owner",
-                "type": "address"
-              },
-              {
-                "name": "addr",
-                "type": "address"
-              }
-            ],
-            "name": "",
-            "type": "tuple"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x693ec85e"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "appName",
-            "type": "string"
-          }
-        ],
-        "name": "exists",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x261a323e"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "name": "owner",
-            "type": "address"
-          }
-        ],
-        "name": "isOwner",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xbde1eee7"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "transferAppOwner",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x1a9dff9f"
-      }
-    ]
-  },
   "ERC20Escrow": {
-    "address": "0xeDBfC160baD8A5ecD1778f0EF0Ca306032102F83",
-    "tx_hash": "0x812400f51225dc1d8045bfdaf0ce7de35962eced8cc93266c305658b9c497d2b",
-    "created_at": 8534166,
+    "address": "0xc0300B3CBA097917B8F8A0b04aeFfED80168C982",
+    "tx_hash": "0x2f968c2124359ac2105f0661f7f7552c192e08771b1920475419a75fb6fcec30",
+    "created_at": 13981616,
     "abi": [
       {
         "inputs": [
@@ -282,10 +84,166 @@
       }
     ]
   },
+  "ControllerRegistry": {
+    "address": "0x5DA52F7f59bC0c0Bf706c6DCBbc65D9750CE1551",
+    "tx_hash": "0x49d584c08382492ac47cfb70b5ac1e0b77a1e17730d7099f84ff47ab030b4bdc",
+    "created_at": 13981578,
+    "abi": [
+      {
+        "constant": false,
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x715018a6"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+          {
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x8da5cb5b"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "isOwner",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x8f32d59b"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xf2fde38b"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "controller",
+            "type": "address"
+          }
+        ],
+        "name": "Registration",
+        "type": "event",
+        "signature": "0x478f5152d8fc568db3f8de9fb402fd9d98a1a7541ecfe434e59cf574fbfc5524"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "controller",
+            "type": "address"
+          }
+        ],
+        "name": "Unregistration",
+        "type": "event",
+        "signature": "0x2171d18d6eaa5385a17d6cacd86394726517e8399c558ab99acf728be83f5bb9"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "previousOwner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event",
+        "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "controllerAddr",
+            "type": "address"
+          }
+        ],
+        "name": "register",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x4420e486"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "controllerAddr",
+            "type": "address"
+          }
+        ],
+        "name": "unregister",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x2ec2c246"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "controller",
+            "type": "address"
+          }
+        ],
+        "name": "isController",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb429afeb"
+      }
+    ]
+  },
   "DataTypeRegistry": {
-    "address": "0x6663Bff98B50d84a8e93FaA7D9B72A5Ae541b4eb",
-    "tx_hash": "0x49c067bb33cf8d5ef426cc627042a408e46f9a60caa5219505549000ff12880d",
-    "created_at": 8534141,
+    "address": "0xC6DdBfd68497B0fA5e868EC5B1FCDDCD639b936d",
+    "tx_hash": "0xb7c3bb8109952c84dc4b50099e0d8d37e537409b173c8d1c6b59fe94f0909a81",
+    "created_at": 13981584,
     "abi": [
       {
         "anonymous": false,
@@ -427,39 +385,478 @@
       }
     ]
   },
-  "ControllerRegistry": {
-    "address": "0x80FF9B7C869F1F8F7749908e174fFbbfe406a4e8",
-    "tx_hash": "0xf9e7af4f326eba3b556ff74ec6372263e231e2acace839a4444ea5b4f05207f9",
-    "created_at": 8534136,
+  "AppRegistry": {
+    "address": "0x3b8D2133Df2F99B56d3F8c01b7db37181d7B1959",
+    "tx_hash": "0x8c0dff48674eb77d01e5a3debb2e84b1c86cd86aba0d5cd0c6cd90cfdce5902b",
+    "created_at": 13981572,
     "abi": [
       {
         "constant": false,
-        "inputs": [],
-        "name": "renounceOwnership",
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          },
+          {
+            "name": "action",
+            "type": "string"
+          }
+        ],
+        "name": "revokeAction",
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x715018a6"
+        "signature": "0x10a789f8"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "createRole",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x617551d4"
       },
       {
         "constant": true,
-        "inputs": [],
-        "name": "owner",
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "name": "action",
+            "type": "string"
+          }
+        ],
+        "name": "isAuthorized",
         "outputs": [
           {
             "name": "",
-            "type": "address"
+            "type": "bool"
           }
         ],
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x8da5cb5b"
+        "signature": "0x96c57715"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "removeRole",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xac1465c6"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "unbindRole",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xb31ec2af"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "bindRole",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xc8526eed"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          },
+          {
+            "name": "action",
+            "type": "string"
+          }
+        ],
+        "name": "grantAction",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xe602362d"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "appId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "appName",
+            "type": "string"
+          }
+        ],
+        "name": "Registration",
+        "type": "event",
+        "signature": "0xf5ef63b2a629619cbea83fa4979a52fa156e638837dd66bc4683dd7fbb8f4709"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "appId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "appName",
+            "type": "string"
+          }
+        ],
+        "name": "Unregistration",
+        "type": "event",
+        "signature": "0xfe4087afbde6adacfa58b7ae569b654c6445bdf8781edab97394ea74d2a5f85e"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "appId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "indexed": true,
+            "name": "oldOwner",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "AppOwnerTransferred",
+        "type": "event",
+        "signature": "0xd862515a389f54c6adf72b970712257c420c06e58830f73050bc0b9aca86f96d"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "RoleCreation",
+        "type": "event",
+        "signature": "0xc2b6ee9f52b3de3bb61425ddae45ae6d999023b01a3950ee19667b235ed8b23a"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "RoleRemoval",
+        "type": "event",
+        "signature": "0xf62cd9d9e6db5c8c5690d7f9adf2224040edc6e63b93e00db8ad092ab6923c08"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": true,
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "RoleBound",
+        "type": "event",
+        "signature": "0xf1292e948ea47db3c62a8d29d6c7d2272d236bc10fa66fddb7b2e1570b1b1372"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": true,
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "RoleUnbound",
+        "type": "event",
+        "signature": "0xe3ee4a62256915250287945244f05e6f185e5b0be4c5f0e85f29e3044f120ce3"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "name": "actionName",
+            "type": "string"
+          }
+        ],
+        "name": "ActionGranted",
+        "type": "event",
+        "signature": "0xe03e108285a5925f590b2999b168b964f1fe8f10e0081058fe0c01c38b7e3bd9"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "name": "actionName",
+            "type": "string"
+          }
+        ],
+        "name": "ActionRevoked",
+        "type": "event",
+        "signature": "0x853537b9aa72341c9043ddf56d5bc062180a8f122964f92d899c2734aad5f430"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "appName",
+            "type": "string"
+          }
+        ],
+        "name": "register",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xf2c298be"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "appName",
+            "type": "string"
+          }
+        ],
+        "name": "unregister",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x6598a1ae"
       },
       {
         "constant": true,
-        "inputs": [],
+        "inputs": [
+          {
+            "name": "appName",
+            "type": "string"
+          }
+        ],
+        "name": "get",
+        "outputs": [
+          {
+            "components": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "owner",
+                "type": "address"
+              }
+            ],
+            "name": "",
+            "type": "tuple"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x693ec85e"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "appName",
+            "type": "string"
+          }
+        ],
+        "name": "getId",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xbee51f3b"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "appName",
+            "type": "string"
+          }
+        ],
+        "name": "exists",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x261a323e"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "name": "owner",
+            "type": "address"
+          }
+        ],
         "name": "isOwner",
         "outputs": [
           {
@@ -470,143 +867,38 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x8f32d59b"
+        "signature": "0xbde1eee7"
       },
       {
         "constant": false,
         "inputs": [
           {
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "transferOwnership",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xf2fde38b"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "controller",
-            "type": "address"
-          }
-        ],
-        "name": "Registration",
-        "type": "event",
-        "signature": "0x478f5152d8fc568db3f8de9fb402fd9d98a1a7541ecfe434e59cf574fbfc5524"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "controller",
-            "type": "address"
-          }
-        ],
-        "name": "Unregistration",
-        "type": "event",
-        "signature": "0x2171d18d6eaa5385a17d6cacd86394726517e8399c558ab99acf728be83f5bb9"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "previousOwner",
-            "type": "address"
+            "name": "appName",
+            "type": "string"
           },
           {
-            "indexed": true,
             "name": "newOwner",
             "type": "address"
           }
         ],
-        "name": "OwnershipTransferred",
-        "type": "event",
-        "signature": "0x8be0079c531659141344cd1fd0a4f28419497f9722a3daafe3b4186f6b6457e0"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "controllerAddr",
-            "type": "address"
-          }
-        ],
-        "name": "register",
+        "name": "transferAppOwner",
         "outputs": [],
         "payable": false,
         "stateMutability": "nonpayable",
         "type": "function",
-        "signature": "0x4420e486"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "controller",
-            "type": "address"
-          }
-        ],
-        "name": "get",
-        "outputs": [
-          {
-            "components": [
-              {
-                "name": "controller",
-                "type": "address"
-              },
-              {
-                "name": "usersCount",
-                "type": "uint256"
-              }
-            ],
-            "name": "",
-            "type": "tuple"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xc2bc2efc"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "controller",
-            "type": "address"
-          }
-        ],
-        "name": "exists",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xf6a3d24e"
+        "signature": "0x1a9dff9f"
       }
     ]
   },
-  "Accounts": {
-    "address": "0x4E48E6356EB97BF9869EbCd7568780E3b9f1DB57",
-    "tx_hash": "0xd6b0456617b9c3c994ccddc9dc6d8ab71dfdd033978b51bc1f63c35cc6afa0df",
-    "created_at": 8534145,
+  "Consents": {
+    "address": "0xE92be3945Db3783Bb1e9Cd72F028494440A7A038",
+    "tx_hash": "0x889a9f585dcd8fb88dce7dae2ca33b17c9b3d685f52274df68fcda0ec797b7df",
+    "created_at": 13981600,
     "abi": [
       {
         "constant": true,
         "inputs": [],
-        "name": "numberOfAccounts",
+        "name": "CONSENT_DATA_MAX_LENGTH",
         "outputs": [
           {
             "name": "",
@@ -616,424 +908,12 @@
         "payable": false,
         "stateMutability": "view",
         "type": "function",
-        "signature": "0x0f03e4c3"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "",
-            "type": "bytes32"
-          }
-        ],
-        "name": "identityHashToAccount",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bytes8"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x17aba2d3"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "",
-            "type": "bytes8"
-          }
-        ],
-        "name": "accounts",
-        "outputs": [
-          {
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "name": "status",
-            "type": "uint8"
-          },
-          {
-            "name": "controller",
-            "type": "address"
-          },
-          {
-            "name": "passwordProof",
-            "type": "address"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xf4a3fad5"
+        "signature": "0x6d332de7"
       },
       {
         "inputs": [
           {
-            "name": "controllerReg",
-            "type": "address"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "constructor",
-        "signature": "constructor"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "owner",
-            "type": "address"
-          },
-          {
-            "indexed": false,
-            "name": "accountId",
-            "type": "bytes8"
-          }
-        ],
-        "name": "SignUp",
-        "type": "event",
-        "signature": "0xb98ae0923087f0b489e49e611630c8accd44d415c9fcbd5d59c6511877754ec4"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "proxy",
-            "type": "address"
-          },
-          {
-            "indexed": true,
-            "name": "identityHash",
-            "type": "bytes32"
-          },
-          {
-            "indexed": false,
-            "name": "accountId",
-            "type": "bytes8"
-          }
-        ],
-        "name": "TemporaryCreated",
-        "type": "event",
-        "signature": "0x7f475d23ee7af49ec9e9b689d8eddd76ab367e3d326ba1658216174b5adbf52e"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "identityHash",
-            "type": "bytes32"
-          },
-          {
-            "indexed": true,
-            "name": "accountId",
-            "type": "bytes8"
-          },
-          {
-            "indexed": false,
-            "name": "newOwner",
-            "type": "address"
-          }
-        ],
-        "name": "Unlocked",
-        "type": "event",
-        "signature": "0x97e37defaf20fab5209164d8e3b54fdb1bd84d7ec6def1886c587be543d41bc0"
-      },
-      {
-        "constant": false,
-        "inputs": [],
-        "name": "create",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bytes8"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xefc81a8c"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "identityHash",
-            "type": "bytes32"
-          }
-        ],
-        "name": "createTemporary",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bytes8"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x56003f0f"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "identityPreimage",
-            "type": "bytes32"
-          },
-          {
-            "name": "newOwner",
-            "type": "address"
-          },
-          {
-            "name": "passwordSignature",
-            "type": "bytes"
-          }
-        ],
-        "name": "unlockTemporary",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x2299219d"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "controller",
-            "type": "address"
-          }
-        ],
-        "name": "setController",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x92eefe9b"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "accountId",
-            "type": "bytes8"
-          }
-        ],
-        "name": "getAccount",
-        "outputs": [
-          {
-            "components": [
-              {
-                "name": "owner",
-                "type": "address"
-              },
-              {
-                "name": "status",
-                "type": "uint8"
-              },
-              {
-                "name": "controller",
-                "type": "address"
-              },
-              {
-                "name": "passwordProof",
-                "type": "address"
-              }
-            ],
-            "name": "",
-            "type": "tuple"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xf9292ddb"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "identityHash",
-            "type": "bytes32"
-          }
-        ],
-        "name": "getAccountByIdentityHash",
-        "outputs": [
-          {
-            "components": [
-              {
-                "name": "owner",
-                "type": "address"
-              },
-              {
-                "name": "status",
-                "type": "uint8"
-              },
-              {
-                "name": "controller",
-                "type": "address"
-              },
-              {
-                "name": "passwordProof",
-                "type": "address"
-              }
-            ],
-            "name": "",
-            "type": "tuple"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xc75aeb7e"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "sender",
-            "type": "address"
-          }
-        ],
-        "name": "getAccountId",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bytes8"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xe0b490f7"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "identityHash",
-            "type": "bytes32"
-          }
-        ],
-        "name": "getAccountIdByIdentityHash",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bytes8"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x793d5046"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "messageHash",
-            "type": "bytes32"
-          },
-          {
-            "name": "signature",
-            "type": "bytes"
-          }
-        ],
-        "name": "getAccountIdFromSignature",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bytes8"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x23d0601d"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "accountId",
-            "type": "bytes8"
-          }
-        ],
-        "name": "isTemporary",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x6b886888"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "sender",
-            "type": "address"
-          },
-          {
-            "name": "accountId",
-            "type": "bytes8"
-          }
-        ],
-        "name": "isControllerOf",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xa83038e7"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "accountId",
-            "type": "bytes8"
-          }
-        ],
-        "name": "exists",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x97e4fea7"
-      }
-    ]
-  },
-  "Consents": {
-    "address": "0x98541077D2218414531129023dA6fCc6F9B1B32c",
-    "tx_hash": "0x98a8ab09db21e59af91a4257ec3b015d8fca34ec6ea02fb0a1e44df8bfd4ed4e",
-    "created_at": 8534154,
-    "abi": [
-      {
-        "inputs": [
-          {
-            "name": "accountReg",
+            "name": "userReg",
             "type": "address"
           },
           {
@@ -1069,8 +949,8 @@
           },
           {
             "indexed": true,
-            "name": "appAddr",
-            "type": "address"
+            "name": "appId",
+            "type": "bytes8"
           },
           {
             "indexed": false,
@@ -1090,7 +970,7 @@
         ],
         "name": "Consented",
         "type": "event",
-        "signature": "0x8599a1c756b9cd519b80b172f29a03b19082bf7df728da8456cbcab9eeaba8e3"
+        "signature": "0x30eae66e1c1ac9fa8cbc19b0340774f536960bfdd4c8bdf58f89b0b7a50a47c6"
       },
       {
         "constant": false,
@@ -1129,6 +1009,80 @@
         "constant": false,
         "inputs": [
           {
+            "name": "userId",
+            "type": "bytes8"
+          },
+          {
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "components": [
+              {
+                "name": "action",
+                "type": "uint8"
+              },
+              {
+                "name": "dataType",
+                "type": "string"
+              },
+              {
+                "name": "allow",
+                "type": "bool"
+              }
+            ],
+            "name": "consentData",
+            "type": "tuple"
+          }
+        ],
+        "name": "consent",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xf5146122"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "userId",
+            "type": "bytes8"
+          },
+          {
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "components": [
+              {
+                "name": "action",
+                "type": "uint8"
+              },
+              {
+                "name": "dataType",
+                "type": "string"
+              },
+              {
+                "name": "allow",
+                "type": "bool"
+              }
+            ],
+            "name": "consentData",
+            "type": "tuple[]"
+          }
+        ],
+        "name": "consentMany",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xcb401b1b"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
             "name": "appName",
             "type": "string"
           },
@@ -1157,162 +1111,6 @@
         "stateMutability": "nonpayable",
         "type": "function",
         "signature": "0xdd43ad05"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "components": [
-              {
-                "name": "action",
-                "type": "uint8"
-              },
-              {
-                "name": "dataType",
-                "type": "string"
-              },
-              {
-                "name": "allow",
-                "type": "bool"
-              }
-            ],
-            "name": "consentData",
-            "type": "tuple"
-          }
-        ],
-        "name": "consentByController",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xf573f89a"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "components": [
-              {
-                "name": "action",
-                "type": "uint8"
-              },
-              {
-                "name": "dataType",
-                "type": "string"
-              },
-              {
-                "name": "allow",
-                "type": "bool"
-              }
-            ],
-            "name": "consentData",
-            "type": "tuple[]"
-          }
-        ],
-        "name": "consentManyByController",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xae6d5034"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "components": [
-              {
-                "name": "action",
-                "type": "uint8"
-              },
-              {
-                "name": "dataType",
-                "type": "string"
-              },
-              {
-                "name": "allow",
-                "type": "bool"
-              }
-            ],
-            "name": "consentData",
-            "type": "tuple"
-          },
-          {
-            "name": "passwordSignature",
-            "type": "bytes"
-          }
-        ],
-        "name": "modifyConsentByController",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x0bfec389"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "components": [
-              {
-                "name": "action",
-                "type": "uint8"
-              },
-              {
-                "name": "dataType",
-                "type": "string"
-              },
-              {
-                "name": "allow",
-                "type": "bool"
-              }
-            ],
-            "name": "consentData",
-            "type": "tuple[]"
-          },
-          {
-            "name": "passwordSignature",
-            "type": "bytes"
-          }
-        ],
-        "name": "modifyConsentManyByController",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xe031b1cf"
       },
       {
         "constant": true,
@@ -1385,9 +1183,9 @@
     ]
   },
   "Exchange": {
-    "address": "0x15F00823c5f9a0fc42081E472bdFdA277ff464A6",
-    "tx_hash": "0x16b3052c0f5423673d3303ef26f87d0ba99d4db8129cce286aee61fd7a1c79f2",
-    "created_at": 8534162,
+    "address": "0xe4132A47aF538e8A6c0Ba119ada119e45c6bBfD3",
+    "tx_hash": "0xd52dc61f95eea78a52ae41c4545cd3c507ddcd44ab9908f0301afe0bc6114b7e",
+    "created_at": 13981611,
     "abi": [
       {
         "inputs": [
@@ -1758,6 +1556,754 @@
         "stateMutability": "view",
         "type": "function",
         "signature": "0x72dfa465"
+      }
+    ]
+  },
+  "Users": {
+    "address": "0x1bd64C662f408437ABC0012F345e686506b01b11",
+    "tx_hash": "0x876c5fbcc35e59467cc4b61c2bf163d6f96d52a7a52f6b10d8fe0f9e652ca841",
+    "created_at": 13981589,
+    "abi": [
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          },
+          {
+            "name": "action",
+            "type": "string"
+          }
+        ],
+        "name": "revokeAction",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x10a789f8"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "ACTION_CONSENT_CREATE",
+        "outputs": [
+          {
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x5e99d46f"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "createRole",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x617551d4"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "numberOfUsers",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x75ce46a7"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "ROLE_TEMP_DATA_CONTROLLER",
+        "outputs": [
+          {
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x7db664b8"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "ROLE_DATA_CONTROLLER",
+        "outputs": [
+          {
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x8007a4b6"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "account",
+            "type": "address"
+          },
+          {
+            "name": "action",
+            "type": "string"
+          }
+        ],
+        "name": "isAuthorized",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x96c57715"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "ACTION_CONSENT_MODIFY",
+        "outputs": [
+          {
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x9c1808aa"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "removeRole",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xac1465c6"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "unbindRole",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xb31ec2af"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "name": "identityHashToUser",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xb85860ae"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "bindRole",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xc8526eed"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "ACTION_USER_TRANSFER_OWNERSHIP",
+        "outputs": [
+          {
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xd0140505"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "name": "roleName",
+            "type": "string"
+          },
+          {
+            "name": "action",
+            "type": "string"
+          }
+        ],
+        "name": "grantAction",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xe602362d"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "",
+            "type": "bytes8"
+          }
+        ],
+        "name": "users",
+        "outputs": [
+          {
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "name": "controller",
+            "type": "address"
+          },
+          {
+            "name": "status",
+            "type": "uint8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xeadfe35f"
+      },
+      {
+        "inputs": [
+          {
+            "name": "controllerReg",
+            "type": "address"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "name": "userId",
+            "type": "bytes8"
+          }
+        ],
+        "name": "SignUp",
+        "type": "event",
+        "signature": "0xb98ae0923087f0b489e49e611630c8accd44d415c9fcbd5d59c6511877754ec4"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "proxy",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "name": "identityHash",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "name": "userId",
+            "type": "bytes8"
+          }
+        ],
+        "name": "TemporaryCreated",
+        "type": "event",
+        "signature": "0x7f475d23ee7af49ec9e9b689d8eddd76ab367e3d326ba1658216174b5adbf52e"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "identityHash",
+            "type": "bytes32"
+          },
+          {
+            "indexed": true,
+            "name": "userId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "Unlocked",
+        "type": "event",
+        "signature": "0x97e37defaf20fab5209164d8e3b54fdb1bd84d7ec6def1886c587be543d41bc0"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "RoleCreation",
+        "type": "event",
+        "signature": "0xc2b6ee9f52b3de3bb61425ddae45ae6d999023b01a3950ee19667b235ed8b23a"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "RoleRemoval",
+        "type": "event",
+        "signature": "0xf62cd9d9e6db5c8c5690d7f9adf2224040edc6e63b93e00db8ad092ab6923c08"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": true,
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "RoleBound",
+        "type": "event",
+        "signature": "0xf1292e948ea47db3c62a8d29d6c7d2272d236bc10fa66fddb7b2e1570b1b1372"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": true,
+            "name": "subject",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          }
+        ],
+        "name": "RoleUnbound",
+        "type": "event",
+        "signature": "0xe3ee4a62256915250287945244f05e6f185e5b0be4c5f0e85f29e3044f120ce3"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "name": "actionName",
+            "type": "string"
+          }
+        ],
+        "name": "ActionGranted",
+        "type": "event",
+        "signature": "0xe03e108285a5925f590b2999b168b964f1fe8f10e0081058fe0c01c38b7e3bd9"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "resourceId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "roleName",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "name": "actionName",
+            "type": "string"
+          }
+        ],
+        "name": "ActionRevoked",
+        "type": "event",
+        "signature": "0x853537b9aa72341c9043ddf56d5bc062180a8f122964f92d899c2734aad5f430"
+      },
+      {
+        "constant": false,
+        "inputs": [],
+        "name": "create",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xefc81a8c"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "identityHash",
+            "type": "bytes32"
+          }
+        ],
+        "name": "createTemporary",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x56003f0f"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "identityPreimage",
+            "type": "bytes32"
+          },
+          {
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "unlockTemporary",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x564929bf"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "newController",
+            "type": "address"
+          }
+        ],
+        "name": "setController",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x92eefe9b"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "userId",
+            "type": "bytes8"
+          }
+        ],
+        "name": "get",
+        "outputs": [
+          {
+            "components": [
+              {
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "name": "controller",
+                "type": "address"
+              },
+              {
+                "name": "status",
+                "type": "uint8"
+              }
+            ],
+            "name": "",
+            "type": "tuple"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x47ba65d2"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "identityHash",
+            "type": "bytes32"
+          }
+        ],
+        "name": "getByIdentityHash",
+        "outputs": [
+          {
+            "components": [
+              {
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "name": "controller",
+                "type": "address"
+              },
+              {
+                "name": "status",
+                "type": "uint8"
+              }
+            ],
+            "name": "",
+            "type": "tuple"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x628ecbda"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "name": "getId",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x65f68c89"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "identityHash",
+            "type": "bytes32"
+          }
+        ],
+        "name": "getIdByIdentityHash",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes8"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x93f9c90e"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "userId",
+            "type": "bytes8"
+          }
+        ],
+        "name": "isTemporary",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x6b886888"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "controller",
+            "type": "address"
+          },
+          {
+            "name": "userId",
+            "type": "bytes8"
+          }
+        ],
+        "name": "isControllerOf",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xa83038e7"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "userId",
+            "type": "bytes8"
+          }
+        ],
+        "name": "exists",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x97e4fea7"
       }
     ]
   }
