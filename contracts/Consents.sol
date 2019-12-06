@@ -51,11 +51,6 @@ contract Consents {
         dataTypes = dataTypeReg;
     }
 
-    modifier onlyDataController() {
-        require(dataControllers.isController(msg.sender), "Consents: caller is not a data controller");
-        _;
-    }
-
     struct ConsentData {
         ActionTypes action;
         string dataType;
