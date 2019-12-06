@@ -87,6 +87,11 @@ First, you need to launch development server.
  $ yarn dev
 ```
 
+If you want to watch live transaction information, you can launch ganache in dev port (9545)
+```
+ $ npx ganache-cli -p 9545
+```
+
 Then you can run unit tests using `yarn test`.
 
 ```
@@ -112,15 +117,15 @@ To access to `deployment.json` (Contract Deployment Addresses), you can use `htt
 ```
 $ curl http://localhost:8500 # For Example
 {
-  "Accounts": { "0xd95b1f49c581251f9b62cae463e34120acdddd76", <ABI> }
-  "AppRegistry": { "0x093735b0603de9e655f876589c8577361b074e1b", <ABI> }
-  "SchemaRegistry": { "0x7c8a3e4a4513514cf7d83921dbfb2700372c9294", <ABI> }
-  "CollectionRegistry": { "0x558a7882df946fbfb631654db52b0a25fc6def8e", <ABI> }
-  "Exchange": { "0x4e6385774f651a9b3317be8433c029cb5f58388f", <ABI> }
-  "SimpleContract": { "0x9a084041d379cf551539a29f8f431d3936e28532", <ABI> }
-  "SparseMerkleTree": { "0x49da8fd3c2fd575663b848488dadbe73f7452cd4", <ABI> }
-  "DataRegistry": { "0x0e101b525652ce6aa43c1f9f71dc0c29b1cb1f37", <ABI> }
-  "ERC20Mintable": { "0x009fb3ad2a28ea072ecc61c9176feab31cae6c68", <ABI> }
+  "Accounts": { "0xd95b1f49c581251f9b62cae463e34120acdddd76", <Created_At>, <Tx_Hash>, <ABI> }
+  "AppRegistry": { "0x093735b0603de9e655f876589c8577361b074e1b", <Created_At>, <Tx_Hash>, <ABI> }
+  "SchemaRegistry": { "0x7c8a3e4a4513514cf7d83921dbfb2700372c9294", <Created_At>, <Tx_Hash>, <ABI> }
+  "CollectionRegistry": { "0x558a7882df946fbfb631654db52b0a25fc6def8e", <Created_At>, <Tx_Hash>, <ABI> }
+  "Exchange": { "0x4e6385774f651a9b3317be8433c029cb5f58388f", <Created_At>, <Tx_Hash>, <ABI> }
+  "SimpleContract": { "0x9a084041d379cf551539a29f8f431d3936e28532", <Created_At>, <Tx_Hash>, <ABI> }
+  "SparseMerkleTree": { "0x49da8fd3c2fd575663b848488dadbe73f7452cd4", <Created_At>, <Tx_Hash>, <ABI> }
+  "DataRegistry": { "0x0e101b525652ce6aa43c1f9f71dc0c29b1cb1f37", <Created_At>, <Tx_Hash>, <ABI> }
+  "ERC20Mintable": { "0x009fb3ad2a28ea072ecc61c9176feab31cae6c68", <Created_At>, <Tx_Hash>, <ABI> }
 }
 ```
 
