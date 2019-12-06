@@ -211,30 +211,30 @@ contract('Consents', async (ethAccounts) => {
     });
   });
 
-  describe(`#consent(string,${CONSENT_DATA_SIG})`, () => {
-    const consentData = {
-      action: ACTION_COLLECTION,
-      dataType: DATA_TYPE_GPS,
-      allow: true,
-    };
+  // describe(`#consent(string,${CONSENT_DATA_SIG})`, () => {
+  //   const consentData = {
+  //     action: ACTION_COLLECTION,
+  //     dataType: DATA_TYPE_GPS,
+  //     allow: true,
+  //   };
 
-    let consent;
+  //   let consent;
 
-    beforeEach(async () => {
-      consent = consents.methods[`consent(string,${CONSENT_DATA_SIG})`];
-    });
+  //   beforeEach(async () => {
+  //     consent = consents.methods[`consent(string,${CONSENT_DATA_SIG})`];
+  //   });
 
-    it('should done correctly', async () => {
-      const { logs } = await consent(APP_NAME, consentData, { from: user });
-      expectEvent.inLogs(logs, 'Consented', {
-        userId,
-        appId,
-        appName: APP_NAME,
-        dataType: DATA_TYPE_GPS,
-        allowed: true,
-      });
-    });
-  });
+  //   it('should done correctly', async () => {
+  //     const { logs } = await consent(APP_NAME, consentData, { from: user });
+  //     expectEvent.inLogs(logs, 'Consented', {
+  //       userId,
+  //       appId,
+  //       appName: APP_NAME,
+  //       dataType: DATA_TYPE_GPS,
+  //       allowed: true,
+  //     });
+  //   });
+  // });
 
   describe('#consentMany(bytes8,string,ConsentData[])', () => {
     const consentDataEmail = {
@@ -449,30 +449,30 @@ contract('Consents', async (ethAccounts) => {
     });
   });
 
-  describe('#consentMany(string,ConsentData[])', () => {
-    const consentData = {
-      action: ACTION_COLLECTION,
-      dataType: DATA_TYPE_EMAIL,
-      allow: true,
-    };
+  // describe('#consentMany(string,ConsentData[])', () => {
+  //   const consentData = {
+  //     action: ACTION_COLLECTION,
+  //     dataType: DATA_TYPE_EMAIL,
+  //     allow: true,
+  //   };
 
-    let consentMany;
+  //   let consentMany;
 
-    beforeEach(async () => {
-      consentMany = consents.methods[`consentMany(string,${CONSENT_DATA_SIG}[])`];
-    });
+  //   beforeEach(async () => {
+  //     consentMany = consents.methods[`consentMany(string,${CONSENT_DATA_SIG}[])`];
+  //   });
 
-    it('should done correctly', async () => {
-      const { logs } = await consentMany(APP_NAME, [consentData], { from: user });
-      expectEvent.inLogs(logs, 'Consented', {
-        userId,
-        appId,
-        appName: APP_NAME,
-        dataType: DATA_TYPE_EMAIL,
-        allowed: true,
-      });
-    });
-  });
+  //   it('should done correctly', async () => {
+  //     const { logs } = await consentMany(APP_NAME, [consentData], { from: user });
+  //     expectEvent.inLogs(logs, 'Consented', {
+  //       userId,
+  //       appId,
+  //       appName: APP_NAME,
+  //       dataType: DATA_TYPE_EMAIL,
+  //       allowed: true,
+  //     });
+  //   });
+  // });
 
   describe('#isAllowed()', () => {
     let consent;

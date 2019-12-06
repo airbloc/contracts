@@ -150,18 +150,18 @@ contract Consents {
         _updateConsent(userId, appName, consentData);
     }
 
-    /**
-     * @dev this method is wrapper method of consent(bytes8, string memory, ConsentData memory)
-     * It finds userId from msg.sender and use as parameter of wrapped method
-     * @param appName name of app registered in AppRegistry
-     * @param consentData new consent data to update
-     */
-    function consent(
-        string memory appName,
-        ConsentData memory consentData
-    ) public {
-        consent(users.getId(msg.sender), appName, consentData);
-    }
+    // /**
+    //  * @dev this method is wrapper method of consent(bytes8, string memory, ConsentData memory)
+    //  * It finds userId from msg.sender and use as parameter of wrapped method
+    //  * @param appName name of app registered in AppRegistry
+    //  * @param consentData new consent data to update
+    //  */
+    // function consent(
+    //     string memory appName,
+    //     ConsentData memory consentData
+    // ) public {
+    //     consent(users.getId(msg.sender), appName, consentData);
+    // }
 
     /**
      * @dev upsert many consent information at once
@@ -193,18 +193,18 @@ contract Consents {
         }
     }
 
-    /**
-     * @dev this method is wrapper method of consentMany(bytes8, string memory, ConsentData[] memory)
-     * It finds userId from msg.sender and use as parameter of wrapped method
-     * @param appName name of app registered in AppRegistry
-     * @param consentData new consent data list to update
-     */
-    function consentMany(
-        string memory appName,
-        ConsentData[] memory consentData
-    ) public {
-        consentMany(users.getId(msg.sender), appName, consentData);
-    }
+    // /**
+    //  * @dev this method is wrapper method of consentMany(bytes8, string memory, ConsentData[] memory)
+    //  * It finds userId from msg.sender and use as parameter of wrapped method
+    //  * @param appName name of app registered in AppRegistry
+    //  * @param consentData new consent data list to update
+    //  */
+    // function consentMany(
+    //     string memory appName,
+    //     ConsentData[] memory consentData
+    // ) public {
+    //     consentMany(users.getId(msg.sender), appName, consentData);
+    // }
 
     /**
      * @param userId id of user
