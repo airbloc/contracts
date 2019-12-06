@@ -31,6 +31,18 @@ contract DataTypeRegistry {
     }
 
     /**
+     * @param name Unique name of the data type. (e.g. "gps-data")
+     */
+    function unregister(string memory name) public {
+        require(isOwner(name, msg.sender), "DataTypeRegistry: unauthorized");
+
+        bytes32 hashedName = keccak256(abi.encodePacked(name));
+        delete dataTypes[hashedName];
+
+        emit Unregistration(name);
+    }
+
+    /**
      * @dev Returns an application object.
      * Reverts if the given name does not exist.
      */
@@ -59,14 +71,5 @@ contract DataTypeRegistry {
      */
     function isOwner(string memory name, address owner) public view returns (bool) {
         return get(name).owner == owner;
-    }
-
-    function unregister(string memory name) public {
-        require(isOwner(name, msg.sender), "DataTypeRegistry: unauthorized");
-
-        bytes32 hashedName = keccak256(abi.encodePacked(name));
-        delete dataTypes[hashedName];
-
-        emit Unregistration(name);
     }
 }
