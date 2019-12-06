@@ -5,6 +5,7 @@ import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./ControllerRegistry.sol";
 import "./rbac/RBAC.sol";
+import "./utils/FeePayerUtils.sol";
 
 
 contract Users is RBAC {
@@ -35,7 +36,6 @@ contract Users is RBAC {
 
     mapping (bytes8 => User) public users;
     mapping (address => bytes8) private addressToUser;
-
     mapping (bytes32 => bytes8) public identityHashToUser;
 
     uint256 public numberOfUsers;
@@ -48,6 +48,11 @@ contract Users is RBAC {
 
     modifier onlyDataController() {
         require(dataControllers.isController(msg.sender), "Users: caller is not a data controller");
+        _;
+    }
+
+    modifier onlyFeePaidByDataController() {
+        require(dataControllers.isController(FeePayerUtils.get()), "Users: caller is not fee paid by data controller");
         _;
     }
 
@@ -96,7 +101,7 @@ contract Users is RBAC {
      */
     function createTemporary(bytes32 identityHash)
         public
-        onlyDataController
+        onlyFeePaidByDataController
         returns (bytes8)
     {
         require(
@@ -124,7 +129,7 @@ contract Users is RBAC {
      */
     function unlockTemporary(bytes32 identityPreimage, address newOwner)
         public
-        onlyDataController
+        onlyFeePaidByDataController
     {
         // check that keccak256(identityPreimage) == user.identityHash
         bytes32 identityHash = keccak256(abi.encodePacked(identityPreimage));
