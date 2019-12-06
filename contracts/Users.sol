@@ -101,7 +101,8 @@ contract Users is RBAC {
      */
     function createTemporary(bytes32 identityHash)
         public
-        onlyFeePaidByDataController
+        onlyDataController
+        // onlyFeePaidByDataController
         returns (bytes8)
     {
         require(
@@ -129,7 +130,8 @@ contract Users is RBAC {
      */
     function unlockTemporary(bytes32 identityPreimage, address newOwner)
         public
-        onlyFeePaidByDataController
+        onlyDataController
+        // onlyFeePaidByDataController
     {
         // check that keccak256(identityPreimage) == user.identityHash
         bytes32 identityHash = keccak256(abi.encodePacked(identityPreimage));
