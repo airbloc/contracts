@@ -157,30 +157,6 @@ contract Users is RBAC {
         emit Unlocked(identityHash, userId, newOwner);
     }
 
-//    function addController(address controller) external {
-//        bytes8 userId = addressToUser[msg.sender];
-//
-//        // the controller and the proxy cannot modify controller.
-//        // a controller can be set only through the user owner's direct transaction.
-//        require(dataControllers.exists(controller), "Users: given address is not a data controller");
-//        require(userId != bytes8(0x0), "Users: user does not exist");
-//        require(!isAuthorized(userId, controller, ROLE_DATA_CONTROLLER), "Users: given address is already authorized");
-//
-//        bindRole(userId, controller, ROLE_DATA_CONTROLLER);
-//    }
-//
-//    function removeController(address controller) external {
-//        bytes8 userId = addressToUser[msg.sender];
-//
-//        // the controller and the proxy cannot modify controller.
-//        // a controller can be set only through the user owner's direct transaction.
-//        require(dataControllers.exists(controller), "Users: given address is not a data controller");
-//        require(userId != bytes8(0x0), "Users: user does not exist");
-//        require(isAuthorized(userId, controller, ROLE_DATA_CONTROLLER), "Users: given address is already unauthorized");
-//
-//        unbindRole(userId, controller, ROLE_DATA_CONTROLLER);
-//    }
-
     /**
      * @dev change user's controller to newController
      * @param newController controller's address which user want to change
