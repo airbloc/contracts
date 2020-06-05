@@ -9,6 +9,7 @@ const DataTypeRegistry = artifacts.require('DataTypeRegistry');
 const ERC20Escrow = artifacts.require('ERC20Escrow');
 const Exchange = artifacts.require('Exchange');
 const ExchangeLib = artifacts.require('ExchangeLib');
+const FeePayerUtils = artifacts.require('FeePayerUtils');
 const StringUtils = artifacts.require('StringUtils');
 
 // for test
@@ -25,6 +26,7 @@ module.exports = (deployer, network) => {
     // contracts without any dependencies will go here:
     // const baseContracts = [AppRegistry, ControllerRegistry, DataTypeRegistry];
 
+    await deployer.deploy(FeePayerUtils);
     await deployer.deploy(StringUtils);
 
     await deployer.link(StringUtils, AppRegistry);
@@ -34,9 +36,9 @@ module.exports = (deployer, network) => {
     await deployer.deploy(DataTypeRegistry);
 
     // users
+    await deployer.link(FeePayerUtils, Users);
     await deployer.link(StringUtils, Users);
     await deployer.deploy(Users, ControllerRegistry.address);
-
 
     // consents
     await deployer.deploy(ConsentsLib);

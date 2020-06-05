@@ -5,6 +5,7 @@ import "openzeppelin-solidity/contracts/cryptography/ECDSA.sol";
 import "openzeppelin-solidity/contracts/math/SafeMath.sol";
 import "./ControllerRegistry.sol";
 import "./rbac/RBAC.sol";
+import "./utils/FeePayerUtils.sol";
 
 
 contract Users is RBAC {
@@ -17,9 +18,10 @@ contract Users is RBAC {
     string constant public ACTION_CONSENT_MODIFY = "consent:modify";
     string constant public ACTION_USER_TRANSFER_OWNERSHIP = "user:transferOwnership";
 
-    event SignUp(address indexed owner, bytes8 userId);
-    event TemporaryCreated(address indexed proxy, bytes32 indexed identityHash, bytes8 userId);
-    event Unlocked(bytes32 indexed identityHash, bytes8 indexed userId, address newOwner);
+    event SignedUp(address indexed owner, bytes8 userId);
+    event ControllerChanged(bytes8 indexed userId, address oldController, address newController);
+    event TemporaryCreated(address indexed proxy, address indexed feePayer, bytes32 indexed identityHash, bytes8 userId);
+    event TemporaryUnlocked(bytes32 indexed identityHash, bytes8 indexed userId, address newOwner);
 
     enum UserStatus {
         NONE,
@@ -35,7 +37,6 @@ contract Users is RBAC {
 
     mapping (bytes8 => User) public users;
     mapping (address => bytes8) private addressToUser;
-
     mapping (bytes32 => bytes8) public identityHashToUser;
 
     uint256 public numberOfUsers;
@@ -48,6 +49,11 @@ contract Users is RBAC {
 
     modifier onlyDataController() {
         require(dataControllers.isController(msg.sender), "Users: caller is not a data controller");
+        _;
+    }
+
+    modifier onlyFeePaidByDataController() {
+        require(dataControllers.isController(FeePayerUtils.get()), "Users: caller is not fee paid by data controller");
         _;
     }
 
@@ -85,7 +91,7 @@ contract Users is RBAC {
         // create initial role for given userId
         createInitialRole(userId);
 
-        emit SignUp(msg.sender, userId);
+        emit SignedUp(msg.sender, userId);
         return userId;
     }
 
@@ -96,7 +102,8 @@ contract Users is RBAC {
      */
     function createTemporary(bytes32 identityHash)
         public
-        onlyDataController
+        // onlyDataController
+        onlyFeePaidByDataController
         returns (bytes8)
     {
         require(
@@ -113,7 +120,7 @@ contract Users is RBAC {
         createInitialRole(userId);
         _bindRole(userId, msg.sender, ROLE_TEMP_DATA_CONTROLLER);
 
-        emit TemporaryCreated(msg.sender, identityHash, userId);
+        emit TemporaryCreated(msg.sender, FeePayerUtils.get(), identityHash, userId);
         return userId;
     }
 
@@ -124,7 +131,8 @@ contract Users is RBAC {
      */
     function unlockTemporary(bytes32 identityPreimage, address newOwner)
         public
-        onlyDataController
+        // onlyDataController
+        onlyFeePaidByDataController
     {
         // check that keccak256(identityPreimage) == user.identityHash
         bytes32 identityHash = keccak256(abi.encodePacked(identityPreimage));
@@ -147,32 +155,8 @@ contract Users is RBAC {
         // unbind temporary controller role
         _unbindRole(userId, msg.sender, ROLE_TEMP_DATA_CONTROLLER);
 
-        emit Unlocked(identityHash, userId, newOwner);
+        emit TemporaryUnlocked(identityHash, userId, newOwner);
     }
-
-//    function addController(address controller) external {
-//        bytes8 userId = addressToUser[msg.sender];
-//
-//        // the controller and the proxy cannot modify controller.
-//        // a controller can be set only through the user owner's direct transaction.
-//        require(dataControllers.exists(controller), "Users: given address is not a data controller");
-//        require(userId != bytes8(0x0), "Users: user does not exist");
-//        require(!isAuthorized(userId, controller, ROLE_DATA_CONTROLLER), "Users: given address is already authorized");
-//
-//        bindRole(userId, controller, ROLE_DATA_CONTROLLER);
-//    }
-//
-//    function removeController(address controller) external {
-//        bytes8 userId = addressToUser[msg.sender];
-//
-//        // the controller and the proxy cannot modify controller.
-//        // a controller can be set only through the user owner's direct transaction.
-//        require(dataControllers.exists(controller), "Users: given address is not a data controller");
-//        require(userId != bytes8(0x0), "Users: user does not exist");
-//        require(isAuthorized(userId, controller, ROLE_DATA_CONTROLLER), "Users: given address is already unauthorized");
-//
-//        unbindRole(userId, controller, ROLE_DATA_CONTROLLER);
-//    }
 
     /**
      * @dev change user's controller to newController
@@ -187,12 +171,16 @@ contract Users is RBAC {
         require(userId != bytes8(0), "Users: user does not exist");
 
         User storage user = users[userId];
-        require(user.controller != newController, "Users: given address is already a controller of user");
-        if (user.controller != address(0x0)) {
-            _unbindRole(userId, user.controller, ROLE_DATA_CONTROLLER);
+        address oldController = user.controller;
+
+        require(oldController != newController, "Users: given address is already a controller of user");
+        if (oldController != address(0x0)) {
+            _unbindRole(userId, oldController, ROLE_DATA_CONTROLLER);
         }
         _bindRole(userId, newController, ROLE_DATA_CONTROLLER);
         user.controller = newController;
+
+        emit ControllerChanged(userId, oldController, newController);
     }
 
     /**
