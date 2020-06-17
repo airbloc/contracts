@@ -7,16 +7,17 @@ import "./ControllerRegistry.sol";
 import "./rbac/RBAC.sol";
 import "./utils/FeePayerUtils.sol";
 
-
 contract Users is RBAC {
     using SafeMath for uint256;
     using ECDSA for bytes32;
 
     string public constant ROLE_DATA_CONTROLLER = "dataController";
-    string public constant ROLE_TEMP_DATA_CONTROLLER = "temporaryDataController";
+    string
+        public constant ROLE_TEMP_DATA_CONTROLLER = "temporaryDataController";
     string public constant ACTION_CONSENT_CREATE = "consent:create";
     string public constant ACTION_CONSENT_MODIFY = "consent:modify";
-    string public constant ACTION_USER_TRANSFER_OWNERSHIP = "user:transferOwnership";
+    string
+        public constant ACTION_USER_TRANSFER_OWNERSHIP = "user:transferOwnership";
 
     event SignedUp(address indexed owner, bytes8 userId);
     event ControllerChanged(
