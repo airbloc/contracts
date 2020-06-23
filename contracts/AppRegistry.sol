@@ -11,13 +11,15 @@ import "./rbac/RBAC.sol";
  * a data provider must stake ABL to this contract as a colletral.
  */
 contract AppRegistry is RBAC {
-
     event Registration(bytes8 indexed appId, string appName);
     event Unregistration(bytes8 indexed appId, string appName);
 
     event AppOwnerTransferred(
-        bytes8 indexed appId, string appName,
-        address indexed oldOwner, address newOwner);
+        bytes8 indexed appId,
+        string appName,
+        address indexed oldOwner,
+        address newOwner
+    );
 
     struct App {
         string name;
@@ -27,7 +29,11 @@ contract AppRegistry is RBAC {
     mapping(bytes8 => App) private apps;
     mapping(string => bytes8) private nameToApp;
 
-    function isResourceOwner(bytes8 appId, address account) internal view returns (bool) {
+    function isResourceOwner(bytes8 appId, address account)
+        internal
+        view
+        returns (bool)
+    {
         return apps[appId].owner == account;
     }
 
@@ -35,7 +41,10 @@ contract AppRegistry is RBAC {
      * @dev Creates a new application.
      */
     function register(string memory appName) public returns (bytes8) {
-        require(!exists(appName), "AppRegistry: app correspond to this name already registered");
+        require(
+            !exists(appName),
+            "AppRegistry: app correspond to this name already registered"
+        );
 
         bytes8 appId = generateId(appName);
         nameToApp[appName] = appId;
@@ -101,7 +110,11 @@ contract AppRegistry is RBAC {
     /**
      * @return true if the caller is an owner of given app.
      */
-    function isOwner(string memory appName, address owner) public view returns (bool) {
+    function isOwner(string memory appName, address owner)
+        public
+        view
+        returns (bool)
+    {
         return get(appName).owner == owner;
     }
 
@@ -109,7 +122,10 @@ contract AppRegistry is RBAC {
      * @dev Transfers an ownership of app to other account.
      */
     function transferAppOwner(string memory appName, address newOwner) public {
-        require(isOwner(appName, msg.sender), "AppRegistry: only owner can transfer ownership");
+        require(
+            isOwner(appName, msg.sender),
+            "AppRegistry: only owner can transfer ownership"
+        );
 
         App storage app = _get(appName);
         address oldOwner = app.owner;

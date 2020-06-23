@@ -1,7 +1,12 @@
 pragma solidity ^0.5.0;
 
+
 library StringUtils {
-    function equals(string memory a, string memory b) public pure returns (bool) {
+    function equals(string memory a, string memory b)
+        public
+        pure
+        returns (bool)
+    {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
 

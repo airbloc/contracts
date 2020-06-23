@@ -6,6 +6,7 @@ import "./AppRegistry.sol";
 import "./ConsentsLib.sol";
 import "./DataTypeRegistry.sol";
 
+
 /**
  * @title Consents is a contract managing users' consent for applications
  * doing specific actions (e.g. Data Collecting, Data Exchanging) to data types.
@@ -13,10 +14,7 @@ import "./DataTypeRegistry.sol";
 contract Consents {
     using ConsentsLib for ConsentsLib.Consents;
 
-    enum ActionTypes {
-        Collection,
-        Exchange
-    }
+    enum ActionTypes {Collection, Exchange}
 
     event Consented(
         ActionTypes indexed action,
@@ -27,7 +25,7 @@ contract Consents {
         bool allowed
     );
 
-    uint256 constant public CONSENT_DATA_MAX_LENGTH = 128;
+    uint256 public constant CONSENT_DATA_MAX_LENGTH = 128;
 
     // consents
     ConsentsLib.Consents private consents;
@@ -42,9 +40,7 @@ contract Consents {
         AppRegistry appReg,
         ControllerRegistry controllerReg,
         DataTypeRegistry dataTypeReg
-    )
-        public
-    {
+    ) public {
         users = userReg;
         apps = appReg;
         dataControllers = controllerReg;
@@ -80,13 +76,19 @@ contract Consents {
         bool consentExists = consents.exists(
             userId,
             appName,
-            uint(consentData.action),
+            uint256(consentData.action),
             consentData.dataType
         );
         if (consentExists) {
-            require(authConsentModify, "Consents: sender must be authorized before modify consent");
+            require(
+                authConsentModify,
+                "Consents: sender must be authorized before modify consent"
+            );
         } else {
-            require(authConsentCreate, "Consents: sender must be authorized before create consent");
+            require(
+                authConsentCreate,
+                "Consents: sender must be authorized before create consent"
+            );
         }
     }
 
@@ -100,13 +102,22 @@ contract Consents {
         string memory appName,
         ConsentData memory consentData
     ) internal {
-        require(dataTypes.exists(consentData.dataType), "Consents: data type does not exist");
+        require(
+            dataTypes.exists(consentData.dataType),
+            "Consents: data type does not exist"
+        );
 
         ConsentsLib.Consent memory consentInfo = ConsentsLib.Consent({
             allowed: consentData.allow,
             at: block.number
         });
-        consents.update(userId, appName, uint(consentData.action), consentData.dataType, consentInfo);
+        consents.update(
+            userId,
+            appName,
+            uint256(consentData.action),
+            consentData.dataType,
+            consentInfo
+        );
 
         emit Consented(
             consentData.action,
@@ -132,8 +143,16 @@ contract Consents {
         require(users.exists(userId), "Consents: user does not exist");
         require(apps.exists(appName), "Consents: app does not exist");
 
-        bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
-        bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
+        bool authConsentCreate = users.isAuthorized(
+            userId,
+            msg.sender,
+            users.ACTION_CONSENT_CREATE()
+        );
+        bool authConsentModify = users.isAuthorized(
+            userId,
+            msg.sender,
+            users.ACTION_CONSENT_MODIFY()
+        );
 
         _checkAuthority(
             userId,
@@ -171,12 +190,23 @@ contract Consents {
     ) public {
         require(users.exists(userId), "Consents: user does not exist");
         require(apps.exists(appName), "Consents: app does not exist");
-        require(consentData.length < CONSENT_DATA_MAX_LENGTH, "Consents: input length exceeds");
+        require(
+            consentData.length < CONSENT_DATA_MAX_LENGTH,
+            "Consents: input length exceeds"
+        );
 
-        bool authConsentCreate = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_CREATE());
-        bool authConsentModify = users.isAuthorized(userId, msg.sender, users.ACTION_CONSENT_MODIFY());
+        bool authConsentCreate = users.isAuthorized(
+            userId,
+            msg.sender,
+            users.ACTION_CONSENT_CREATE()
+        );
+        bool authConsentModify = users.isAuthorized(
+            userId,
+            msg.sender,
+            users.ACTION_CONSENT_MODIFY()
+        );
 
-        for (uint index = 0; index < consentData.length; index++) {
+        for (uint256 index = 0; index < consentData.length; index++) {
             _checkAuthority(
                 userId,
                 appName,
@@ -214,7 +244,12 @@ contract Consents {
         ActionTypes action,
         string memory dataType
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consentInfo = consents.get(userId, appName, uint(action), dataType);
+        ConsentsLib.Consent memory consentInfo = consents.get(
+            userId,
+            appName,
+            uint256(action),
+            dataType
+        );
         return consentInfo.allowed;
     }
 
@@ -233,7 +268,13 @@ contract Consents {
         string memory dataType,
         uint256 blockNumber
     ) public view returns (bool) {
-        ConsentsLib.Consent memory consentInfo = consents.getPastConsent(userId, appName, uint(action), dataType, blockNumber);
+        ConsentsLib.Consent memory consentInfo = consents.getPastConsent(
+            userId,
+            appName,
+            uint256(action),
+            dataType,
+            blockNumber
+        );
         return consentInfo.allowed;
     }
 }

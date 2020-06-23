@@ -6,6 +6,7 @@ import "./ExchangeLib.sol";
 
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 
+
 /**
  * @title Exchange contract is exchange feature implementation of airbloc protocol.
  * This makes users of protocol to exchange data each other.
@@ -20,7 +21,12 @@ contract Exchange is ReentrancyGuard {
     event OfferCanceled(bytes8 indexed offerId, string providerAppName);
     // consumer (settle/reject order)
     event OfferSettled(bytes8 indexed offerId, address indexed consumer);
-    event OfferReceipt(bytes8 indexed offerId, string providerAppName, address indexed consumer, bytes result);
+    event OfferReceipt(
+        bytes8 indexed offerId,
+        string providerAppName,
+        address indexed consumer,
+        bytes result
+    );
     event OfferRejected(bytes8 indexed offerId, address indexed consumer);
     // escrow (settle)
     event EscrowExecutionFailed(bytes reason);
@@ -54,7 +60,10 @@ contract Exchange is ReentrancyGuard {
         bytes20[] memory dataIds
     ) public returns (bytes8) {
         require(apps.exists(provider), "Exchange: provider app does not exist");
-        require(apps.isOwner(provider, msg.sender), "Exchange: only provider app owner can prepare order");
+        require(
+            apps.isOwner(provider, msg.sender),
+            "Exchange: only provider app owner can prepare order"
+        );
 
         bytes8 offerId = orderbook.prepare(
             ExchangeLib.Offer({
@@ -81,13 +90,13 @@ contract Exchange is ReentrancyGuard {
      * @param offerId id of prepared offer
      * @param dataIds bundle of dataIds you want add
      */
-    function addDataIds(
-        bytes8 offerId,
-        bytes20[] memory dataIds
-    ) public {
+    function addDataIds(bytes8 offerId, bytes20[] memory dataIds) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(apps.isOwner(offer.provider, msg.sender), "Exchange: only provider app owner can update order");
+        require(
+            apps.isOwner(offer.provider, msg.sender),
+            "Exchange: only provider app owner can update order"
+        );
 
         orderbook.addDataIds(offerId, dataIds);
     }
@@ -99,7 +108,10 @@ contract Exchange is ReentrancyGuard {
     function order(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(apps.isOwner(offer.provider, msg.sender), "Exchange: only provider app owner can present order");
+        require(
+            apps.isOwner(offer.provider, msg.sender),
+            "Exchange: only provider app owner can present order"
+        );
 
         orderbook.order(offerId, DEFAULT_TIMEOUT_BLOCKS);
 
@@ -113,7 +125,10 @@ contract Exchange is ReentrancyGuard {
     function cancel(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(apps.isOwner(offer.provider, msg.sender), "Exchange: only provider app owner can cancel order");
+        require(
+            apps.isOwner(offer.provider, msg.sender),
+            "Exchange: only provider app owner can cancel order"
+        );
 
         orderbook.cancel(offerId);
 
@@ -127,7 +142,10 @@ contract Exchange is ReentrancyGuard {
     function settle(bytes8 offerId) public nonReentrant {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == offer.consumer, "Exchange: only consumer can settle order");
+        require(
+            msg.sender == offer.consumer,
+            "Exchange: only consumer can settle order"
+        );
 
         (bool success, bytes memory result) = orderbook.settle(offerId);
         if (!success) {
@@ -136,12 +154,7 @@ contract Exchange is ReentrancyGuard {
         }
 
         emit OfferSettled(offerId, msg.sender);
-        emit OfferReceipt(
-            offerId,
-            offer.provider,
-            offer.consumer,
-            result
-        );
+        emit OfferReceipt(offerId, offer.provider, offer.consumer, result);
     }
 
     /**
@@ -151,7 +164,10 @@ contract Exchange is ReentrancyGuard {
     function reject(bytes8 offerId) public {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
 
-        require(msg.sender == offer.consumer, "Exchange: only consumer can reject order");
+        require(
+            msg.sender == offer.consumer,
+            "Exchange: only consumer can reject order"
+        );
 
         orderbook.reject(offerId);
 
@@ -171,7 +187,11 @@ contract Exchange is ReentrancyGuard {
      * @param offerId offer's id you want to get
      * @return offer object
      */
-    function getOffer(bytes8 offerId) public view returns (ExchangeLib.Offer memory) {
+    function getOffer(bytes8 offerId)
+        public
+        view
+        returns (ExchangeLib.Offer memory)
+    {
         return orderbook.get(offerId);
     }
 
@@ -179,7 +199,11 @@ contract Exchange is ReentrancyGuard {
      * @param offerId offer's id you want to get
      * @return owners of from, to apps
      */
-    function getOfferMembers(bytes8 offerId) public view returns (address, address) {
+    function getOfferMembers(bytes8 offerId)
+        public
+        view
+        returns (address, address)
+    {
         ExchangeLib.Offer memory offer = orderbook.get(offerId);
         return (apps.get(offer.provider).owner, offer.consumer);
     }

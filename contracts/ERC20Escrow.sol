@@ -9,6 +9,7 @@ import "openzeppelin-solidity/contracts/token/ERC20/IERC20.sol";
 import "openzeppelin-solidity/contracts/token/ERC20/SafeERC20.sol";
 import "openzeppelin-solidity/contracts/utils/ReentrancyGuard.sol";
 
+
 /**
  * @title Simple escrow contract for exchange
  * This contract going to be called by ExchangeLib.sol
@@ -31,10 +32,10 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         require(ex.offerExists(offerId), "ERC20Escrow: offer does not exists");
 
         if (sign == getTransactSelector()) {
-            (
-                address token,
-                uint256 amount
-            ) = abi.decode(args, (address, uint256));
+            (address token, uint256 amount) = abi.decode(
+                args,
+                (address, uint256)
+            );
 
             return abi.encodeWithSelector(sign, token, amount, offerId);
         }
@@ -51,14 +52,27 @@ contract ERC20Escrow is IEscrow, ReentrancyGuard {
         (address provider, address consumer) = ex.getOfferMembers(offerId);
 
         // check authority
-        require(msg.sender == address(ex), "ERC20Escrow: only exchange contract can execute this method");
+        require(
+            msg.sender == address(ex),
+            "ERC20Escrow: only exchange contract can execute this method"
+        );
 
         // check contract address
-        require(offer.escrow.addr == address(this), "ERC20Escrow: invalid contract information");
+        require(
+            offer.escrow.addr == address(this),
+            "ERC20Escrow: invalid contract information"
+        );
 
         // check allowance/balance
-        require(amount <= token.allowance(consumer, address(this)), "ERC20Escrow: low allowance");
-        require(token.allowance(consumer, address(this)) <= token.balanceOf(consumer), "ERC20Escrow: low balance");
+        require(
+            amount <= token.allowance(consumer, address(this)),
+            "ERC20Escrow: low allowance"
+        );
+        require(
+            token.allowance(consumer, address(this)) <=
+                token.balanceOf(consumer),
+            "ERC20Escrow: low balance"
+        );
 
         token.safeTransferFrom(consumer, provider, amount);
     }

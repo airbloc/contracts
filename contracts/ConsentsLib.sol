@@ -1,12 +1,12 @@
 pragma solidity ^0.5.0;
 pragma experimental ABIEncoderV2;
 
+
 /**
  * @title ConsentsLib is a library which describes consent data structure.
  * Defined structs can work only CRUD actions.
  */
 library ConsentsLib {
-
     /**
      * Consent struct is basic consent rule element
      */
@@ -21,8 +21,8 @@ library ConsentsLib {
      * we need make the changelog accessible in Solidity runtime.
      */
     struct ConsentHistory {
-        mapping (uint => Consent) records;
-        uint numRecords;
+        mapping(uint256 => Consent) records;
+        uint256 numRecords;
     }
 
     /**
@@ -30,7 +30,7 @@ library ConsentsLib {
      * UserId -> AppName -> Action -> DataTypeName
      */
     struct Consents {
-        mapping(bytes8 => mapping(string => mapping(uint => mapping(string => ConsentHistory)))) consents;
+        mapping(bytes8 => mapping(string => mapping(uint256 => mapping(string => ConsentHistory)))) consents;
     }
 
     /**
@@ -46,10 +46,13 @@ library ConsentsLib {
         Consents storage self,
         bytes8 userId,
         string memory appName,
-        uint actionType,
+        uint256 actionType,
         string memory dataType
     ) internal view returns (Consent memory) {
-        require(exists(self, userId, appName, actionType, dataType), "consent does not exists");
+        require(
+            exists(self, userId, appName, actionType, dataType),
+            "consent does not exists"
+        );
         return _get(self, userId, appName, actionType, dataType);
     }
 
@@ -69,15 +72,19 @@ library ConsentsLib {
         Consents storage self,
         bytes8 userId,
         string memory appName,
-        uint actionType,
+        uint256 actionType,
         string memory dataType,
         uint256 at
     ) internal view returns (Consent memory) {
-        require(exists(self, userId, appName, actionType, dataType), "consent does not exists");
+        require(
+            exists(self, userId, appName, actionType, dataType),
+            "consent does not exists"
+        );
 
         // find past consent record
-        ConsentsLib.ConsentHistory storage history = self.consents[userId][appName][actionType][dataType];
-        for (uint i = history.numRecords - 1; i >= 0; i--) {
+        ConsentsLib.ConsentHistory storage history = self
+            .consents[userId][appName][actionType][dataType];
+        for (uint256 i = history.numRecords - 1; i >= 0; i--) {
             if (history.records[i].at <= at) {
                 return history.records[i];
             }
@@ -93,10 +100,11 @@ library ConsentsLib {
         Consents storage self,
         bytes8 userId,
         string memory appName,
-        uint actionType,
+        uint256 actionType,
         string memory dataType
     ) internal view returns (Consent storage) {
-        ConsentsLib.ConsentHistory storage history = self.consents[userId][appName][actionType][dataType];
+        ConsentsLib.ConsentHistory storage history = self
+            .consents[userId][appName][actionType][dataType];
         return history.records[history.numRecords - 1];
     }
 
@@ -110,7 +118,7 @@ library ConsentsLib {
         Consents storage self,
         bytes8 userId,
         string memory appName,
-        uint actionType,
+        uint256 actionType,
         string memory dataType
     ) internal view returns (bool) {
         return _get(self, userId, appName, actionType, dataType).at != 0;
@@ -129,11 +137,12 @@ library ConsentsLib {
         Consents storage self,
         bytes8 userId,
         string memory appName,
-        uint actionType,
+        uint256 actionType,
         string memory dataType,
         Consent memory consent
     ) internal {
-        ConsentsLib.ConsentHistory storage history = self.consents[userId][appName][actionType][dataType];
+        ConsentsLib.ConsentHistory storage history = self
+            .consents[userId][appName][actionType][dataType];
         history.records[history.numRecords++] = consent;
     }
 
@@ -148,7 +157,7 @@ library ConsentsLib {
         Consents storage self,
         bytes8 userId,
         string memory appName,
-        uint actionType,
+        uint256 actionType,
         string memory dataType
     ) internal {
         delete self.consents[userId][appName][actionType][dataType];

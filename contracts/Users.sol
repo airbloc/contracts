@@ -7,27 +7,37 @@ import "./ControllerRegistry.sol";
 import "./rbac/RBAC.sol";
 import "./utils/FeePayerUtils.sol";
 
-
 contract Users is RBAC {
     using SafeMath for uint256;
     using ECDSA for bytes32;
 
-    string constant public ROLE_DATA_CONTROLLER = "dataController";
-    string constant public ROLE_TEMP_DATA_CONTROLLER = "temporaryDataController";
-    string constant public ACTION_CONSENT_CREATE = "consent:create";
-    string constant public ACTION_CONSENT_MODIFY = "consent:modify";
-    string constant public ACTION_USER_TRANSFER_OWNERSHIP = "user:transferOwnership";
+    string public constant ROLE_DATA_CONTROLLER = "dataController";
+    string
+        public constant ROLE_TEMP_DATA_CONTROLLER = "temporaryDataController";
+    string public constant ACTION_CONSENT_CREATE = "consent:create";
+    string public constant ACTION_CONSENT_MODIFY = "consent:modify";
+    string
+        public constant ACTION_USER_TRANSFER_OWNERSHIP = "user:transferOwnership";
 
     event SignedUp(address indexed owner, bytes8 userId);
-    event ControllerChanged(bytes8 indexed userId, address oldController, address newController);
-    event TemporaryCreated(address indexed proxy, address indexed feePayer, bytes32 indexed identityHash, bytes8 userId);
-    event TemporaryUnlocked(bytes32 indexed identityHash, bytes8 indexed userId, address newOwner);
+    event ControllerChanged(
+        bytes8 indexed userId,
+        address oldController,
+        address newController
+    );
+    event TemporaryCreated(
+        address indexed proxy,
+        address indexed feePayer,
+        bytes32 indexed identityHash,
+        bytes8 userId
+    );
+    event TemporaryUnlocked(
+        bytes32 indexed identityHash,
+        bytes8 indexed userId,
+        address newOwner
+    );
 
-    enum UserStatus {
-        NONE,
-        TEMPORARY,
-        CREATED
-    }
+    enum UserStatus {NONE, TEMPORARY, CREATED}
 
     struct User {
         address owner;
@@ -35,9 +45,9 @@ contract Users is RBAC {
         UserStatus status;
     }
 
-    mapping (bytes8 => User) public users;
-    mapping (address => bytes8) private addressToUser;
-    mapping (bytes32 => bytes8) public identityHashToUser;
+    mapping(bytes8 => User) public users;
+    mapping(address => bytes8) private addressToUser;
+    mapping(bytes32 => bytes8) public identityHashToUser;
 
     uint256 public numberOfUsers;
 
@@ -48,16 +58,26 @@ contract Users is RBAC {
     }
 
     modifier onlyDataController() {
-        require(dataControllers.isController(msg.sender), "Users: caller is not a data controller");
+        require(
+            dataControllers.isController(msg.sender),
+            "Users: caller is not a data controller"
+        );
         _;
     }
 
     modifier onlyFeePaidByDataController() {
-        require(dataControllers.isController(FeePayerUtils.get()), "Users: caller is not fee paid by data controller");
+        require(
+            dataControllers.isController(FeePayerUtils.get()),
+            "Users: caller is not fee paid by data controller"
+        );
         _;
     }
 
-    function isResourceOwner(bytes8 userId, address account) internal view returns (bool) {
+    function isResourceOwner(bytes8 userId, address account)
+        internal
+        view
+        returns (bool)
+    {
         return userId == addressToUser[account];
     }
 
@@ -80,7 +100,8 @@ contract Users is RBAC {
     function create() external returns (bytes8) {
         require(
             addressToUser[msg.sender] == bytes8(0x0),
-            "Users: you can make only one user per one Klaytn Account");
+            "Users: you can make only one user per one Klaytn Account"
+        );
 
         // generate userId & insert information to User struct
         bytes8 userId = generateId(bytes32(0x0), msg.sender);
@@ -108,7 +129,8 @@ contract Users is RBAC {
     {
         require(
             identityHashToUser[identityHash] == bytes8(0x0),
-            "Users: user already exists");
+            "Users: user already exists"
+        );
 
         // generate userId & insert information to User struct
         bytes8 userId = generateId(identityHash, msg.sender);
@@ -120,7 +142,12 @@ contract Users is RBAC {
         createInitialRole(userId);
         _bindRole(userId, msg.sender, ROLE_TEMP_DATA_CONTROLLER);
 
-        emit TemporaryCreated(msg.sender, FeePayerUtils.get(), identityHash, userId);
+        emit TemporaryCreated(
+            msg.sender,
+            FeePayerUtils.get(),
+            identityHash,
+            userId
+        );
         return userId;
     }
 
@@ -143,10 +170,12 @@ contract Users is RBAC {
 
         require(
             msg.sender == user.controller,
-            "Users: user must be unlocked through the designated data controller");
+            "Users: user must be unlocked through the designated data controller"
+        );
         require(
             addressToUser[newOwner] == bytes8(0),
-            "Users: you can make only one user per one Klaytn Account");
+            "Users: you can make only one user per one Klaytn Account"
+        );
 
         user.owner = newOwner;
         user.status = UserStatus.CREATED;
@@ -167,13 +196,19 @@ contract Users is RBAC {
 
         // the controller and the proxy cannot modify controller.
         // a controller can be set only through the user owner's direct transaction.
-        require(dataControllers.isController(newController), "Users: given address is not a data controller");
+        require(
+            dataControllers.isController(newController),
+            "Users: given address is not a data controller"
+        );
         require(userId != bytes8(0), "Users: user does not exist");
 
         User storage user = users[userId];
         address oldController = user.controller;
 
-        require(oldController != newController, "Users: given address is already a controller of user");
+        require(
+            oldController != newController,
+            "Users: given address is already a controller of user"
+        );
         if (oldController != address(0x0)) {
             _unbindRole(userId, oldController, ROLE_DATA_CONTROLLER);
         }
@@ -188,7 +223,11 @@ contract Users is RBAC {
      * @param creator creator of id
      * @return unique id of user
      */
-    function generateId(bytes32 uniqueData, address creator) internal view returns (bytes8) {
+    function generateId(bytes32 uniqueData, address creator)
+        internal
+        view
+        returns (bytes8)
+    {
         bytes memory seed = abi.encodePacked(creator, block.number, uniqueData);
         return bytes8(keccak256(seed));
     }
@@ -216,7 +255,11 @@ contract Users is RBAC {
      * @param identityHash identityHash of user
      * @return memory struct of User correspond with given identityHash
      */
-    function getByIdentityHash(bytes32 identityHash) public view returns (User memory) {
+    function getByIdentityHash(bytes32 identityHash)
+        public
+        view
+        returns (User memory)
+    {
         return get(getIdByIdentityHash(identityHash));
     }
 
@@ -236,7 +279,11 @@ contract Users is RBAC {
      * @param identityHash identityHash of user
      * @return 8-length byte id that matches with given identityHash
      */
-    function getIdByIdentityHash(bytes32 identityHash) public view returns (bytes8) {
+    function getIdByIdentityHash(bytes32 identityHash)
+        public
+        view
+        returns (bytes8)
+    {
         bytes8 userId = identityHashToUser[identityHash];
         require(userId != bytes8(0x0), "Users: unknown identity hash");
         return userId;
@@ -257,7 +304,11 @@ contract Users is RBAC {
      * @param userId id of user
      * @return given user's controller is given controller or not
      */
-    function isControllerOf(address controller, bytes8 userId) public view returns (bool) {
+    function isControllerOf(address controller, bytes8 userId)
+        public
+        view
+        returns (bool)
+    {
         return get(userId).controller == controller;
     }
 

@@ -3,12 +3,12 @@ pragma experimental ABIEncoderV2;
 
 import "openzeppelin-solidity/contracts/ownership/Ownable.sol";
 
+
 /**
  * ControllerRegistry is a contract for managing data controllers.
  * In the initial version, it will be operated as a permissioned manner.
  */
 contract ControllerRegistry is Ownable {
-
     event Registration(address indexed controller);
     event Unregistration(address indexed controller);
 
@@ -18,7 +18,10 @@ contract ControllerRegistry is Ownable {
      * @dev Register given address in controller registry
      */
     function register(address controllerAddr) public onlyOwner {
-        require(!isController(controllerAddr), "ControllerRegistry: already registered");
+        require(
+            !isController(controllerAddr),
+            "ControllerRegistry: already registered"
+        );
 
         controllers[controllerAddr] = true;
 
@@ -29,10 +32,13 @@ contract ControllerRegistry is Ownable {
      * @dev Unregister given address in controller registry
      */
     function unregister(address controllerAddr) public onlyOwner {
-        require(isController(controllerAddr), "ControllerRegistry: already unregistered");
-        
+        require(
+            isController(controllerAddr),
+            "ControllerRegistry: already unregistered"
+        );
+
         delete controllers[controllerAddr];
-        
+
         emit Unregistration(controllerAddr);
     }
 

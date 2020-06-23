@@ -3,7 +3,6 @@ pragma experimental ABIEncoderV2;
 
 
 contract DataTypeRegistry {
-
     event Registration(string name);
     event Unregistration(string name);
 
@@ -20,7 +19,10 @@ contract DataTypeRegistry {
      * @param schemaHash SHA256 hash of the JSON schema of the data type.
      */
     function register(string memory name, bytes32 schemaHash) public {
-        require(!exists(name), "DataTypeRegistry: data type name already exists");
+        require(
+            !exists(name),
+            "DataTypeRegistry: data type name already exists"
+        );
 
         DataType storage dataType = _get(name);
         dataType.name = name;
@@ -69,7 +71,11 @@ contract DataTypeRegistry {
     /**
      * @return true if the caller is an owner of given app.
      */
-    function isOwner(string memory name, address owner) public view returns (bool) {
+    function isOwner(string memory name, address owner)
+        public
+        view
+        returns (bool)
+    {
         return get(name).owner == owner;
     }
 }
