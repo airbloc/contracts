@@ -187,7 +187,7 @@
         "signature": "0x2c7e9e18beb0594fa2ccaf8412bbe719d47f3c1efb1349e2ba03c1a3e4f64c83"
       },
       {
-        "constant": false,
+        "anonymous": false,
         "inputs": [
           {
             "name": "name",
@@ -1096,7 +1096,7 @@
         "signature": "0xbde1eee7"
       },
       {
-        "constant": false,
+        "constant": true,
         "inputs": [
           {
             "name": "appName",
@@ -1110,7 +1110,7 @@
         "name": "transferAppOwner",
         "outputs": [],
         "payable": false,
-        "stateMutability": "nonpayable",
+        "stateMutability": "view",
         "type": "function",
         "signature": "0x1a9dff9f"
       }
