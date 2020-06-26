@@ -1,153 +1,8 @@
 {
-  "DataTypeRegistry": {
-    "address": "0x53053853318788C219Ea55Af1f5Bb5eB80E3fFf4",
-    "tx_hash": "0xbd5a990edafb84bbaa02d7b928812b9d2ed7f878296b613bc8024ef4d08995f9",
-    "created_at": 14407884,
-    "abi": [
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "name": "name",
-            "type": "string"
-          }
-        ],
-        "name": "Registration",
-        "type": "event",
-        "signature": "0xd510136a132b28d5bccd27cc4dd52d556d9982ab168ba54b1e775d4d0f1ca948"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": false,
-            "name": "name",
-            "type": "string"
-          }
-        ],
-        "name": "Unregistration",
-        "type": "event",
-        "signature": "0x2c7e9e18beb0594fa2ccaf8412bbe719d47f3c1efb1349e2ba03c1a3e4f64c83"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "schemaHash",
-            "type": "bytes32"
-          }
-        ],
-        "name": "register",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x656afdee"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "name",
-            "type": "string"
-          }
-        ],
-        "name": "unregister",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0x6598a1ae"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "name",
-            "type": "string"
-          }
-        ],
-        "name": "get",
-        "outputs": [
-          {
-            "components": [
-              {
-                "name": "name",
-                "type": "string"
-              },
-              {
-                "name": "owner",
-                "type": "address"
-              },
-              {
-                "name": "schemaHash",
-                "type": "bytes32"
-              }
-            ],
-            "name": "",
-            "type": "tuple"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x693ec85e"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "name",
-            "type": "string"
-          }
-        ],
-        "name": "exists",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x261a323e"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "name",
-            "type": "string"
-          },
-          {
-            "name": "owner",
-            "type": "address"
-          }
-        ],
-        "name": "isOwner",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0xbde1eee7"
-      }
-    ]
-  },
   "ControllerRegistry": {
-    "address": "0xBf912b275d6E5390B96142C56aF399269d127A35",
-    "tx_hash": "0x4f161b4a651a1af22f647b7775fdfcee1c868c7acb85045071f18251e6c8a327",
-    "created_at": 14407882,
+    "address": "0xDbCADb2a8867CfbD8230f4c5950a38A4720aa61F",
+    "tx_hash": "0x620dc07717dd4556c335d1d8176aac5b23354559d451281794c26ebc49693c18",
+    "created_at": 31599808,
     "abi": [
       {
         "constant": false,
@@ -301,9 +156,9 @@
     ]
   },
   "SimpleToken": {
-    "address": "0x1A64Cdb40D9F0FEe05Ea9Ed02BCBfB226406E435",
-    "tx_hash": "0x97371845b1767a445f2efb559ceabc5ad1b70d6a985fbcc9250d82a8ed9aff04",
-    "created_at": 14407903,
+    "address": "0xCE79473006488feB31a5Ca49f37A73CDF0C92324",
+    "tx_hash": "0x55320c5b46ec2473bfbe4f560d3d93032a4b2194cc98533bdefdfe9697f21a16",
+    "created_at": 31599829,
     "abi": [
       {
         "constant": false,
@@ -631,236 +486,10 @@
       }
     ]
   },
-  "Consents": {
-    "address": "0xb331923B952447AC8162311494541Ee49CA35C57",
-    "tx_hash": "0x2bcc40b0dc53ac3dcca9d958fe2b58af312e8c0a4d597fcb2f632f78e30a05e0",
-    "created_at": 14407893,
-    "abi": [
-      {
-        "constant": true,
-        "inputs": [],
-        "name": "CONSENT_DATA_MAX_LENGTH",
-        "outputs": [
-          {
-            "name": "",
-            "type": "uint256"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x6d332de7"
-      },
-      {
-        "inputs": [
-          {
-            "name": "userReg",
-            "type": "address"
-          },
-          {
-            "name": "appReg",
-            "type": "address"
-          },
-          {
-            "name": "controllerReg",
-            "type": "address"
-          },
-          {
-            "name": "dataTypeReg",
-            "type": "address"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "constructor",
-        "signature": "constructor"
-      },
-      {
-        "anonymous": false,
-        "inputs": [
-          {
-            "indexed": true,
-            "name": "action",
-            "type": "uint8"
-          },
-          {
-            "indexed": true,
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "indexed": true,
-            "name": "appId",
-            "type": "bytes8"
-          },
-          {
-            "indexed": false,
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "indexed": false,
-            "name": "dataType",
-            "type": "string"
-          },
-          {
-            "indexed": false,
-            "name": "allowed",
-            "type": "bool"
-          }
-        ],
-        "name": "Consented",
-        "type": "event",
-        "signature": "0x30eae66e1c1ac9fa8cbc19b0340774f536960bfdd4c8bdf58f89b0b7a50a47c6"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "components": [
-              {
-                "name": "action",
-                "type": "uint8"
-              },
-              {
-                "name": "dataType",
-                "type": "string"
-              },
-              {
-                "name": "allow",
-                "type": "bool"
-              }
-            ],
-            "name": "consentData",
-            "type": "tuple"
-          }
-        ],
-        "name": "consent",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xf5146122"
-      },
-      {
-        "constant": false,
-        "inputs": [
-          {
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "components": [
-              {
-                "name": "action",
-                "type": "uint8"
-              },
-              {
-                "name": "dataType",
-                "type": "string"
-              },
-              {
-                "name": "allow",
-                "type": "bool"
-              }
-            ],
-            "name": "consentData",
-            "type": "tuple[]"
-          }
-        ],
-        "name": "consentMany",
-        "outputs": [],
-        "payable": false,
-        "stateMutability": "nonpayable",
-        "type": "function",
-        "signature": "0xcb401b1b"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "name": "action",
-            "type": "uint8"
-          },
-          {
-            "name": "dataType",
-            "type": "string"
-          }
-        ],
-        "name": "isAllowed",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x50615985"
-      },
-      {
-        "constant": true,
-        "inputs": [
-          {
-            "name": "userId",
-            "type": "bytes8"
-          },
-          {
-            "name": "appName",
-            "type": "string"
-          },
-          {
-            "name": "action",
-            "type": "uint8"
-          },
-          {
-            "name": "dataType",
-            "type": "string"
-          },
-          {
-            "name": "blockNumber",
-            "type": "uint256"
-          }
-        ],
-        "name": "isAllowedAt",
-        "outputs": [
-          {
-            "name": "",
-            "type": "bool"
-          }
-        ],
-        "payable": false,
-        "stateMutability": "view",
-        "type": "function",
-        "signature": "0x7cdda67c"
-      }
-    ]
-  },
   "Users": {
-    "address": "0xFB6c4F91df7BA5dD648e3eC00781e4c12D1D152c",
-    "tx_hash": "0x02629665645441f53888d2657613ebff11c4ca830516790ceccefd1e94b6a013",
-    "created_at": 14407887,
+    "address": "0xA6Da0246C02A068AD8FB2D26B5806F63E6130d4a",
+    "tx_hash": "0x88d7133cf79cefc8f81fb9eaaa16ead952781f01202572a5d395fbccdf3d2299",
+    "created_at": 31599813,
     "abi": [
       {
         "constant": false,
@@ -1633,10 +1262,155 @@
       }
     ]
   },
+  "DataTypeRegistry": {
+    "address": "0xC85D5aE14f73271198d7bB9008B987a392E4f08A",
+    "tx_hash": "0x87534cecf8e959300b6d1079749c0d14662299c58f947d9126f1661216b9cb7e",
+    "created_at": 31599811,
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "name": "name",
+            "type": "string"
+          }
+        ],
+        "name": "Registration",
+        "type": "event",
+        "signature": "0xd510136a132b28d5bccd27cc4dd52d556d9982ab168ba54b1e775d4d0f1ca948"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "name": "name",
+            "type": "string"
+          }
+        ],
+        "name": "Unregistration",
+        "type": "event",
+        "signature": "0x2c7e9e18beb0594fa2ccaf8412bbe719d47f3c1efb1349e2ba03c1a3e4f64c83"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "schemaHash",
+            "type": "bytes32"
+          }
+        ],
+        "name": "register",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x656afdee"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ],
+        "name": "unregister",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0x6598a1ae"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ],
+        "name": "get",
+        "outputs": [
+          {
+            "components": [
+              {
+                "name": "name",
+                "type": "string"
+              },
+              {
+                "name": "owner",
+                "type": "address"
+              },
+              {
+                "name": "schemaHash",
+                "type": "bytes32"
+              }
+            ],
+            "name": "",
+            "type": "tuple"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x693ec85e"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "name",
+            "type": "string"
+          }
+        ],
+        "name": "exists",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x261a323e"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "name",
+            "type": "string"
+          },
+          {
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "name": "isOwner",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0xbde1eee7"
+      }
+    ]
+  },
   "ERC20Escrow": {
-    "address": "0x00c217ab5fc478Be52acC9e55312A85f94c32C84",
-    "tx_hash": "0xc9ef38a3ad156fea16169b6974cb2821251290eaeabab8a042317df90203ca94",
-    "created_at": 14407901,
+    "address": "0x39EaCb882004408B3EAf7Dd285176A09CF97b3f4",
+    "tx_hash": "0x8984a079cff960e990384e4d7106668a42e031c8532b105eb9f775256e2ef5a6",
+    "created_at": 31599826,
     "abi": [
       {
         "inputs": [
@@ -1718,10 +1492,236 @@
       }
     ]
   },
+  "Consents": {
+    "address": "0xa8FA281674C73A2b8cb7cB8E0dB15711813d292c",
+    "tx_hash": "0xc81f3df33dff79fffc06e30b5d8d6d7628f17859389707a9db4bf97a6151ce1e",
+    "created_at": 31599819,
+    "abi": [
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "CONSENT_DATA_MAX_LENGTH",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x6d332de7"
+      },
+      {
+        "inputs": [
+          {
+            "name": "userReg",
+            "type": "address"
+          },
+          {
+            "name": "appReg",
+            "type": "address"
+          },
+          {
+            "name": "controllerReg",
+            "type": "address"
+          },
+          {
+            "name": "dataTypeReg",
+            "type": "address"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "constructor",
+        "signature": "constructor"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "name": "action",
+            "type": "uint8"
+          },
+          {
+            "indexed": true,
+            "name": "userId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": true,
+            "name": "appId",
+            "type": "bytes8"
+          },
+          {
+            "indexed": false,
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "name": "dataType",
+            "type": "string"
+          },
+          {
+            "indexed": false,
+            "name": "allowed",
+            "type": "bool"
+          }
+        ],
+        "name": "Consented",
+        "type": "event",
+        "signature": "0x30eae66e1c1ac9fa8cbc19b0340774f536960bfdd4c8bdf58f89b0b7a50a47c6"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "userId",
+            "type": "bytes8"
+          },
+          {
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "components": [
+              {
+                "name": "action",
+                "type": "uint8"
+              },
+              {
+                "name": "dataType",
+                "type": "string"
+              },
+              {
+                "name": "allow",
+                "type": "bool"
+              }
+            ],
+            "name": "consentData",
+            "type": "tuple"
+          }
+        ],
+        "name": "consent",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xf5146122"
+      },
+      {
+        "constant": false,
+        "inputs": [
+          {
+            "name": "userId",
+            "type": "bytes8"
+          },
+          {
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "components": [
+              {
+                "name": "action",
+                "type": "uint8"
+              },
+              {
+                "name": "dataType",
+                "type": "string"
+              },
+              {
+                "name": "allow",
+                "type": "bool"
+              }
+            ],
+            "name": "consentData",
+            "type": "tuple[]"
+          }
+        ],
+        "name": "consentMany",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function",
+        "signature": "0xcb401b1b"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "userId",
+            "type": "bytes8"
+          },
+          {
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "name": "action",
+            "type": "uint8"
+          },
+          {
+            "name": "dataType",
+            "type": "string"
+          }
+        ],
+        "name": "isAllowed",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x50615985"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "userId",
+            "type": "bytes8"
+          },
+          {
+            "name": "appName",
+            "type": "string"
+          },
+          {
+            "name": "action",
+            "type": "uint8"
+          },
+          {
+            "name": "dataType",
+            "type": "string"
+          },
+          {
+            "name": "blockNumber",
+            "type": "uint256"
+          }
+        ],
+        "name": "isAllowedAt",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function",
+        "signature": "0x7cdda67c"
+      }
+    ]
+  },
   "AppRegistry": {
-    "address": "0xc55EABdddf933b9BCc050Ec64803a6d11F72638C",
-    "tx_hash": "0x28b72a9749c6dd9b43d0c04b0f3331eab4e484052af324d8cfc3f4d799c8974b",
-    "created_at": 14407879,
+    "address": "0x672aebaDd637Cd9a65BBb1729772FEe499165dFb",
+    "tx_hash": "0x6665bf23af604e4ca7c590019696bfbe4930a069b442f04c8375c743c34801b9",
+    "created_at": 31599805,
     "abi": [
       {
         "constant": false,
@@ -2224,9 +2224,9 @@
     ]
   },
   "Exchange": {
-    "address": "0x6e15B206D6af3cD3e6563A6806B8E8fb656774ad",
-    "tx_hash": "0xca0525d66f8c7bca20eb2cc3139e808af6d8e5e09c40ef371ecf7e6defd179e8",
-    "created_at": 14407898,
+    "address": "0x9D468208f4EDda8a9C6E1C8ce6e88c71879BAdd1",
+    "tx_hash": "0xaa5c5787cd8c6604897ccefdc37f3280e279443b27480346da9004b2aaf31c96",
+    "created_at": 31599824,
     "abi": [
       {
         "inputs": [
